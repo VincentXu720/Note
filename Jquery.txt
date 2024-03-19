@@ -1,0 +1,348 @@
+Jquery插入、取代、刪除元素
+    插入(目標元素上呼叫，傳入內容做引數)
+        before()
+            在被選擇的元素前(前一行)插入，由參數指定的內容
+            語法
+                $(selector).before(content)
+                $(selector).before(function(index)) // index為選擇器得index位置
+                例如
+                    <body>
+                        <p>This is a P</p>
+                        <p>This is a paragraph.</p>
+                        <button class="btn1">在每个段落前面插入新的段落</button>
+                    </body>
+                    $(document).ready(function(){
+                        $(".btn1").click(function(){
+                            $("p").before("<p>Hello world!</p>");
+                            $("span").before("<h1>Hi span</h1>");
+                        });
+                    });
+                    
+                    Hello world!
+                    This is a P
+                    Hello world!
+                    This is a paragraph.
+                    在每个段落前面插入新的段落 <= button
+        after()
+            在被選擇的元素後，插入內容
+            語法
+                $(selector).after(content);
+                $(selector).after(function(index,html))
+            例如
+                <div class="inner">Hello</div>
+                <div class="inner">Goodbye</div>
+                
+                $('.inner').after('<p>Test</p>')
+
+                <div class="inner">Hello</div>
+                <p>Test</p>
+                <div class="inner">Goodbye</div>
+                <p>Test</p>
+
+                如果被選中的插在另一邊
+                <h2>Greetings</h2>
+                <div class="container">
+                    <div class="inner">Hello</div>
+                    <div class="inner">Goodbye</div>
+                </div>
+                $('.container').after($('h2'));
+                被選中元素將會移動到另一個元素後面
+                <div class="container">
+                    <div class="inner">Hello</div>
+                    <div class="inner">Goodbye</div>
+                </div>
+                <h2>Greetings</h2>
+        prepend()
+            在參數的指定內容，插入被選擇的元素前(開頭)
+            語法
+                $(selector).prepend(content);
+                $(selector).prepend(function(index,html))
+            例如
+                <body>
+                    <p>This is a P</p>
+                    <p>This is a paragraph.</p>
+                    <button class="btn1">在每个段落前面插入新的段落</button>
+                </body>
+                $(document).ready(function(){
+                    $(".btn1").click(function(){
+                        $("p").before("<p>Hello world!</p>");
+                        $("span").before("<h1>Hi span</h1>");
+                    });
+                });
+
+                Hello world! This is a P
+                Hello world! This is a paragraph.
+                在每个段落前面插入新的段落 <= button
+        append()
+            在被選擇的元素結尾，插入內容
+            語法
+                $(selector).append(content);
+                $(selector).append(function(index,html));
+                content 可以為一個或多個DOM、元素陣列、HTML字符串，或jQuery物件
+            例如
+                <div class="container">
+                    <div class="inner">Hello</div>
+                    <div class="inner">Goodbye</div>
+                </div>
+                $('inner').append('<p>Hi P</p>')
+
+                <div class="container">
+                    <div class="inner">
+                        <p>Hi P</p>
+                        Hello
+                    </div>
+                    <div class="inner">
+                        <p>Hi P</p>
+                        Goodbye
+                    </div>
+                </div>
+
+                or
+
+                var $newdiv1 = $('<div id="object1"/>'),
+                    newdiv2 = document.createElement('div'),
+                    existingdiv1 = document.getElementById('foo');
+                $('body').append($newdiv1, [newdiv2, existingdiv1]);
+    插入(反過來用內容呼叫，傳入目標元素做引數)
+        prependTo()
+            與prepend相反，把元素插進目標元素中
+            語法
+                $(content).prepend(selector);
+            例如
+                被選中元素在另一邊
+                <body>
+                    <div id="foo">FOO!</div>
+                    <span>I have something to say... </span>
+                </body>
+                $(document).ready(function(){
+                    $(".btn1").click(function(){
+                        $("span").prependTo("#foo");
+                    });
+                });
+                被選中元素會被移動到另一個元素中
+                I have something to say...FOO!
+
+                or
+
+                <div class="inner">
+                    Hello
+                </div>
+                <div class="inner">
+                    Goodbye
+                </div>
+                $(document).ready(function(){
+                    $(".btn1").click(function(){
+                        $("<p>Test</p>").prependTo(".inner");
+                    });
+                });
+
+                <div class="inner">
+                    <p>Test</p>
+                    Hello
+                </div>
+                <div class="inner">
+                    <p>Test</p>
+                    Goodbye
+                </div>
+        appendTo()
+            $(content).appendTo('selector')
+        insertAfter()
+            $(content).insertAfter('selector')
+        insertBefore()
+            $(content).insertBefore('selector')
+    取代
+        replaceWith()
+            用指定的HTML內容或元素替換被選中的元素，可接受函式
+            語法
+                $(selector).replaceWith(content)
+                $(selector).replaceWith(function(index,oldContent))
+            ex
+                <p>This is another paragraph.</p>
+                <button class="btn1">用粗体文本替换所有段落</button>
+                $(document).ready(function(){
+                    $(".btn1").click(function(){
+                        $("p").replaceWith("<b>Hello world!</b>");
+                    });
+                });
+
+                Hello world!
+                用粗体文本替换所有段落 <= button
+        replaceAll()
+            被選中的元素插入HTML內容或元素，不接受函式
+            語法
+                $(content).replaceAll(selector)
+            ex
+                $('<h2>New heading</h2>').replaceAll('.inner')
+    刪除
+        empty()
+            清空子元素，移除每個被選中的元素內部全部的子元素(包括文字節點)，不會更動元素本身
+            語法
+                $(selector).empty()
+        remove()
+            將自己與子孫元素全部移除，還會移除先前連接的事件處理器，remove () 通常不帶引數，並會移除 jQuery 物件中所有的元素。不過如果傳入一個引數
+            那個引數會被視為選擇器，當然，也可以使用 filter 來篩選
+            語法
+                $('div').remove()
+                $('div').remove('.hello') === $('div').filter('.hello').remove()
+        detach()
+            與remove用法相同，但它不會移除事件處理與資料，如果要保留所有事件處理器，若只想暫時自文件中移除某些元素，之後還要放回去的話，detach () 會比較適合
+    打包
+        wrap()
+            將被選擇的元素集合，每個都加上一個父元素
+            ex
+                <div class="container">
+                    <div class="inner">Hello</div>
+                    <div class="inner">Goodbye</div>
+                </div>
+                $('.inner').wrap('<div class="new"></div>')
+
+                <div class="container">
+                    <div class="new">
+                        <div class="inner">Hello</div>
+                    </div>
+                    <div class="new">
+                        <div class="inner">Goodbye</div>
+                    </div>
+                </div>
+        unwrap()
+            將被選擇的元素集合，每個的父元素都移除    
+        wrapAll()
+            將被選擇的元素集合，全部放到一個指定的父元素中
+            ex
+                <div class="container">
+                    <div class="inner">Hello</div>
+                    <div class="inner">Goodbye</div>
+                </div>
+                $('.inner').wrapAll('<div class="new" />')
+                
+                <!-- 結果 -->
+                <div class="container">
+                    <div class="new">
+                        <div class="inner">Hello</div>
+                        <div class="inner">Goodbye</div>
+                    </div>
+                </div>
+        wrapInner()
+            各別包到被選擇的元素中
+            <div class="container">
+                <div class="inner">Hello</div>
+                <div class="inner">Goodbye</div>
+            </div>
+            $('.inner').wrapInner('<div class="new"></div>')
+
+            <!-- 結果 -->
+            <div class="container">
+                <div class="inner">
+                    <div class="new">Hello</div>
+                </div>
+                <div class="inner">
+                    <div class="new">Goodbye</div>
+                </div>
+            </div>
+attr()
+    attr(attributeName)
+        取得被選中元素的屬性值(只有第一個)
+        例如
+            <p>
+                Once there was a <em title="huge, gigantic">large</em> dinosaur...
+            </p>
+            $('em').attr('title')  // huge, gigantic
+    attr(attributeName,value)
+        賦予被選中的元素一個或多個屬性值
+        例如
+            <p>
+                Once there was a <a title="huge, gigantic">large</a> dinosaur...
+            </p>
+            $('a').attr('title','Enjoy JQuery') // <a title="Enjoy JQuery"></a>
+    attr(attributes)
+        用key/value object 改變被選中的元素的多個屬性值
+        例如
+            <button type="button" title="up" alt="Top" class="btn up">上一頁</button>
+            $( ".up" ).attr({
+                alt: "upButton",
+                title: "TopButton"
+            });
+
+            <button type="button" title="TopButton" alt="upButton" class="btn up">上一頁</button>
+    removeAttr(attributeName)
+        移除被選中的屬性
+        例如
+            <button title="up" alt="Top" class="up"></button>
+            $('.up').removeAttr('title') === $('.up').attr('title',null)
+
+            <button alt="Top" class="up"></button>
+class
+    增加class
+        .addClass(className)
+            添加className，可放入多個Name，要用空格隔開
+    移除class
+        .removeClass
+            移除className
+value
+    val()
+        取得或賦予表單元素的value值
+        .val() // get
+        .val(value) // set
+        例如(get)
+            // 取得下拉選單 (select box) 的值
+            $('select.foo').val();
+
+            // 取得 checkbox 欄位的選取值
+            $('input:checkbox:checked').val();
+
+            // 取得 radio 欄位的選取值
+            $('input:radio[name=bar]:checked').val();
+        例如(set)
+            // HTML
+            <input type="text">
+            // 設定欄位值
+            $('input').val('Hello World!');
+            // 設定後的結果
+            <input type="text" value="Hello World!">
+css
+    css(propertyName)
+        取得(第一次)被選中元素的樣式
+        例如
+            const BC = $('.up').css('border')
+            console.log(BC) // 2px solid rgb(145, 11, 163)
+    css(propertyName,value)
+        將所有被選中的元素設定成同樣式
+        例如
+            $('button').css('border','5px solid blue')
+    css(properties)
+        用key/value將所有被選中的元素設定多個樣式
+        例如
+            $('button').css({
+                color:'black',
+                'background-color':'blue'
+            })
+            當屬性包含了"-"，要加上引號，沒有的話則可不加
+width and height
+    可以抓到元素內容的寬與高，但不包含padding、margin、border
+    width()
+        取得元素寬度(第一個被選中)
+    width(value)
+        設定元素寬度(所有被選中)
+    height()
+        取得元素高度(第一個被選中)
+    height(value)
+        設定元素高度(所有被選中)
+偏移量(offset)
+    offset()
+        相當於JS中的offsetLeft or offsetTop，用來取得元素在頁面上的座標，在IE與FF(Firefox)會有不同解讀
+        但在JQuery中統一使用offset即可，他會回傳object{top,left}
+        例如
+            var offset = $('p:last').offset();
+            console.log(offset.left)
+            console.log(offset.top)
+
+            const offset = $('.swiper').offset()
+            console.log("Left:",offset.left) // left:xx
+            console.log("Top:",offset.top) // top:xx
+            console.log("Right:",offset.right) // undefined
+            console.log("Bottom:",offset.bottom) // undefined
+            console.log("offset:",offset) // {top:xx,left:xx}
+
+            $('p:last') => 最後一個被選中的p元素
+            $('p:first') => 第一個被選中的p元素
+            $('p') => 所有被選中的p元素

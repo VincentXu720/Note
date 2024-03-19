@@ -1,0 +1,25 @@
+event loop(事件迴圈)
+    雖然都是JS的語法，不過Node在event loop上還是以不同的方式(libuv)去實現
+    以主線呈會有三階段
+        一、main
+            啟動腳本，運行函式
+        二、event loop
+            檢查是否要進入event loop
+                檢查其他線呈中是否有待處理事項
+                檢查任務是否在執行中
+                以上就會進到event loop中
+        三、over
+            所有事情(任務)完成，結束
+    event loop中又分成六階段
+    一、timers(計時器)
+        執行setTimeout or setInterval的callback
+    二、pending callbacks
+        執行被延遲的下個event loop的I/O回調
+    三、idle,prepare
+        node.JS內部專用階段(可不需理會)
+    四、poll
+        檢查是否有新的I/O發生，這階段會有阻塞發生
+    五、check
+        執行setImmediate的回調
+    六、close
+        發出事件，關閉資源的回調

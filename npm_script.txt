@@ -1,0 +1,13 @@
+指令
+    npm run
+        可以不帶參數執行的指令，他會新建一個"Shell"，而 Shell 會將當前目錄下的 node_modules/.bin 子目錄加入 PATH 變量，執行結束後，再將 PATH 變量恢復
+    --
+        來分隔選項，後面的東西會當參數傳入
+    progress 進度條
+    source-map  原始碼對應表
+    i
+        install縮寫用於安裝npm包
+    -g
+        global簡寫，表示將安裝包安裝到全局路徑中(C:\Users\{YourUserName}\AppData\Roaming\npm)這個位置(如果沒更改的話)
+    -D
+        devDependencies簡寫，表示將安裝包安裝到 packge.json 文件中，他只會在開發中使用到，像:測試框架、構件工具、代碼檢查工具等，不會包含到最終生產環境中

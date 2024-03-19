@@ -1,0 +1,99 @@
+ASP.NET core and .NET core
+    差別
+        ASP 
+            底層".NET Full Framework"(最低要求4.6.2)，包含 .NET core 設置理念，ex:default Kestrel 監聽 HTTP request
+            允許 Middleware 對所有的 HttpRequest 請求，收到請求後會調用註冊的 Middleware 對 HttpRequest 進行處理
+        .NET core
+            保留了 ASP 的優點並跨平台運行
+    結構
+        通用
+            wwwroot/ => 靜態資源的資料夾
+            Properties/launchSettings.json => 透過 dotnet run 啟動時的檔案
+            *.csproj => 專案檔
+            Program.cs => 程式進入點
+            Startup.cs => 啟動設定
+            appsettings.json => 組態設定檔
+        mvc、Web API
+            Controller => 控制器
+            Models => 模型
+            Views => 檢視
+        Blazor、Web App
+            Pages => 所有 Razor 頁面
+            Pages/_Host.cshtml => 預設首頁 (_Host.cshtml)
+            Pages/*.razor => 所有 Blazor 元件(頁面)
+            Shared => 共用 Blazor 元件的資料夾
+            Data => 預設的資料存取類別所在的資料夾
+        gRPC
+            Protos => Protocol Buffer File
+            Services => gRPC 服務的實作類別
+NuGet
+    安裝第三方套件的套件
+最小 API
+
+
+流程
+    專案設定
+        1. [使用控制器 (取消核取以使用最小 API)] 核取方塊
+        2. [啟用 OpenAPI 支援] 核取方塊
+PutTodoItem
+    PutTodoItem 類似於 PostTodoItem，但差異在於 PutTodoItem 會使用 HTTP PUT
+    以 HTTP 要求，Client 需要 send 整個更新的實體，如部分更新，要使用HTTP PATCH
+Blazor
+    有助於生成 Web 應用，從 Client and server 的可重組件生成 Web 應用
+
+資料庫串接流程(0~1)
+    安裝 Microsoft.EntityFrameworkCore.SqlServer、Microsoft.EntityFrameworkCore.Design、Microsoft.EntityFrameworkCore.Tools
+    1.創建新資料庫23
+    2.創建資料庫的資料表
+    3.VStudio 創立一個 Web API 專案
+    4.新增 Models 資料夾
+    5.新增類別(看有幾筆資料或資料的共通類別)(這裡的檔案相當於一筆資料)
+    6.VStudio 用 SQL Server Object Explorer => 加入 SQL Server => 伺服器:SQL 連接的資料庫名稱(從屬性查看)
+    7.對資料庫右鍵 => 屬性 => 找到 Connection string => 複製到 appsettings.json中
+        "ConnectionStrings": {
+            "DefaultConnection": "Data Source=MSI\\SQLEXPRESS;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False"
+        },
+    8.打程式
+    9.建立完整的資料庫檔案 Add-Migration InitialCreate
+    10.建立資料庫 dotnet run seeddata
+資料庫 CRUD
+    注入 DI
+
+    R (GET)
+        [HttpGet("路徑")]
+        public async Task<ActionResult> 
+    C (POST)
+
+    U (PUT、PATCH)
+    D (DELETE)
+屬性與語法
+    屬性
+        [AllowAnonymous] -> 限制已有驗證的使用者才可存取元件
+        
+    語法
+        implicit => 不需明確指定轉換類型
+        explict => 必須明確轉換類型
+    異步
+        public async Task<<object> GetExternalDataSets(int dataSourceId)
+    型別
+        dynamic => 在執行中判斷型別是否有錯
+補充
+    SQL Server 資料放在 (C:\Program Files\Microsoft SQL Server\{電腦名稱}\MSSQL\DATA)下最好
+    one-to-many
+        one 設定成 ClassName Class，many 用 ICollection<Class>
+        one => 結合其他表格 (ClassName Class)
+        many => one 連接到的表格 (ICollection)
+    many-to-many
+    連接資料庫指令
+        appsettings.json
+            Server=伺服器名稱;Database=資料庫名稱;User ID=帳號;TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+            "TodoDatabase": Data Source=MSI\\SQLEXPRESS;AttachDbFilename=C:\\Program Files\\Microsoft SQL Server\\MSSQL15.SQLEXPRESS\\MSSQL\\DATA\\YT_tutorial\\\\Todo.mdf;Integrated Security=True;Connect Timeout=30
+        NuGet指令
+            Scaffold-DbContext "Server=伺服器名稱;Database=資料庫名稱;User ID=使用者名稱(帳號);TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+        透過伺服器總管 -> 連線到資料庫
+        透過 SQL Server 物件總管 -> 加入 SQL Server
+            伺服器名稱 => MSSQL 伺服器名稱
+            資料庫名稱 => MSSQL 伺服器下的資料庫名稱
+    DTO
+        只要不想把多餘的資料傳輸出去就可以使用
+        透過 Models 中的資料內容，去除一些不必要內容(增加新內容)，這就是 DTO

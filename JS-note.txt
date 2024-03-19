@@ -1,0 +1,2069 @@
+Babel
+    (官網)https://babeljs.io/
+    (介紹)https://ithelp.ithome.com.tw/articles/10197028
+    轉換現代化的JS語法(ES6)，讓語法可以兼容各種browser版本
+    開發目錄
+        dist(自創建)
+            該資料夾會存被babel轉換成ES5的JS檔案，index.html會引入這裡的檔案
+        src(自創建)
+            該資料夾會存JS ES6檔案的地方
+    安裝方式
+        $ npm init <= 初始化npm
+        $ npm install babel-cli babel-preset-env --save-dev <= 安裝babel-cli和babel-preset-env
+        創建".babelrc"檔案在根目錄下，並寫入
+            {
+                "presets": ["env"]
+            }
+        到package.json中的script，改寫
+            "scripts": {
+                "build": "babel src -d dist"
+            }
+        $ npm run build <= 執行命令
+
+
+NaN
+    一種特殊的數值表示，通常用來表示無效或為定義的數值，當某個運算或操作無法產生有效數字時，就會產生
+    ex:
+        0/0 = NaN
+        Math.sqrt(-1) // 负数取平方根
+        使用undefined作用算時
+原始類型資料(Primitive type data)
+    當複製變數時會直接"複製值"
+    ex:string、num、boolean、underfined、null、symbol
+原始資料型態 and 物件資料型態(Object data)
+    原始資料型態
+        Number、String、Boolean、null、undefined、Symbol(符號)(ES6)
+    物件資料型態
+        object、array、function
+shallow and deep copy
+    淺拷貝(shallow copy)(複製資料地址)
+        當original obj data 與 cloned obj data 中，有一層的資料地址(address)
+        相同，背後指向的值相同，就會互相影響
+        
+        const originalData = {
+            firstLayerNum: 10，
+            obj: {
+                secondLayerNum: 100，
+            }，
+        };
+        const clonedData = originalData;
+
+        clonedData.firstLayerNum = 20;
+        clonedData.obj.secondLayerNum = 200;
+
+        console.log(originalData.firstLayerNum);
+        // 20 => 第一層有被 clonedData 影響而改變
+        console.log(originalData.obj.secondLayerNum);
+        // 200 => 第二層有被 clonedData 影響而改變
+
+        所以當兩個並非是完全獨立的obj data就會發生淺拷貝
+        const originalData = {
+            firstLayerNum: 10，
+            obj: {
+                secondLayerNum: 100，
+            }，
+        };
+        const clonedData = {
+            firstLayerNum: originalData.firstLayerNum，
+            obj: originalData.obj，
+        };
+
+        clonedData.firstLayerNum = 20;
+        clonedData.obj.secondLayerNum = 200;
+
+        console.log(originalData.firstLayerNum);
+        // 10 => 第一層沒有被 clonedData 影響，因為複製的是資料
+        console.log(originalData.obj.secondLayerNum);
+        // 200 => 第二層被 clonedData 影響而改變，因為複製的是物件
+        
+        例如:
+            // 變數
+            let a = 5;
+            let b = a; // 複製 a 變數
+            console.log(a) // 5
+            console.log(b) // 5
+            b = 10
+            console.log(a) // 5  console.log(b) // 10 => a 不會改變
+            // 物件
+            let a = {number:5};
+            let b = a // 複製 a 物件
+            console.log(a) // {number : 5}
+            console.log(b) // {number : 5}
+            b.number = 10
+            console.log(a) // 10  console.log(b) // 10 => a與b的地址相同(指向同一個值)，所以a發生改變
+        淺拷貝寫法
+            .slice()
+                const list = ['1'，'2']
+                const copylist = list.slice()
+                copylist.push('3'，'4')
+                console.log(list) // 1 2
+                console.log(copylist) // 1 2 3 4
+            .concat()
+                const list = ['1'，'2']
+                const copylist = [].concat(list)
+                copylist.push('3'，'4')
+                console.log(list) // 1 2
+                console.log(copylist) // 1 2 3 4
+            Array.from
+                const list = ['1'，'2']
+                const copylist = Array.from(list)
+                copylist.push('3'，'4')
+                console.log(list) // 1 2
+                console.log(copylist) // 1 2 3 4
+            [...]
+                const list = ['1'，'2']
+                const copylist = [...list]
+                copylist.push('3'，'4')
+                console.log(list) // 1 2
+                console.log(copylist) // 1 2 3 4
+            以上都不會影響到原array
+    結論:如果回傳一個新的array or obj 的話，原物件就不會發生改變，
+         改變的會是新的array or obj
+
+    深拷貝(deep copy)
+        兩個獨立的obj，每層資料位置都不同，互不影響深層物件
+        一、JSON.stringify/perse
+        常用來處理Local Storge、Session Storage等的Storge儲存操作
+        主要用JSON.stringify將obj轉成字串，再用JSON.perse轉為物件
+        例子:
+            const originalData = {
+                firstLayerNum: 10，
+                obj: {
+                    secondLayerNum: 100，
+                }，
+            };
+            const clonedData = JSON.parse(JSON.stringify(originalData));
+
+            clonedData.firstLayerNum = 20;
+            clonedData.obj.secondLayerNum = 200;
+
+            console.log(originalData.firstLayerNum);
+            // 10 => 第一層「沒有」被 clonedData 影響
+            console.log(originalData.obj.secondLayerNum);
+            // 100 => 第二層「沒有」被 clonedData 影響
+        不過有些值經過JSON.stringify/perse之後，會導致非預期的結果發生:
+            1.undefined : 連同key一起消失
+            2.NaN : 會被轉成null
+            3.Infinity : 會被轉成null
+            4.regExp : 會被轉換成空{}
+            5.Date : 型別會由Data => string
+            ex:
+                const originalData ={
+                    undefined:undefined,// undefined values will be completely lost,including the key containing the undefined value
+                    notANumber:NaN,// will be forced to null
+                    infinity:Infinity,// will be forced to null
+                    regExp:/.*/,// will be forced to an empty object {}
+                    date:new Date('2023-10-21T13:15:10') // Date will get stringified
+                }
+                console.log(faultyClonedData.undefined); // undefined
+                console.log(faultyClonedData.notANumber); // null
+                console.log(faultyClonedData.infinity); // null
+                console.log(faultyClonedData.regExp); // {}
+                console.log(faultyClonedData.date); // "1999-12-31T15:59:59.000Z"
+        二、Lodash cloneDeep()
+        Loadash library 本身就提供了deep copy的cloneDeep()方法，
+        且不會遇到JSON.stringify/prase的問題
+        ex:
+            import { clone,cloneDeep } from 'lodash';
+            const nestedArr = [['1'],['2'],['3']];
+
+            const shallowCopyWithLodash = clone(nestedArr); // 實踐「淺」拷貝
+            console.log(nestedArr[0] === shallowCopyWithLodash[0]);
+            // true => Shallow copy (same reference address)
+
+            const deepCopyWithLodash = cloneDeep(nestedArr); // 實踐「深」拷貝
+            console.log(nestedArr[0] === deepCopyWithLodash[0]);
+            // false => Deep copy (different reference address)
+        三、創建一個Recursive deepCopyFunction(遞迴函式)
+            使用"遞迴函式"遍歷obj data 每層資料，將其完全複製新的一份
+            ex:
+                function deepCopyFunction(inputObject) {
+                    // Return the value if inputObject is not an Object data
+                    // Need to notice typeof null is 'object'
+                    if (typeof inputObject !== 'object' || inputObject === null) {
+                        return inputObject;
+                    }   
+
+                    // Create an array or object to hold the values
+                    const outputObject = Array.isArray(inputObject) ? [] : {};
+
+                    // Recursively deep copy for nested objects,including arrays
+                    for (let key in inputObject) {
+                        const value = inputObject[key];
+                        outputObject[key] = deepCopyFunction(value);
+                    }
+                    return outputObject;
+                }
+                const originalData = {
+                    firstLayerNum: 10，
+                    obj: {
+                        secondLayerNum: 100，
+                    }，
+                };
+                const clonedData = deepCopyFunction(originalData);
+
+                clonedData.firstLayerNum = 20;
+                clonedData.obj.secondLayerNum = 200;
+
+                console.log(originalData.firstLayerNum);
+                // 10 => 第一層「沒有」被 clonedData 影響
+                console.log(originalData.obj.secondLayerNum);
+                // 100 => 第二層「沒有」被 clonedData 影響
+    結論:當你clone資料，但在不同的儲存位置，也就是放入新的obj、array的話，
+         就算更改新的物件資料也不會改變原obj or array的資料
+
+This
+    This是甚麼?
+        this 是 JS 的關鍵字
+        this 是function運行時所在的環境對象
+        this 代表function執行時所屬的物件，而不是function本身或Scope
+        this 是建立在JS的OOP基礎下的產物，全域環境window物件代表了一個
+             包含DOM文件的視窗，所以只要this"沒有"其他物件之下，this的
+             值就是window
+        ex:
+            var a = 1
+            var test1 = function (){
+                console.log(this.a)
+            }
+            test1() // 1 (找到全域環境的a)
+
+            var a = 1
+            var test2 = function (){
+                console.log(this.a)
+            }
+            var example ={
+                a:50，
+                getTest:test2，
+                getObj:function(){
+                    const test = () => {
+                        console.log('obj'，this.a)
+                    }
+                    test();
+                }，
+            };
+            test2() // 1
+            example.getTest() // 50 (在物件裡call function ，由於本身在物件中，所以會找到物件裡的a)
+            example.getObj() // 50  (物件裡this的指向會是物件裡的a)
+        兩個綁定this的方法 
+            1.call & apply
+                它們會把第一個傳進來的參數轉換為物件，而this會綁定，並設定為this的值
+                ex:
+                    function test1(){
+                        console.log(this.a)
+                    }
+                    var obj = {
+                        a:20
+                    };
+                    test1.call(obj); // 20
+                    test1.apply(obj); // 20
+            2.bind
+                ES5新增的bind方法，它可以將函式的this與bind的第一參數綁定
+                綁定函式
+                ex:
+                    function test1(){
+                        console.log(this.a)
+                    }
+                    var test3 = test1.bind({
+                        a:100
+                    });
+                    test3(); // 100
+
+                    test3會經由bind()去綁定test1 function，所以呼叫test3()
+                    就可以使用test1 function
+        New的方式
+                ex:
+                    class Car{
+                        setName(name){
+                            this.name = name
+                        }
+                        getName(){
+                            return this.name
+                        }
+                    }
+                    const myCar = new Car()
+                    myCar.setName('Hello')
+                    console.log(myCar.getName())
+    This指向到底是誰?
+        1.如果是透過new進行，this就是新建構出的該物件
+        2.如果是以.call() or .apply() 呼叫function，又或者是透過bind()綁定
+          那this就是被指定的物件
+        3.如果被呼叫的function是在物件中，this就是指向該物件
+        4.如果以上的條件都沒有達到，this就會是全域物件"window"，在嚴格模式下
+          會是undefined
+    呼叫方式
+        全域物件
+            console.log(this === window) // true
+            在全域中，this 會指向全域物件
+        函式呼叫
+            做為物件的 method 被呼叫，this 指向該物件，但如果函式獨立於任何物件而被呼叫，this 就會使用全域物件(非嚴格) or undefined(嚴格)
+            const obj = {
+                method: function() {
+                    console.log(this === obj);
+                }
+            };
+            obj.method(); // true
+            const func = obj.method; // 全域
+            func(); // false (在非嚴格模式下為 true)
+        建構式
+            如果函式使用 new 調用並建立新物件，那 this 將會指向該物件
+            function Person(name) {
+                this.name = name;
+            }
+
+            const person1 = new Person('Alice');
+            console.log(person1.name); // Alice
+        call() 和 apply() 方法
+            function greet() {
+                console.log(`Hello,${this.name}`);
+            }
+
+            const obj = { name: 'Alice' };
+
+            greet.call(obj); // Hello,Alice
+            greet.apply(obj); // Hello,Alice
+        箭頭函式
+            箭頭函式不會擁有自己的 this 而是繼承自外部的執行
+            const obj = {
+                method: function() {
+                    const innerFunc = () => {
+                        console.log(this === obj);
+                    };
+                    innerFunc();
+                }
+            };
+
+            obj.method(); // true
+
+    結論:
+        口訣:看this，就看"怎麼"呼叫function
+            ex:
+                var x = 10
+                var obj = {
+                    x: 20，
+                    fn: function () {
+                            var test = function () {
+                                console.log(this.x)
+                            }
+                            test()
+                        }，
+                }
+                obj.fn()
+            把obj.fn => obj.fn.call(obj)，想像把前面呼叫的物件放入
+            .call()裡呼叫，但這裡會因為test function裡還有一個呼叫
+            所以this.x會指向全域環境的值
+        箭頭函式中的this在哪個物件中使用指向就是哪一個物件
+
+JQuery與JS語法差異
+    JQuery與JS關係?
+        一個以JS編寫的library，為客戶端腳本
+    選擇器 
+        在JS中要定義一個DOM必須要透過選擇器進行讀取(querySelector or getElementById)
+        但在JQuery中只需透過$符號即可達成此效果class => $('.') Id => $('#')
+    動畫效果 
+        animate()
+            但他"無法"去做出影片類的動畫效果，它只能讓元件動作不會有斷點，會是流暢的
+            它還有套件jQuery UI可以使用
+鏈結串列(linked list)
+    what is linked list?
+        與陣列一樣都是以線性資料結構，但不同之處在於:
+            陣列宣告後長度會是固定的，如果空間小會上溢，空間大會導致memory的浪
+            費，而且更動array中的資料需要透過移動其他資料才能達成
+            鏈結串列剛好可以改善這些缺點，它是藉由一連串的節點(node)構成，所有
+            的node都會透過指標(參考)來進行連接，所以它為鏈式儲存結構，memory的
+            位置儲存是不連續的
+    定義:
+        一、節點
+            裡面包含著
+                1.資料元素
+                2.指標(參考)
+                    又稱(鏈結、引用、參考)，通常為一或兩個，用來指上/下個位置，如果
+                    沒有則為空，如果指標斷裂，資料就會遺失
+            就相當於火車車廂與車廂間的鏈結，相較於array，由於資料位置不是連續性的，
+            插入或移除資料都不需要移動元素，只須改上/下指標的指向即可，而缺點在於資
+            料沒有固定的長度，所以沒有索引可以存取特定，需要重頭找起，所以相較array
+            會更加費時
+        二、類型
+            1.單向鏈結串列(Singly Linked List)
+                又稱線性鏈結串列、普通鏈結串列，為最基本的鏈結串列其
+                特點是單向的，對鏈結串列的存取，要頭部(head)開始，依
+                序往下讀取
+            2.雙向鏈結串列(Doubly Linked List)
+                又稱為雙鏈結串列，與單向最大區別在於，每個node中會有
+                兩個指標，分別為上一個與下一個node，所以可以從任一個
+                node存取上或下一個node
+            3.迴圈鏈結串列(Circularly Linked List)
+                又稱環狀鏈結串列、循環鏈結串列，與一班鏈結串列操作一
+                致，但串列的頭尾會連接再一起，成為一個環
+        三、時間複雜度
+            1.插入、刪除:O(1)
+                這裡的插入與刪除O(1)是在有獲取node的前提下，如果沒有
+                獲取node，而要刪除或插入指定位置的node，會先經過查詢
+                node的動作，所以時間複雜度會變成O(n)
+                如果node位置為開頭，時間複雜度也為O(1)
+            2.存取、查詢:O(n)
+        四、與array的優缺點比較
+            array
+                優點:
+                    可透過index隨機存取(Random Access)，只需要O(1)的
+                    時間
+                    可靠度高，不會因為鏈結斷裂導致資料遺失
+                缺點:
+                    在開頭或中間插入、刪除資料，都需要花O(n)的時間將資
+                    料移動
+                    連續的記憶體空間，可能有用不到的空間，造成浪費
+                    array滿了，會需要花O(n)的時間搬動資料到新的array內
+            linked list
+                優點:
+                    資料在memory中不是連續性
+                    插入與刪除只需要修改上/下一個指標的指向
+                缺點:
+                    只能順序存取，花費O(n)的時間
+                    鏈結斷裂資料會遺失
+    JS中沒有內建鏈結串列，可以用物件進行模擬
+        ex:
+            {
+                data: 'data1'，
+                next: {
+                    data: 'data2'，
+                    next: {
+                        data: 'data3'，
+                        next: null
+                    }
+                }
+            }
+        先建立兩個列別，分別是Node(節點)和LikedList(提供插入、刪除node或其他方法)
+        1.Node包含資料和指標
+            ex:
+                class Node {
+                    constructor(data) {
+                        this.data = data;
+                        this.next = null;
+                    }
+                }
+        2.LikedList
+            ex:
+                class LinkedList {
+                    constructor() {
+                        this.head = null;  // 指向串列開頭
+                        this.tail = null;  // 指向串列結尾
+                        this.length = 0;   // Node數量
+                    }
+                    // methods
+                }
+        3-1.輔助語法
+            isEmpty() 可以檢查串列是否為空
+                isEmpty() {
+                    return this.length === 0;
+                }
+            getNode() 取得指定位置Node
+                getNode(index) {
+                    // 判斷指定位置是否在範圍內
+                    if (index < 0 || index >= this.length) return null;
+                    // 從頭開始迭代到指定位置訪問
+                    let currNode = this.head;
+                    let currIndex = 0;
+                    while (currIndex < index) {
+                        currIndex += 1;
+                        currNode = currNode.next;
+                    }
+                    return currNode;
+                }
+            print() 照順序印出所有Node資料值
+                print() {
+                    const temp = [];
+                    let currNode = this.head;
+                    while (currNode) {
+                        temp.push(currNode.data);
+                        currNode = currNode.next;
+                    }
+                    return temp.join(',');
+                }
+        3-2.插入新節點
+            append(data)  在串列尾部插入一個Node
+                在尾部插入一個節點會有兩種情況:
+                    1.串列為空，更新head和tail
+                    2.串列不為空，更新tail
+                        先將原本tail指向新的Node
+                        再更新tail
+                ex:
+                    append(data) {
+                        const newNode = new Node(data);
+                        if (this.isEmpty()) {
+                            this.head = newNode;
+                            this.tail = newNode;
+                        } else {
+                            this.tail.next = newNode; 
+                            this.tail = newNode;
+                        }
+                        this.length += 1;
+                    }
+            insert(index，data) 在指定位置插入一個Node
+                在指定位置中插入資料，需考慮三種狀況
+                    1.插入串列結尾後面，與append()相同
+                    2.插入串列開頭，會取代head
+                    3.在中間位置插入資料，需修改上一個的指標
+                        取得指定位置上一個Node
+                        再取得指定位置原本的Node
+                        重新定義上一個Node指標，指向新的Node
+                        最後將新插入的Node指標，指向原本的Node
+                    ex:
+                        insert(index,data) {
+                            if (index >= this.length) {
+                                this.append(data);
+                                return;
+                            }
+
+                            const newNode = new Node(data);
+                            
+                            if (index <= 0) {
+                                newNode.next = this.head;
+                                this.head = newNode;
+                            } else {
+                                const prevNode = this.getNode(index - 1);
+                                const currNode = prevNode.next;
+                                prevNode.next = newNode;
+                                newNode.next = currNode;
+                            }
+                            this.length += 1;
+                        }
+            最後在外部要加一個 const list = new LinkedList(); 才能建立串列
+        3-3.刪除Node
+            需先判定index有效，刪除指定位置的Node
+                1.刪除Node是開頭，重新指定head
+                2.其他Node，必須先找到目標Node，修改上一個Node的指向，如果
+                目標Node是tail(指標會指向null)記得要重新指定
+                ex:
+                    removeAt(index) {
+                        if (index < 0 || index >= this.length) return;
+
+                        if (index === 0) {
+                            this.head = this.head.next;
+                        } else {
+                            const prevNode = this.getNode(index - 1);
+                            const delNode = prevNode.next;
+                            const nextNode = delNode.next;
+                            prevNode.next = nextNode;
+                            if (nextNode === null) {
+                            this.tail = prevNode;
+                            }
+                        }
+                        this.length -= 1;
+                    }
+        3-4.其他語法
+            getData() 取得指定位置Node的資料值
+                ex:
+                    get(index) {
+                        const node = this.getNode(index);
+                        return node ? node.data : null;
+                    }
+            indexOf() 根據資料值，回傳索引，沒有則回傳-1
+                ex:
+                    indexOf(data) {
+                        let currNode = this.head;
+                        let currIndex = 0;
+                        while (currNode) {
+                            if (currNode.data === data) return currIndex;
+                            currIndex += 1;
+                            currNode = currNode.next;
+                        }
+                        return -1;
+                    }
+            remove() 根據資料值，刪除符合的第一個Node
+                ex:
+                    remove(data) {
+                        const index = this.indexOf(data);
+                        return this.removeAt(index);
+                    }
+            clear() 清空串列
+                ex:
+                    clear() {
+                        this.head = null;
+                        this.tail = null;
+                        this.length = 0;
+                    }
+            size() 回傳Node個數
+                ex:
+                    size() {
+                        return this.length;
+                    }
+    雙向鏈結串列
+        它與單向差別在，Node有兩個指標，Node會多一個指向上一個指標
+        class DoublyNode {
+            constructor(data) {
+                this.data = data;
+                this.next = null;
+                this.prev = null;
+            }
+        }
+        除了插入、刪除Node要多加處理prev指標，其他操作方法與單向串列相同
+        insert(index,data) {
+            if (index >= this.length) {
+            this.append(data);
+            return;
+            }
+
+            const newNode = new DoublyNode(data);
+            if (index <= 0) {
+            this.head.prev = newNode; // new
+            newNode.next = this.head;
+            this.head = newNode;
+            } else {
+            const prevNode = this.getNode(index - 1);
+            const currNode = prevNode.next;
+            prevNode.next = newNode;
+            newNode.next = currNode;
+            }
+            this.length += 1;
+        }
+    迴圈鏈結串列
+        迴圈鏈結串列中的tail的next指標會指向head、head的prev指標會
+        指向tail，而非null
+捲動軸
+    scrollTop
+        用於document.documentElement這樣的元素
+        回傳內容被捲動的距離
+        
+    scrollY/X
+        是 window 對象的屬性，提供了整個文檔在垂直(水平)方向上捲動的像素值。
+        window.scrollY 返回的是整個文檔在垂直(水平)方向上的滾動量
+    ineerHeight
+        是 window 對象的屬性，表示視窗的內部高度，即瀏覽器窗口的可視區域高
+        度，不包括工具條、捲動條等。
+    clientHeight
+        是用於獲取元素的內容區域高度，不包括元素的邊框（border）、外邊距（margin）
+        和滾動條(如果存在的話)
+        對 document.documentElement 或 document.body 這樣的元素，clientHeight 
+        會返回整個文檔的內容區域高度。
+    offsetParent
+        具有定位(position)的父元素，當目標元素為position: fixed時，由於他是相對於
+        視窗做定位，不存在什麼絕對母層，所以他的offsetParent會回傳null
+    offsetTop
+        與上方Paren與上方Parent元素的距離
+Template literals(Template strings)
+    
+
+事件冒泡and事件捕獲
+    在父層到目標層都設有監聽器的情況下，會在點到元素後，從根一層一層往下，這就叫事件捕獲(Capturing_Phase)，直到找到target(At_Target)，找到target後，由target由下往上回傳觸發function，直到根
+    就叫做事件冒泡(Bubbling_Phase)
+    event.stopPropagation() 可阻止冒泡事件
+    ex:
+        <ul>
+            <li>
+                <a>Click Me</a>
+            </li>
+        </ul>
+        const ul = document.querySelector('ul')
+        const li = document.querySelector('li')
+        const a = document.querySelector('a')
+        ul.addEventListener('click'，()=>{
+            console.log('ul capturing')
+        }，true)
+        ul.addEventListener('click'，()=>{
+            console.log('ul bubbling')
+        }，false)
+        li.addEventListener('click'，()=>{
+            console.log('li capturing')
+        }，true)
+        li.addEventListener('click'，()=>{
+            console.log('li bubbling')
+        }，false)
+        a.addEventListener('click'，()=>{
+            console.log('a capturing')
+        }，true)
+        a.addEventListener('click'，()=>{
+            console.log('a bubbling')
+        }，false)
+        輸出:
+            ul capturing
+            li capturing
+            a capturing
+            a bubbling
+            li bubbling
+            ul bubbling
+        而如果把a上下顛倒(true=>false，false=>true)
+        輸出:
+            ul capturing
+            li capturing
+            a bubbling
+            a capturing
+            li bubbling
+            ul bubbling
+    ex:
+        <div class="grandma">
+            <div class="mother">
+                <div class="daughter">
+                    <div class="boby"></div>
+                </div>
+            </div>
+        </div>
+        const grandma = document.querySelector('.grandma')
+        const mother = document.querySelector('.mother')
+        const daughter = document.querySelector('.daughter')
+        const baby = document.querySelector('.baby')
+        function theName(){
+            console.log("我是"+this.className)
+        }
+        baby.addEventListener('click'，theName，false) // 冒泡
+        daughter.addEventListener('click'，theName，true) // 捕獲
+        mother.addEventListener('click'，theName，true) // 捕獲
+        grandma.onclick = theName  // 冒泡
+        輸出:
+            我是mother
+            我是daughter
+            我是baby
+            我是grandma
+JS OOP(物件導向)
+    物件導向的兩個核心概念:
+        1.物件(object)
+            語法:屬性名+屬性值
+                var obj={
+                    name:'小名', // name and age=>屬性名 '小名' and 18 =>屬性值
+                    age:18
+                }
+            以[]來訪問
+                情況一 (屬性名不符合JS標示符命名規範，就必須用[]進行訪問)
+                    oop['test-for-oop']
+                情況二 (以變量去儲存屬性名時，要以[]進行訪問)
+                    var obj ={
+                        a:18，
+                        b:20，
+                        c:19
+                    }
+                    var age = 'b'
+                    console.log(obj.age) // undefined 無法直接調用變量
+                    console.log(obj[age]) // 20 將變量放入[]中就可調用
+                情況三 (屬性名稱動態生成)
+                    const obj = { name: "John",age: 30 };
+                    const propertyName = "age";
+                    console.log(obj[propertyName]); // 30
+            當屬性名為function時，就稱為物件的method(方法)
+                var obj ={
+                    name:'white'，
+                    hobbies:['健身'，'寫code']，
+                    'test-for-oop':'任意儲存值'，
+                    // 第一寫法
+                    sayhello:function(){   // <= 物件的method
+                        console.log('Hello')
+                    }
+                    // 第二寫法
+                    sayHi(){
+                        console.log('Hi')
+                    }
+                }
+                var x = 'sayHi'
+                var y = 'sayHi()'
+                obj.sayhello() // 即可調用該物件的方法
+                obj.sayHi()
+                失敗的訪問
+                    obj[x] // 這只能跑出method，無法運作
+                    obj[y] // 這只能跑出undefined
+                只能透過物件取訪問method
+                    var x = obj.sayHi()
+            遍歷物件(for...in...)
+                var obj = {
+                    name:'小名'，
+                    age:18
+                }
+                for(var k in obj){
+                    console.log('屬性'+ k + '值' + obj[k])
+                }
+                變數可以訪問屬性名，但訪問屬性值，除非透過[]的方式才行
+            shallow copy
+                var obj1 = {
+                    a:1，
+                    b:2，
+                    c:[44，55，66]
+                }
+                var obj2 = {}
+                for(var k in obj1){
+                    // 每次遍歷會把屬性名放到obj2
+                    // 並也把值放到相同的屬性名裡面
+                    obj2[k] = obj1[k]
+                }
+                obj1.c.push(77)  // 由於c屬性名的值是array，所以可以用push
+                console.log(obj2);
+                console.log(obj1.c == obj2.c) // 由於每次遍歷會將obj1的內容放到obj2裡面，所以兩者相同
+            deep copy
+                var obj1 = {
+                    a:1，
+                    b:2，
+                    c:[33，44，{
+                        m:55，
+                        n:66，
+                        p:[77，88]
+                    }]
+                }
+                function deepClone(o){
+                    if(Array.isArray(o)){
+                        var result = [];
+                        for(var i=0;i<o.length;i++){
+                            result.push(deepClone(o[i]));
+                        }
+                    }else if(typeof o == 'object'){
+                        var result = [];
+                        for(var k in o){
+                            result[k] = deepClone(o[k]);
+                        }
+                    }else{
+                        var result = o;
+                    }
+                    return result;
+                }
+                var obj2 = deepClone(obj1);
+                console.log(obj2)
+                console.log(obj1.c === obj2.c)
+                obj1.c.push(99)
+                console.log(obj2)
+                obj1.c[2].p.push(999);
+                console.log(obj2);   
+        2.類別(class)
+            JS是基於 Prototype-based 的語言，也就是說JS沒有Class語法可以宣告一個類別，所以JS可以會使用function的方式
+            定義類別，也就是用建構子(constructor)定義一個類別
+            ex:
+                一般情況
+                    function PCGame(name，genre){
+                        this.name = name;
+                        this.genre = genre;
+                        this.score = null;
+                    }
+                    pcGame.prototype.rate = function(score){
+                        this.score = score;
+                    }
+                    let game1 = new PCGame('Age of Empires 3','Real-time strategy');
+                    let game2 = new PCGame('The Outer Worlds','Action role-playing');
+                如果使用了class與constructor
+                    class PCGame{
+                        constructor(name，genre，score){
+                            this.name = name;
+                            this.genre = genre;
+                            this.score = score;
+                        }
+                        rate(){
+                            this.score = score;
+                        }
+                    }
+                    let game1 = new PCGame('Age of Empires 3','Real-time strategy');
+                    let game2 = new PCGame('The Outer Worlds','Action role-playing');
+            而constructor在其他語言代表class，在JS中則是function
+            定義類別屬性(Property)-this
+                var Person = function(nickname){
+                    this，nickname = nickname;
+                }
+                用了this在建構函數中，定義Person類別的nickname屬性，constructor function or method中的關鍵字this可用
+                來引用物件本身
+            定義類別的方法(Method)
+                將函數加到類別的prototype object上，就可定義一個類別方法
+                ex:
+                    Person.prototype.sayHello = function(){
+                        alert('Hello,I\'m' + this.nickname);
+                    }
+                    對Person定義一個sayHello方法
+            建立類別的實例(instance)物件-new
+                可用new建立(instantiate)，一個新物件實例
+                ex:
+                    var mike = new Person('Mike);
+                    mike.nickname; // Mike 存取物件的屬性
+                    mike['nikename'] // Mike 存取物件的屬性
+                    mike.sayHello() // 顯示 Hello,I'm Mike 執行物件方法
+                    mike.nikename = 'Brad' // 讀取屬性nikename
+                    mike.sayHello() // 顯示 Hello,I'm Brad 執行物件方法
+            結合this和new用法
+                ex:
+                    function Movies(title，year){
+                        this.title = title;
+                        this.year = year;
+                    }
+                    let movie = new Movies('Joker'，2019);
+                    movie; // Movies{title:"Joker"，year:2019}
+                    movie.title; // "Joker"
+                    movie.year; // 2019
+    OOP的四大概念
+        Encapsulation(封裝)
+            把屬性、方法包裝成一個物件，達到降低程式複雜性與增加靈活度
+            以OOP和 Procedural programming(流程化程式設計) 做比較
+            ex:
+                Procedural programming 寫法(口語化)
+                    let income = 50000;
+                    let expense = 30000;
+                    function saving(income，expense){
+                        return income - expense
+                    }
+                    saving() // 20000
+                OOP 寫法(自動化)
+                    let money = {
+                        income:50000，
+                        expense:30000，
+                        saving(){
+                            return(this.income - this.expense)
+                        }
+                    }
+                    money.saving(); // 20000
+        Abstraction(抽象/提煉)
+            將物件的某些屬性與方法隱藏(hide)，例如:遙控器按鈕控制電視，其實就只是
+            遙控器中的零件相互作用，而使用者不必知道他們的相互作用，所以零件與作用
+            就相當於被隱藏起來得屬性與方法
+            優點:讓物件介面更簡單、減少改變的影響
+        Inheritance(繼承)
+            // Parent Classes
+            function Person(name,age) {
+                this.name = name || 'default';
+                this.age = age || 0;
+                this.interest = ['reading','music'];
+            }
+
+            Person.prototype.greet = function () {  // 建立方法
+                console.log(`My name is ${this.name}. I am ${this.age} years old.`);
+            };
+
+            // Child Classes
+            function Student(name) {
+                this.name = name;
+                this.score = 80;
+            }
+            Student.prototype = new Person(); // 繼承parent classes
+            Student.prototype.say = function (){ // 建立方法
+                console.log(`My name is ${this.name}. I am studying.`);
+            }
+
+            var aaron  = new Student('Aaron') // 使用child classes
+            console.log(aaron.name); // Aaron 由於 child classes cover parent classes prototype
+            console.log(aaron.interest); // [ 'reading','music' ] parent classes prototype
+            console.log(aaron.score); // 80 child classes prototype
+            aaron.say() // I am studying 子類自己的方法
+            aaron.greet() // My name is 繼承自父類的方法
+                    
+            不過如果要添加其他東西時，會有問題
+                    
+            var lucy = new Student('Lucy');
+            console.log(lucy.interest) // [ 'reading','music' ]
+                
+            剛開始使用會得到相同的屬性值，但
+                    
+            aaron.interest.push('basketball')
+            console.log(aaron.interest) // [ 'reading','music',basketball ]
+            console.log(lucy.interest) // [ 'reading','music',basketball ]
+                    
+            只要改變arron，就會連lucy的屬性值一起受到影響，如果要避免就必須用到Person.call(this)
+            補充:
+                    使用 Student.prototype = new Person(); 的作法與透過 Object.create() 的方法類似
+                    但在 Object.create() 中參數不一定要function constructor
+                
+            建構函式繼承(使用call(this))
+                ex:
+                    // Parent Class
+                    function Person(name,age) {
+                        this.name = name || 'default';
+                        this.age = age || 0;
+                        this.interest = ['reading','music'];
+                    }
+                    // Child Class
+                    function Student(name,age,score) {  // 要把延伸參數傳進來
+                        // call(this)中不需要全部Person屬性，只需填寫想延伸進 Student 的屬性
+                        Person.call(this.name,this.age);
+                        this.score = score;
+                    }
+                    這時就等於複製一份Parent的內容到Student中
+                        function Student(name,age) {
+                            this.name = name || 'default';
+                            this.age = age || 0;
+                            this.interest = ['reading','music'];
+                        }
+                    
+                    aaron = new Student('aaron',28,80);
+                    lucy = new Student('lucy',29,88);
+                    這時就不共享父層屬性了
+                    aaron.interest.push('basketball');
+                    console.log(aaron.interest); //  ["reading","music","basketball"]
+                    console.log(lucy.interest); //  ["reading","music"]
+            組合繼承
+                // 父類別
+                function Person(name) {
+                    this.name = name || 'default';
+                    this.interest = ['reading','music'];
+                }
+                Person.prototype.say = function () {
+                    console.log(`Hello,I am Person. My name is ${this.name}`);
+                };
+
+                // 子類別
+                function Student(name,score) {
+                    Person.call(this,name); // 建構式函式繼承(繼承屬性) 呼叫Parent Classes一次
+                    this.score = score;
+                }
+                Student.prototype = new Person(); // 原型鏈繼承(繼承方法) 呼叫Parent Classes二次
+
+                aaron = new Student('aaron',80);
+                lucy = new Student('lucy',88);
+
+                aaron.interest.push('basketball');
+                console.log(aaron.interest); //  ["reading","music","basketball"]
+                console.log(lucy.interest); //  ["reading","music"]
+                使用原型鏈和建構式函式繼承會個呼叫一次Parent Classes，總共兩次，可以使用Object.create()改善
+                    Student.prototype = Object.create(Person.prototype); //  ==> Student.prototype.__proto__ === Person.prototype;相當於繼承Person原型
+                指向錯誤的constructor
+                    console.log(aaron.constructor.name); // Person
+                    改變它
+                    Student.prototype.constructor = Student; // Student
+                // 父類別
+                function Person(name) {
+                    console.log('Person init');
+                    this.name = name || 'default';
+                    this.interest = ['reading','music'];
+                }
+                Person.prototype.say = function () {
+                    console.log(`Hello,I am Person. My name is ${this.name}`);
+                };
+
+                // 子類別
+                function Student(name.score) {
+                    Person.call(this.name); // 建構式函式繼承(繼承屬性)
+                    this.score = score;
+                }
+
+                Student.prototype = Object.create(Person.prototype); // 原型鏈繼承(繼承方法)
+                Student.prototype.constructor = Student;
+                Student.prototype.say = function () {
+                    console.log(`My name is ${this.name}. I'm a student.`);
+                };
+
+                aaron = new Student('aaron',80);
+                lucy = new Student('lucy',88);
+
+                // 子類別可以使用父類別的方法
+                aaron.say(); // My name is aaron. I'm a student.
+
+                // 子類別不會共享到父類別的屬性
+                aaron.interest.push('basketball');
+                console.log(aaron.interest); //  ["reading","music","basketball"]
+                console.log(lucy.interest); //  ["reading","music"]
+            繼承兩個以上的類別
+                當需要兩個以上的類別時，可以使用Object.assign()將多個類別方式延伸
+                    function Student(){
+                        Person.call(this);
+                        Animal.call(this);
+                    }
+                    // inherit one class
+                    Student.prototype = Object.create(Person.prototype);
+                    // mixin another
+                    Object.assign(Student.prototype,Animal.prototype)
+                    // re-assign constructor
+                    Student.prototype.constructor = Student;
+                    Student.prototype.selfMethod = function(){
+                        // do something
+                    }
+            JS ES6中的關鍵字class(class為JS語法糖，底層運作來是透過原型繼承來運作)
+                使用class建立建構式函式
+                    class Person{
+                        constructor(name，interest){
+                            this.name = name;
+                            this.interest = interest;
+                        }
+                        greeting(){
+                            console.log('Hi! I'm'${this.name}.);
+                        }
+                    }
+                    透過constructor()定義建構式函式要在Person中使用的屬性
+                    greeting屬於類別方法(class methods)，任何與這個類別有關的都可以在這定義
+                    
+                    再來透過new實例化物件
+                    aaron = new Person('aaron'，['computer science']);
+                    aaron.greeting()
+                使用class繼承建構式函式
+                    class Teacher extends Person{
+                        constructor(name,interests,subject){
+                            // 繼承Person屬性
+                            super(name,interests);
+                            this.subject = subject;
+                        }
+                    }
+                    let aaron = new Teacher('aaron'，['basketball']，'psychology);
+                    aaron.greeting() 
+            getter and setter
+                透過getter and setter所存取的屬性會被放在物件實例的原型(__proto__)中
+                    class Teacher extends Person {
+                        constructor(name,interests,subject) {
+                            super(name,interests); // 讀取或呼叫父類別的函式，只能在constructor中執行，且必須要在this之前出現
+                            this._subject = subject;
+                        }
+                        // 這個 subject 會被放在物件實例的原型 __proto__ 中
+                        get subject() {
+                            return this._subject; // 只有區塊內可以存取到的變數會加上 _ 開頭命名
+                        }
+
+                        set subject(newSubject) {
+                            this._subject = newSubject;
+                        }
+                    }
+                    let aaron = new Teacher('aaron',['baseball'],'psychology');
+                    console.log(aaron.subject); // 'psychology'
+                    aaron.subject = 'Computer Science';  // 會進到set裡面把'Computer Science'帶入，改變subject的值
+                    console.log(aaron.subject); //Computer Science
+            Static(靜態方法)
+                被定義為static的函式可以直接用constructor function 呼叫，但無法被已實體化(new)的類別物件呼叫
+                    //Static Method 不需實體化所需類別的實例就可以被呼叫
+                    class Person {
+                        constructor(name,age) {
+                            this.name = name;
+                            this.age = age;
+                        }
+                        static student(name,age) {
+                            console.log(`I'm ${name}. ${age} years old.`)  //不要加this
+                        }
+                    }
+                    Person.student('Teagan','22')
+                    // I'm Teagan. 22 years old.
+
+                    //被定義為靜態方法的函式，無法被已實體化（new過）的類別物件呼叫
+                    let person = new Person('Teagan',22);
+                    person.student;    //Uncaught TypeError: person.student is not a function
+                    console.log(Person.student('Teagan',22)) // 直接從物件去呼叫已被static定義的函式
+        Polymorphism(多型)
+            方法名稱或許相同，但是執行完全不同，以狗狗為例:當狗狗看到主人時，會有一個反應，但每隻狗狗的反應，會隨著
+            個性、品種、心情而不同，以程式碼來說:
+                function Bulldog(){ // 法鬥反應 }
+                function Chihuahua(){ // 吉娃娃反應 }
+            所以要以不同品種的狗狗，來寫出不同的反應，會用到if...else的功能
+                if(狗=== Bulldog){
+                    // 法鬥反應
+                }else if(狗 === Chihuahua){
+                    // 吉娃娃反應
+                }else if(狗 === Shiba){
+                    // 柴犬反應
+                }
+            這樣就會讓程式碼很混亂 or 過於複雜化，就可以使用讓程式變得簡單化
+                var Bulldog = {
+                    color:brown，
+                    age:14，
+                    Look_master(){
+                        console.log('搖尾巴')
+                    }
+                }
+                var Chihuahua = {
+                    color:white，
+                    age:5，
+                    Look_master(){
+                        console.log('跳到身上')
+                    }
+                }
+                var Shiba = {
+                    color:black，
+                    age:8，
+                    Look_master(){
+                        console.log('跑過來')
+                    }
+                }
+                Bulldog.Look_master() // 搖尾巴
+                Chihuahua.Look_master() // 跳到身上
+                Shiba.Look_master() // 跑過來
+        總結
+            封裝 => 將屬性或方法用物件包住
+            抽象 => 物件中一些被隱藏的屬性，但這些屬性是有功能的
+            繼承 => 當我透過"new"去建立一個建構式函式的實例，就可以稱這個實例是"繼承"建構函式的實例
+            多型 => 我在物件不同的物件中，使用同一個方法，而這個方法的輸出會根據物件的內容出現不同的輸出
+時間複雜度(O)
+    時間複雜度可以決定演算法好壞，在n非常大，好的演算法可以省下很多，時間演算法並不是以秒計算，而是以步驟次數
+    在實務中會記錄最高次方那一項，並忽略其他所有的係數
+    簡易公式:輸入+演算法=輸出
+    六種時間複雜與演算法
+        1.O(1)陣列讀取
+            在array中不論輸入多少東西，程式都會在同一時間跑完
+            例如:array的索引(index)
+                Pokemons = ["卡丘"，"胖丁"，"尼龜"，"比獸"，"呆獸"，"種子"，"小剛"]
+                這時想要知道這個array中任一個編號所對應的pokemon，只需要將編好對應的元素印出來就好
+                let n = 0
+                console.log(Pokemons[n])
+                不論n值為多少，程式都可以在"一個步驟"就達到n所對應的容器，並印出該元素，這就會稱為
+                array讀取演算法的時間複雜度為O(1)
+        2.O(n)簡易搜尋
+            以Pokemons為例，在array容器中，每個容器都關閉了，當我們要知道"呆獸"在哪裡時，就會想到
+            每一個容器一個一個打開直到找到為止，這就是簡易搜尋
+                Pokemons = ["卡丘"，"胖丁"，"尼龜"，"比獸"，"呆獸"，"種子"，"小剛"]
+                for(let i=0; i<Pokemons.length;i++){
+                    if(Pokemons[i]==="呆獸"){
+                        console.log(Pokemons[i])
+                    }else{
+                        console.log("繼續找")
+                    }
+                }
+                當我們要找到"呆獸"時，需要從第一個容器找到第五個才找到，這時就代表花了6個才找到牠
+                除非"呆獸"在第0個容器，一開始就找到，當我們要從 n 個櫃子中找到一隻特定的神奇寶貝，
+                我們最慘最慘的情況需要花剛好 n 個步驟才能找到（想像要找的神奇寶貝在最後一個櫃子的情況）
+                在程式執行會碰到最壞情況去決定複雜度的表示，在這時就會說簡易搜尋演算法的時間複雜度為O(n)
+        3.O(log n)二分搜尋法
+            時間複雜度為O(log n)的演算法(這裡的log都是以二為底)，代表輸入數為n時，執行步驟會是log n
+            log n = x === n=2^x (無說明會以2為底) ex:n=4，就表示程式會用2步驟完成，n=16，就表示程式
+            會用4個步驟完成，以七個有排序的櫃子來說
+
+                5   17    33    44    55   61   80
+
+                如果以簡易搜尋方法會花五個步驟找到55
+                
+                5   17    33    44    55   61   80
+
+                如果以二分搜尋法，會先打開中間的櫃子(44)，就會發現44比55小，所以由此得知從第1個櫃子到
+                第3個櫃子都不會有55，接下來只需要找5到7的櫃子就好，而在繼續開5~7中間的櫃子，會找到61
+                61比55大，所以就知道55會在第5個櫃子而不是在第7個櫃子
+                以例子來說最多只需要三個步驟，但如果有n個櫃子時，二分搜尋可以一次排除一半的可能性，每
+                次都可以排除一半，所以二分搜尋最糟也只需要以2為底的n步驟就能完成
+
+                以程式方面
+                    let Numbers = [5,17,33,41,55,61,80]
+                    let find = 55
+                    let low = 0
+                    let high = Numbers.length-1
+                    while (low <= high){
+                        let mid = Math.floor((low+high)/2)
+                        if(Numbers[mid]>find){
+                            high=mid-1
+                        }else if(Numbers[mid]>find){
+                            low = mid+1
+                        }else{
+                            return
+                        }
+                    }
+        4.O(nlog n)
+
+        5.O(n^2)
+
+        6.O(2^n)
+setTimeout and setInterval
+    setTimeout()
+        在延遲某段時間(毫秒)後，去執行一次指定的程式碼，並回傳一個獨立的timer ID
+    setInterval()
+        在固定延遲某段時間(毫秒)後，去"不斷循環"執行對應的程式碼，也會回傳一個獨立timer ID
+    clearInterval()
+        終止setInterval()循環的終止器，裡面的值會是setInterval()回傳的值
+        ex:
+            const intervalRef = useRef(null);
+            intervalRef.current = setInterval(()=>{
+                setNow(Date.now())
+            }，10);
+            clearInterval(intervalRef.current)
+preventDefault and stopPropagation
+    preventDefault
+        會取消事件的預設行為，例如:點擊checkbox會切換選中狀態、表單按鈕點擊時，一般會變為提交狀態，但下這個語法就會阻止這個預設行為
+        還有其他地方可使用
+            阻止連結跳轉 => 在連結的點擊事件中，使用event.preventDefault()
+            阻止右鍵菜單 => 在元素的contextmenu事件中使用event.preventDefault()
+            阻止文字選取 => 在mousedown事件中，使用event.preventDefault()
+            不過並不是所有事件都可被取消，必須是cancelabel屬性為true時，才能取消
+        ex:
+            function preventScrollWheel(event) {
+                // 檢查類型和確定有cancelable屬性
+                if (typeof event.cancelable !== "boolean" || event.cancelable) {
+                    event.preventDefault();
+                } else {
+                    // The event cannot be canceled,so it is not safe
+                    // to call preventDefault () on it.
+                    console.warn(`The following event couldn't be canceled:`);
+                    console.dir(event);
+                }
+            }
+            document.addEventListener("wheel",preventScrollWheel);
+    stopPropagation
+        阻止冒泡事件
+reduce
+    語法
+        arr.reduce(accumulator,currentValue,currentIndex,array)，initialValue
+        accumulator => 累加器，值會是累加後的回傳值
+        currentValue => 原陣列迭代處理中的元素
+        currentIndex => 原陣列目前所迭代處理中的元素之索引，如有傳入initialValue，會從0元素開始，沒有則從1元素
+        array => 呼叫reduce()的array
+        initialValue => 起始值，非必要，放在function後
+JS型別
+        原始型別
+            typeof(true) // Boolean 型別
+            typeof('12345') // String 型別
+            typeof(123) // Number 型別
+            typeof(123n) // Bigint 型別
+            typeof(null) // Null 型別
+            console.log(typeof(Symbol('symbol A'))) // Symbol 型別
+        物件型別
+            typeof([])  // 物件型別
+            typeof(function(){}) // 本質是物件型別
+        判斷型別
+            物件型別
+                const obj = {};
+                obj.name = 'name'; // 新增屬性
+                console.log(obj) // 物件特性 => 可以自由新增屬性
+
+                const arr = [1，2，3，4] // 物件型別(可自由新增屬性)
+                arr.name = '陣列'
+                console.log(arr) // [1，2，3，4，name:'陣列']
+                console.log(arr.length) // 4 [1，2，3，4，name:'陣列'] (不包含屬性)
+            原始型別
+                let num = 0;
+                num.name = '一個字' // 原始型別不能新增屬性
+                console.log(num.name) // 0 (不會出錯，但也不會新增屬性)
+                (undefined 如果新增屬性會出錯)
+            function fn(){
+
+            }
+            console.log(fn)
+            fn.myName = '這是一個字' // 本身function就有name
+            console.log(fn) // fn(){ // 空的 }
+            console.dir(fn) // fn(){myName:'這是一個字'，...} // 用dir可以看到function裡的物件
+
+            原始型別包括物件(String ,Number ,Boolean ,BigInt ，etc)
+                String() // 原始型別的包裹物件
+                    console.dir(new String()) // String物件裡有一個Prototype陣列，裡面就包括所有可以對String使用的語法
+                    (new String 建立String(實體化))
+                // 實際使用不要new
+                    const str = new String('aa')
+                    console.log(typeof('aa')) // string
+                    console.log(typeof(str)) // object
+                    console.log(str) // 可以查看包裹物件的Prototype
+        型別轉換
+            顯性
+                原始型別包裹物件
+                正負運算子(一元)
+                邏輯運算子
+            隱性
+                (規則一:前後運算元其中之一為"字串"，+ 視為字串運算子)
+                    console.log(1+'1') // 11
+                (規則二:前後運算元如果無法轉換為原始型別(就是物件型別)，+ 視為字串運算子)
+                    console.log(1+[1]) or console.log(1+{}) // 物件型別會被先轉為字串
+                (規則三:上述情況外，+ 視為算數運算子)
+                    console.log(Symbol(1)+true); // error (因為Symbol無法轉型成物件或字串)
+                (只要前後其一為字串或物件，則視為字串運算子)
+                (算數運算子一律用Number()轉型)
+                    console.log(1+true) => console.log(1+Number(true))
+                (BigInt與Number無法混合計算)
+                    console.log(1+1n) // error(BigInt無法與自己以外的型別做運算)
+        型別比較
+            嚴格相等 '==='
+                console.log(NaN === NaN); // false
+                console.log({} === {}); // false
+                console.log([] === []); // false
+                (JS的特性 {}，[] 不可使用這方式做比較)
+                console.log(new Number(1) === new Number(1)); //false(實際使用不要用new去做比較)
+                console.log(+0 === -0) // true (正負值的0都是0)
+            寬鬆相等 '=='
+                Number，String，Boolean型別進行對比時，通通都會使用Number()進行轉型
+                    console.log(1=='1') // true
+                    console.log(1==true) // true (Number(true)=1)
+                    console.log('1'==true) // true
+                    console.log('3'==true) // false (Number(true)=1 != 3)
+                    console.log(3==true) // false
+                null and undefined
+                    console.log(null==undefined) // true
+                    console.log(null==0) // false
+                    console.log(null=='') // false
+                    (因為null和undefined不轉型，只能相等於undefined)
+                BigInt
+                    console.log(1==1n); // true
+                    (沒有小數點、最大值、NaN之外，其他概念與Number相同)
+                    最大值
+                        Number的最大安全數，只要差過這個數，回傳的值會不穩定
+                        Number.MAX_SAFE_INTEGER // 9007199254740991
+                        console.log(9007199254740991==9007199254740991n)  // true
+                        console.log(9007199254740993==9007199254740993n) // false 
+                    NaN
+                        console.log(NaN==1n) // false (沒有NaN)
+            真假值
+                轉換後的值為'true'的值，都為真值，而false、0、-0、0n、""、null、undefined 和 
+                NaN都為假值
+                if(1){ // 判斷真值或假值
+
+                }
+            物件與非物件對比 (物件與其他型別做比較，會透過"包裹物件"將物件轉化為相同型別)
+                物件
+                    console.log({} == '[object Object]') // true (只能與這個字串相比為'true'，其他都是false)
+                    console.log({} == '1') // false
+                    console.log({} == 1) // false
+                陣列
+                    console.log([] == 0) // true
+                    console.log(Number([]).toString()) // 0
+                    console.log([] == 1) // false
+                    console.log([1] == 1) // true
+                    console.log([1，2] == 12) // false
+                    [1，2].toString() // "1，2"(會先轉換成字串)
+                    Number([1，2]) // NaN，(再轉換成數字)
+                    (NaN與其他的型別都不相等(包含自己))
+Promise 非同步處理
+    本身為一個建構函式，表示非同步運算後(成功 or 失敗)的物件，由於是物件型態，所以可以對她使用 all、race、resolve、reject 的method
+    結構
+        Promise建構函式會透過new建構出物件，所以可以使用原型method(prototype內)，包含then、catch、finally(這些必須在產生新物件使用)
+            const p = new Promise()
+            p.then() // 回傳正確
+            p.catch() // 回傳失敗
+            p.finally() // 非同步執行完成(無論是否正確完成)
+        當Promise函式被建立時，可透過resolve and reject作為參數傳入，而這兩個參數只能回傳一個，回傳後表示Promise事件結束
+            new Promise((resolve，reject)=>{
+                resolve() // 成功
+                reject() // 失敗
+            })
+    狀態
+        pending:事件執行中，未取得結果
+            new Promise((resolve，reject)=>{}) // 會停在pending狀態階段
+        resolved:事件執行完畢並成功操作，回傳resolve的結果 // 會顯示resolve狀態
+            new Promise((resolve，reject)=>{
+                resolve('成功')
+            })
+        rejected:事件執行完畢，但操作失敗，回傳reject的結果 // 會顯示reject狀態
+            new Promise((resolve，reject)=>{
+                reject('失敗')
+            })
+    建立Promise
+        function promise() {
+            return new Promise((resolve,reject) => {
+                // 隨機取得 0 or 1
+                const num = Math.random() > 0.5 ? 1 : 0;
+
+                // 1 則執行 resolve，否則執行 reject
+                if (num) { 
+                    resolve('成功');
+                }
+                reject('失敗')
+            });
+        }
+        這個執行後會有三狀態
+            Pending // 未有結果
+            Resolved // 事件執行完畢且成功操作，並回傳resolve結果
+            Rejected // 事件執行完畢，但操作失敗，並回傳reject結果
+        三種狀態都可以使用 then() 和 catch() 取得成功或失敗的結果
+        then(onFulfilled，onRejected)
+            onFulfilled:執行成功的函式，表示Promise函式中resolve帶入的值
+            onRejected:執行成功的函式，表示Promise函式中reject帶入的值
+            ex:
+                promise()
+                    .then((success) => {
+                        console.log(success);
+                    },(fail) => {
+                        console.log(fail);
+                    })
+        重要觀念
+            當Promise執行中，出現錯誤並被catch捕抓到後，"不會"繼續執行後續的程式
+        鏈接
+            Promise可以用鏈接方式"不斷地"進行下一個任務
+            例子
+                function promise(num) {
+                    return new Promise((resolve,reject) => {
+                        num ? resolve(`${num},成功`) : reject('失敗');
+                    });
+                }
+                promise(1)
+                .then(success => {
+                    console.log(success);
+                    return promise(2);
+                })
+                .then(success => {
+                    console.log(success);
+                    return promise(0); // 這個階段會進入 catch
+                })
+                // 由於 promise(0) 會導致 reject，並被catch抓到
+                // 所以下面的 then 不會被繼續執行
+                .then(success => {   // 由於上一個階段結果是 reject，所以此段不執行
+                    console.log(success);
+                    return promise(3);
+                })
+                .catch(fail => {
+                    console.log(fail);
+                })
+        Then vs Catch 失敗 feedback 差異
+            then與catch都可以接收失敗結果，但catch只能接收失敗結果
+            不使用then接收失敗
+                promise(1)
+                .then(success => {
+                    console.log(success);
+                    return promise(2);
+                })
+                .then(success => {
+                    console.log(success);
+                    return promise(0); // 這個階段會進入 catch
+                })
+                .then(success => { 
+                    console.log(success);
+                    return promise(3);
+                })
+                .catch(fail => {
+                    console.log(fail);
+                    return promise(4)  <= 除了抓取錯誤外，也可以return給下一個then接收(不常見)
+                })
+                .then(success => { 
+                    console.log(success);
+                })
+            使用then接收失敗
+                promise(0)
+                .then(success => { <= onFulfilled(resolve)
+                    console.log(success);
+                    return promise(2);
+                }.fail=>{ <= onRejected(reject)，此範例promise(0)會到catch()，但這裡只有then，所以會到onRejected(reject)中
+                    console.log(fail);
+                    return promise(2)
+                })
+                .then(success => { 
+                    console.log(success); <= 顯示2
+                    return promise(0); <= 這裡又導致reject，所以會跳過下個then的success階段
+                }.fail=>{ <= 當 resolve 回傳後，這裡不會動作
+                    console.log(fail);
+                })
+                .then(success => { <= 因為上面的 return 是 reject，所以被跳過
+                    console.log(success);
+                    return promise(3);
+                }.fail=>{
+                    console.log(fail);  <= 到這裡
+                    return promise(4) <= 這裡在return給下一個then執行，達成不會因為 reject 而中斷
+                })
+                .then(fail => {
+                    console.log(fail);
+                    return promise(4)
+                })
+                .then(success => { 
+                    console.log(success);
+                })
+        Finally 完成
+            用來確認工作結束，finally不帶任何參數，適用於作為 AJAX 以讀取完成，透過 finally 關閉讀取效果
+            ex
+                promise(1)
+                    .then(success => {
+                        console.log(success);
+                    }).finally(() => {
+                        console.log('done');
+                    })
+        改寫XMLHttpRequest
+            透過XML建構式產生可進行遠端請求物件，並依序定義方法(GET)、狀態(onload)、送出請求(send)，取得結果後的其他行為則需撰寫在onload內
+            ex
+                var url = 'https://jsonplaceholder.typicode.com/todos/1';
+                // 定義 Http request
+                var req = new XMLHttpRequest();
+
+                // 定義方法
+                req.open('GET',url);
+
+                // 當請求完成，則進行函式的結果
+                req.onload = function() {
+                    if (req.status == 200) {
+                        // 成功直接列出結果
+                        console.log(req.response);
+                    } else {
+                        // 失敗的部分
+                    }
+                };
+                req.send();
+                封裝到get()中，包含Promise及XML行為，只要直接使用get(url)，接下來運用符合Promise結構，重複運用即可提高易讀性
+                function get(url) {
+                    return new Promise((resolve,reject)=> {
+                        // 定義 Http request
+                        var req = new XMLHttpRequest();
+                        req.open('GET',url);
+                        req.onload = function() {
+                            if (req.status == 200) {
+                                // 使用 resolve 回傳成功的結果，也可以在此直接轉換成 JSON 格式
+                                resolve(JSON.parse(req.response));
+                            } else {
+                                // 使用 reject 自訂失敗的結果
+                                reject(new Error(req))
+                            }
+                        };
+                        req.send();
+                    });
+                }
+
+                // 往後的 HTTP 直接就能透過 get 函式取得
+                get('https://jsonplaceholder.typicode.com/todos/1')
+                .then((res) => {
+                    console.log(res);
+                })
+                .catch((res) => {
+                    console.error(res)
+                })
+    API
+        function promise(num,time = 500) { // time => Promise執行時間長度 ,num => Promise 執行成功與否
+            return new Promise((resolve,reject) => {
+                setTimeout(() => {
+                    num ? resolve(`${num},成功`) : reject('失敗');
+                },time); 
+            });
+        }
+        以上面舉例
+        Promise.all 多個Promise行為同時執行，全部完成後統一回傳
+            Promise.all([promise(1),promise(2),promise(3,3000)]) // 3000 => time
+                .then(res => {
+                    console.log(res); // 1，成功 2，成功 3，成功
+                });
+        Promise.race 多個 Promise 同時執行，但僅回傳第一個完成的
+            Promise.race([promise(1),promise(2),promise(3,3000)]) // 3000 => time
+                .then(res => {
+                    console.log(res); // 1，成功
+                });
+        Promise.resolve / Promise.reject 定義 Fulfilled 或 Rejected 的 Promise 物件。
+            resolve 產生 Promise 物件
+                var result = Promise.resolve('result');
+                result.then(res => {
+                    console.log('resolved',res); // 成功部分可以正確接收結果
+                },res => {
+                    console.log('rejected',res); // 失敗部分不會取得結果
+                });
+            reject 產生 Promise 物件
+                var result = Promise.reject('result');
+                result.then(res => {
+                    console.log(res);
+                },res => {
+                    console.log(res); // 只有這裡會取得結果
+                });
+
+核心觀念
+    閉包
+        1.內部function的變數會找外部function的值
+            var msg = "global";
+            function outer(){
+                var msg = "local"
+                function inner(){
+                    return msg;
+                }
+                return inner;
+            }
+            var innerFunc = outer();
+            var result = innerFunc();
+            console.log(result)
+            inner()中的msg會去找外部function的msg，如果外部沒有賦值，就會繼續往外找，直到最外層
+        2.狀態保存
+            function counter(){
+                var count = 0;
+                return function(){
+                    return ++count;
+                }
+            }
+            var countFunc = counter();
+            var countFunc2 = counter();
+            console.log( countFunc() );   // 1
+            console.log( countFunc() );   // 2
+            console.log( countFunc() );   // 3
+
+            console.log( countFunc2() );   // 1
+            console.log( countFunc2() );   // 2
+            每次呼叫時，會讓裡面的count+1，但透過另一個變數去呼叫同function時，會發現count從頭開始，表示說變數儲存的會是function，而不是function中的值
+            而不斷去用同一個變數去呼叫，值的狀態會被記住，所以會有往上加的情況發生 
+    事件迴圈(Event Loop)
+        stack/Queue/Heap
+        async/await
+        微任務
+            在Promise中只有在then後面的任務才回放到微任務中，而New Promise本身會是同步執行的狀態
+                new Promise(resolve=>{
+                    console.log('1') <= 同步
+                    resolve()
+                    console.log('2') <= 同步
+                }).then(function(){
+                    console.log('3') <= 先放進micro task
+                }).then(function(){
+                    console.log('4') <= 先放進micro task
+                })
+                console.log('5') <= 同步任務
+                // 1 2 5 3 4
+            在await中只有在await右邊的程式，是同步的，而在async中的程式會放到微任務中
+                async function async1(){
+                    await async2() <= 先執行
+                    console.log('1') <= 放到micro task中
+                }
+                async function async2(){
+                    console.log('2')
+                }
+                // 2 
+                // 1
+        宏任務
+            setTimeout and setInterval
+                setTimeout(()=>{
+                    console.log('timeout')
+                }，0)
+                let t = Date.now()
+                while(1){
+                    if(Date.now()-t>=2000){
+                        console.log('while')
+                        break;
+                    }
+                }
+                // timeout while
+            宏任務中有為任務的存在，就會先執行完裡面所有的微任務後，才會執行下個宏任務
+        在JS中會微任務優先於宏任務，但在執行一個宏任務中會執行完所有的宏任務中的微任務後，再執行下一個宏任務
+        優先權
+            同步(不在micro task 和 macro task中的code、tag await code、new Promise中的code(不包含then)) > 微任務(async and then) > 宏任務(setTimeout and setInterval)
+    AJAX(Asynchronous JavaScript and XML)
+        它可以讓使用者不須重新整理網頁，就可以即時透過browser去跟server溝通
+        並抓取資料，而res => HTML、JSON、XML三種格是其中之一，最常見是JSON
+        XML
+            它可以讓自己在網頁上遠端讀取JSON資料，常見用途在註冊頁面驗證
+            "用戶名"或"信箱"是否被使用
+            設定xhr
+                設定一個XMLHttpRequst物件抓取資料。裡面還包含了事件與屬性可
+                以使用，ex:onload/readyState
+                    var xhr = new XMLHttpRequest();
+                readyState
+                    可以用來判斷目前讀取資料的狀態
+                        0:已產生XML物件，但還沒連結要取得的資料，接著用open
+                        語法設定環境(有三個參數)
+                        1:用open，但還沒傳資料
+                        2:偵測使用了send
+                        3:資料loading中
+                        4:取到資料了，數據收到
+                    open語法
+                        xhr.open('格式'，'URL'，true)
+                            格式 => post 傳送資料到server ,get 讀取資料
+                            true or false => 同步為true 非同步為false
+                        然後xhr的readyState會為1，代表用了open()但還沒把資料傳送過去
+                    send語法
+                        xhr.send()
+                            讀取資料時，()要打null
+                            此時readyState = 2 ，表示偵測到用send
+                            如果讀取到資料，則XML內的responseText屬性會把資料記錄進去
+                            此時readyState = 4，表示成功取得資料
+        AJAX(非同步請求)
+            透過XML會有兩種請求方式 => 非同步語同步模式，而XMLHttpRequst中的
+            open()語法，第三個參數true為非同步、false為同步，為避免阻塞頁面，
+            一般都會使用非同步，但非同步請求在用了send()語法後，還是需要load
+            資料
+            那在還沒取得資料時，程式碼繼續往下跑，要怎麼樣才能將資料印出來?
+                需要用XMLHttpRequst中的onload事件
+                    onload(當資料全跑完，才會觸發事件)
+                        xhr.onload = function(){
+                            console.log(xhr.responseText)
+                            // 把抓到的資料物件化或陣列化
+                            // JSON.parse => 將JSON資料物件化
+                            var str = JSON.parse(xhr.responseText)
+                            document.querySelector('要插入資料的DOM').textContent = str ([array編號].array屬性)
+                        }
+                使用if加入http狀態的判斷寫法
+                    xhr.onload = function(){
+                        console.log(xhr.responseText)
+                        // 200 資料正確回傳 404 資料讀取錯誤
+                        if(xhr.status === 200){
+                            var str = JSON.parse(xhr.responseText)
+                            document.querySelector('要插入資料的DOM').textContent = str ([array編號].array屬性) 
+                        }else{
+                            console.log('資料錯誤');
+                        }
+                    }
+            取得(get)整段程式
+                var xhr = new XMLHttpRequest();
+                xhr.open('get'，'URL'，true) // readyState = 1
+                xhr.send() // 使用了readyState = 2 讀取成功 readyState = 4
+                xhr.onload = function(){
+                    console.log(xhr.responseText)
+                    if(xhr.status === 200){
+                        var str = JSON.parse(xhr.responseText)
+                        document.querySelector('要插入資料的DOM').textContent = str ([array編號].array屬性) 
+                    }else{
+                        console.log('資料錯誤');
+                    }
+                }
+            傳送(post)整段程式碼
+                var account = {
+                    email:'abc123@gmail.com'，
+                    password:'1234';
+                }
+                var xhr = new XMLHttpRequest();
+                xhr.open('post'，'URL'，true) // readyState = 1
+                // 選擇格式為JSON
+                xhr.setRequestHeader('Content-type'，'application/json');
+                // 另一個變數儲存字串化(stringify)的JSON
+                var data = JSON.stringify(account);
+                xhr.send(data);
+        CORS(Cross-Origin Resource Sharing)
+            開啟後，開發者才能跨網域取得資料
+    for...of and for...in
+        for...of(ES6)
+            當遍歷array時，可以使用此語法，他輸出會是value(值)，修復for...in的不足，如果要遍歷object需要搭配Object.keys()使用
+            ex
+                array
+                    let iterable = [3,5,7];
+                    // 回傳「value」
+                    for (let i of iterable) {
+                        console.log(i); // 3,5,7
+                    }
+                object
+                    var student={
+                        name:'kanboo'，
+                        age:16，
+                        locate:{
+                            country:'tw'，
+                            city:'taipei'，
+                            school:'CCC'
+                        }
+                    }
+                    for(var key of Object.keys(student)){
+                        //使用Object.keys()方法取得物件的Key的陣列
+                        console.log(key+": "+student[key]); // "name: kanboo" "age: 16" "locate: [object Object]"
+                    }
+        for...in(ES5)
+            當遍歷object property時，可以使用此語法，但他也可用在array遍歷上，只是他輸出會是index，而不是value，用在object上，會是輸出key(屬性名稱)
+            ex
+                array
+                    let iterable = [3,5,7];
+                    // 回傳「key」
+                    for (let i in iterable) {
+                        console.log(i); // "0","1","2"
+                    }
+                object
+                    let iterable = {
+                        id:3
+                    };
+                    for (let i in iterable) {
+                        console.log(i); // id
+                    }
+    Function 宣告語法
+        1.function declaration 函式宣告式
+            會有 hosting 的特性
+            ex
+                function functionName(){...}
+        2.function expression 函式表達式
+            不會有 hosting 的特性
+            ex
+                const expression = function(){...}
+        兩者差異
+            1.hosting
+                在 expression 中他不會有 hosting 的特性發生，因為它會到宣告 function 的地方才會執行，如果先呼叫就會出現錯誤
+                ex
+                    x(2，2)  <= 這裡就會出現錯誤
+                    const x = function(a，b){
+                        return a * b
+                    }
+                    x(2，2)  <= 這裡會因為有 hosting 的特性發生，所以不會出現錯誤
+                    function x(a，b){
+                        return a * b
+                    }
+            2.儲存位置
+                ex
+                    function declareFunction(){
+                        return "Function Declaration"
+                    }
+                    console.log(declareFunction()) // "Function Declaration"
+                    console.log(window.declareFunction()) // 會存到全域物件中，"Function Declaration"
+
+                    const expressionFunction = function() {
+                        return "Function Expression";
+                    };
+
+                    console.log(expressionFunction())  // 輸出: "Function Expression"
+                    console.log(window.expressionFunction) // 不會存到全域物件中，如果是用 var 進行宣告，則會得到"Function Expression"，反之，undefined
+    value and reference
+        value (傳值)
+            用在"變數與變數"之間的傳輸
+        reference (傳址)
+            用在"物件與物件"之間的傳輸
+    原型鏈
+        建構式函式
+            由於 JS 沒有像 Java 之類的 OOP 語言(es6 的 class 並不是這裡說的 class 語法，只是 JS 的語法糖)，所以他特別設計出一個類似繼承的機制，會用"new"，而在 java 中 new 的後面會接 class
+            但 JS 沒有，所以他會在 new + "建構式函式" 創造出實例，但透過此方式建立的實例，會讓每個實例都是獨立的，導致無法共用屬性和資源浪費
+            1.Function
+                // 這裡就模擬了 java 的 constructor()
+                function Person(name,age){
+                    this.name = name;
+                    this.age = age;
+                }
+                var personA = new Person('Charles','30');
+                var personB = new Person('Jane',29);
+                console.log(personA.name); // Charles
+                console.log(personB.name); // Jane
+                透過原型鏈的引入(prototype)
+                    function Person(name, age) {
+                        this.name = name;
+                        this.age = age;
+                    }
+                    Person.prototype.log = function() {  <= 透過 prototype 去將 log 的函式共用(將兩個實例用鏈子綁住)
+                        console.log(this.name + ', age:' + this.age);
+                    }
+                    var personA = new Person('Charles', '30');
+                    var personB = new Person('Jane', 29);
+                    console.log(personA.log === personB.log) // true
+                    // 功能依舊
+                    personA.log(); // Charles, age: 30
+                    personB.log(); // Jane, age: 29
+                    console.log(personA.__proto__) // 原型物件
+                    console.log(Person.prototype) // 原型物件，與上面會相同
+                    尋找方式
+                        當兩個實例要呼叫方法(method)時，JS 會先在兩個實例中尋找該方法(method)，如果沒有 JS 會跑到物件原型(這裡的是Person.prototype)中尋找該函式
+                        如果還是沒找到會到物件原型的鏈子(__proto__)去找，還是沒找到就會繼續往"__proto__"找，直到完全找不到
+                        personA.__proto__ -> Person.prototype -> Person.prototype.__proto__ -> Person.prototype.__proto__.__proto__ ..... <= 這裡就是原型鏈
+            2.class (es6語法糖)
+
+            總結
+                每個實例以原型物件為基底，透過原型物件產生出來的原型鏈，與每個實例連結起來，達到資源共享的目的，因為每個實例會透過"new"製造出來，而這樣會導致每個實例都會是獨立的
+Side Effect(副作用) and pure functions(純函式)
+    Side Effect
+        當輸入相同，每次的輸出的值每次都不一定就稱為副作用
+        ex
+            let a = 2;
+            let b = Math.random()
+            let value = a*b
+            console.log(value) // 輸出每次都不同
+    pure functions
+        當輸入相同，每次的輸出的值也相同，就稱為純函式
+        ex
+            let a = 2;
+            let b = 2
+            let value = a*b
+            console.log(value) // 輸出每次都相同
+補充:
+    Symbol (獨一無二的值)
+        1.為ES6引入的primitive type，透過symbol建立的值
+          都是獨特的(unique)，因此可做為獨特不重複的物件
+          屬性名稱
+        2.它與object and array類似，不能被類似obj.name的
+          運算符存取，必須用[]訪問這些屬性
+        3.它不會出現在for...in、for...of迴圈中，也不會被
+          Object.keys()、Object.getOwnPropertyNames()、
+          JSON.stringify()返回，只有Object.getOwnPropertySymbols
+          才可獲取指定對象的Symbol屬性名
+        4.還有一個API，Reflect.ownKeys可以返回所有類型的鍵名
+        5.不會被遍歷方式得到，把對象定義為非私有的、但希望可
+          以用於內部的方法
+        使用方式:
+            1.Symbol()
+                內部會建立一個獨特的id，相同key的symbol是不同的
+                無法透過Symbol.keyFor()找到
+                let a = Symbol('Symbol A'); // 建立Symbol不需加new
+                let aa = Symbol('Symbol A')
+                a === aa // false
+            2.Symbol.for()
+                一樣會生成新的Symbol，但兩個相同的key會是相同的id
+                且可以透過Symbol.keyFor()找到
+                let b = Symbol.for('Symbol B')
+                let bb = Symbol.for('Symbol B')
+                b === bb // true
+            3.Symbol.keyFor()
+                可以返回一個已登記的Symbol類型值的key
+                let b = Symbol.for('Symbol B')
+                let bb = Symbol.for('Symbol B')
+        給予物件
+            var mySymbol = Symbol(); // 建立Symbol
+            // 寫法一
+            var a = {};
+            a[mySymbol] = 'Hello!';
+            // 寫法二
+            var a = {
+                [mySymbol]:'Hello!'
+            }
+            // 寫法三
+            var a = {};
+            Object.defineProperty(a，mySymbol，{value:'Hello!'});
+
+            以上寫法結果都相同 a[mySymbol] // Hello
+        取得物件的Symbol
+            var obj ={
+                name : 'Aaron'，
+            };
+            var a = Symbol('aaa');
+            var b = Symbol('bbb');
+
+            obj[a] = 'Hello';
+            obj[b] = 'World';
+
+            // 使用 Object.getOwnPropertySymbols() 取得Symbol
+            Object.getOwnPropertySymbols(obj);
+
+            // 使用 Reflect.ownKeys() 取得物件所有的key
+            Reflect.ownKeys(obj)
+        無法取得 Symbol
+            // Object.keys() 無法取得
+            Object.keys(obj);
+
+            // for...in 無法取得
+            for(let prop in obj){
+                console.log(`${prop}:${obj[prop]}`);
+            }
+            // Object.getOwnPropertyNames()無法取得
+            Object.getOwnPropertyNames(obj);
+        實際用法:
+            let symbolGlobal = Symbol.for('shared');
+            // 透過 dynamic property(動態屬性) 把 symbol 設成 key
+            let person ={
+                firstName : 'Aaron'，
+                lastName: 'Chen'，
+            };
+            function registerMember(memberObj){
+                // function 中設定 symbol 一樣可以影響外層
+                let symbolScope = Symbol.for('shared');
+                memberObj[symbolScope] = 'secret';
+
+                person[symbolGlobal]; // secret
+                person[symbolScope]; // secret
+            }
+            registerMember(person)
+
+            person[symbolGlobal]; // secret
+            person[symbolScope] // symbolScope is not defined
+        修改內建Symbol
+            let number = [1，2，3];
+            number[Symbol.toPrimitive] = function(){
+                return 999;
+            };
+            console.log(number + 1) // 原本會回傳"1，2，3"，修改後會回傳1000
+    Infinity (無窮大)全域物件屬性
+        初始值是Number.POSITIVE INFINITY，在數學表現上為無窮大
+        ES5中，JS1.8.5版本/Firefox 4 中 Infinity 是唯讀屬性
+    RegExp(正則表達式)
+        創建RegExp obj 有兩種方式:
+            1.字面量
+                由(/)包圍，而不是引號，當表達式被賦值，字面量提供正則表達式
+                編譯，當表達式違常量時使用字面量，例如:在循環中使用字面量，
+                不會在每次循環迭代中重新編譯
+            2.構造函式
+                由引號包圍，而不是(/)，如new RegExp('ab+c')提供正則表達式運
+                行時的編譯，如果知道正則表達式模式會改變或事前不知道甚麼模式
+                的情況下，都可以用構造函式
+                ES6中第一參數為正則表達式而第二標誌參數存在時，不在拋出TypeError
+                取而代之是將參數創建一個新的正則表達式，當用正則表達式創建正
+                則obj時，需要(在前面+\)
+                ex:
+                    var re = new RegExp("\\w+");
+                    var re = /\w+/;
+            ex:
+
+                /ab+c/i; //字面量形式
+                new RegExp("ab+c","i"); // 首个参数为字符串模式的构造函数
+                new RegExp(/ab+c/,"i"); // 首个参数为常规字面量的构造函数
+    Lodash
+        JS的模塊化、高性能的套件，可以降低array、obj、string
+        等的使用難度，適用於:
+            1.遍歷array、obj、string
+            2.對值進行操作和檢測
+            3.創建符合功能的函數
+        安裝方式:
+            1.透過瀏覽器
+                <script src="lodash.js"></script>
+            2.透過npm
+                $ npm i -g npm
+                $ npm i --save lodash
+        測試:
+            // Load the full build.
+            var _ = require('lodash');
+            // Load the core build.
+            var _ = require('lodash/core');
+            // Load the FP build for immutable auto-curried iteratee-first data-last methods.
+            var fp = require('lodash/fp');
+ 
+            // Load method categories.
+            var array = require('lodash/array');
+            var object = require('lodash/fp/object');
+ 
+            // Cherry-pick methods for smaller browserify/rollup/webpack bundles.
+            var at = require('lodash/at');
+            var curryN = require('lodash/fp/curryN');
+    Transform&Translate&Transition
+        三者差異?
+            Transform => 控制HTML元素，做出旋轉、縮放、移動等效果(改變元素特性)
+                ex:旋轉、縮放、位移
+            Translate => 某物變成新的形式(元素位移)
+                ex:元素位移、元素大小改變
+            Transition => 轉換形式或類型或基礎動畫效果(改變屬性過程)
+                ex:漸變、邊欄位移
+補充
+    圖片縮放
+        每個容器應與父容器同寬度(max-width)，不需要再寫入各個容器寬度，這樣會導致
+        圖片無法縮放
+    監測器
+        1.
+            back.addEventListener("click",()=>{
+                Language()
+            });
+            這種寫法，會先安裝監測器到back上，再用箭頭函式，回調function
+        2.
+            back.addEventListener("click"，Language())
+            這種寫法，會在安裝監測器時，直接調用function
+    語法
+        starsWith()
+            判斷字串是否以指定字串的字符開頭
+            ex
+                var str = "Hello world"
+                console.log(str.starsWith("Hello")) // true
+ 

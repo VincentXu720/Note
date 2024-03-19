@@ -1,0 +1,131 @@
+雙斜線(//)可以不轉成css
+斜線心號(/**/)會被轉進css裡面
+
+(介紹)https://awdr74100.github.io/2020-05-18-scss-install/
+安裝方式
+    (npm) npm install sass -g
+    (VScode) 安裝 Live Sass Compiler
+使用
+    npm
+        創立css、scss資料夾
+        sass中創建XX.scss檔
+        sass .\scss\all.scss .\css\all.css <= 編譯 .\scss\all.scss 檔案到 .\css\all.css 內
+        如果每次輸入指令麻煩可使用watch
+        sass  --watch .\scss\all.scss .\css\all.css
+    VScode
+        先到檔案 > 喜好設定 > 設定 > 開啟設定 (JSON)，更改創建路徑
+            {
+                "liveSassCompile.settings.formats": [
+                    {
+                    "format": "expanded",
+                    "extensionName": ".css",
+                    "savePath": "~/../css"
+                    }
+                ]
+            }
+            null
+                在 *.sass / *.scss 同層的位置生成檔案
+            /
+                相對於根目錄
+            ~
+                相對於每個 *.sass / *.scss 檔案的同層位置
+            format 
+                代表的是輸出的格式 (樣式)，以下模式可做使用
+                    expanded：預設模式，即不做任何壓縮處理
+                    nested：類似 expanded 模式，但會處理縮排
+                    compressed：最小化處理，即常見的程式碼壓縮
+                    compact：類似 compressed 模式，但不處理空白字元
+            extensionName
+                代表副檔名名稱，通常設定為.css 或 .min.css名稱
+        當編譯時開啟Live Sass VScode插件
+    
+
+SCSS資料夾中會當工作區
+創建出來的css資料夾會當測試區
+
+檔案前加"_"不會被轉化成css
+
+rem
+    px(font-size) * rem
+    ex:
+        font-size:16
+        line-height:1.2rem === line-height:19.2px
+        => 16 * 1.2 = 19.2px 
+
+extend(繼承)
+    會集合所有的樣式
+    語法:
+        %aButton{
+            display:inline-block;
+            text-decoration: none;
+        }
+        .a{
+            @extend %aButton;
+        }
+        .b{
+            @extend %aButton;
+        }
+        .c{
+            @extend %aButton;
+        }
+    結果:
+        .a,.b,.c{
+            display:inline-block;
+            text-decoration: none;
+        }
+mixin(混用)(可集合所有樣式)
+    會產出很多份樣式
+    語法:
+        @mixin aButton(){
+            display:inline-block;
+            text-decoration: none;
+        }
+        .aaa{
+            // @extend %aButton;
+            @include aButton();
+        }
+        .bbb{
+            // @extend %aButton;
+            @include aButton();
+        }
+        .ccc{
+            // @extend %aButton;
+            @include aButton();
+        }
+    結果:
+        .aaa {
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .bbb {
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .ccc {
+            display: inline-block;
+            text-decoration: none;
+        }
+function(函式)
+    就像function一樣
+    語法:
+        @function line($count:1,$baseLineHeight:12px){  // :1為預設值
+            @return $baseLineHeight * $count
+        }
+        .aa{
+            padding:line(2); // 帶入參數
+        }
+        .bb{
+            padding:line(1);
+        }
+        .cc{
+            padding:line(3);
+        }
+PostCSS
+    將sass語法轉換成css語法，讓瀏覽器可以識別
+    ，可以搭配Autoprefixer
+    Autoprefixer
+        (介紹)https://medium.com/%E5%89%8D%E7%AB%AF%E5%B0%8F%E7%A9%BA%E9%96%93/webpack-postcss-%E8%88%87-autoprefixer-css-%E7%80%8F%E8%A6%BD%E5%99%A8%E7%9B%B8%E5%AE%B9%E6%80%A7-6320900d47cc
+        (介紹)https://medium.com/%E5%B0%8F%E5%BD%A5%E5%BD%A5%E7%9A%84%E5%89%8D%E7%AB%AF%E4%BA%94%E5%9B%9B%E4%B8%89/%E5%9C%A8webpack%E4%B8%AD%E4%BD%BF%E7%94%A8postcss-%E5%92%8C-autoprefixer%E5%B9%ABcss%E8%87%AA%E5%8B%95%E5%A2%9E%E5%8A%A0%E5%89%8D%E7%B6%B4%E8%A9%9E-c06c093dc60e
+        它在透過Webpack+PostCSS打包完後，幫開發者"自動"寫好各種瀏覽器的前綴

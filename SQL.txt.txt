@@ -1,0 +1,13 @@
+連線伺服器
+    驗證 -> SQL Server 驗證
+    登入 -> g
+新增登入
+    安全性 -> 登入(右鍵) -> 名稱:g -> SQL Server 驗證 -> 取消強制執行密碼
+    設定 
+        public 
+        sysadmin 
+        master -> db_owner 
+        model -> db_owner
+        msdb -> db_owner
+        tempdb -> db_owner
+        授與

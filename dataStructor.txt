@@ -1,0 +1,113 @@
+Stack and Queue
+    Stack(堆疊)
+        有後進先出(LIFO)特性，最先進入的資料會最後才被取出(FILO,first-in-last-out)，最後進的資料會先被取出(LIFO,last-in-first-out)，以盤子為例，添加新盤子時，會一層一層往上疊，
+        而取出時，也會從最上面開始拿
+        操作方式
+            pop(從上面移除)
+                function Stack() {
+                    let items = [];
+                    function push(element) {
+                        items.push(element);
+                    }
+                    function pop() {
+                        return items.pop();
+                    }
+                    function peek() {
+                        return items[items.length - 1];
+                    }
+                    return {
+                        push,
+                        pop,
+                        peek,
+                    };
+                }
+                const stack = new Stack();
+                stack.push("A");
+                stack.push("B");
+                stack.push("C");
+                console.log(stack.pop()); // C
+                console.log(stack.peek()); // B
+                
+                peek (只能查看stack最頂部元素)
+
+            push(從上面新增)
+                function Stack() {
+                    let items = [];
+                    function push(element) {
+                        items.push(element);
+                    }
+                    function pop() {
+                        return items.pop();
+                    }
+                    function peek() {
+                        return items[items.length - 1];
+                    }
+                    return {
+                        push,
+                        pop,
+                        peek,
+                    };
+                }
+                const stack = new Stack();
+                stack.push("A");
+                stack.push("B");
+                stack.push("C"); 
+                stack.print(); // [A,B,C]
+    Queue(序列)
+        有先進先出(FIFO)特性，以排隊為例，排在最前面的人會先被處理事情，等事情處理完再處理下一個，而隊伍後方又會有人進來
+        與array不同的是他沒有index(索引)
+        操作方式
+            push(從後面新增)
+                class Queue {
+                    constructor(arr) {
+                        this.queue = arr;
+                    }
+                    push(item) {
+                        this.queue.push(item);
+                    }
+                    size() {
+                        return this.queue.length;
+                    }
+                    print() {
+                        return this.queue;
+                    }
+                }
+                const queue = new Queue([3, 6, 9, 1, 7]);
+                queue.push(2);
+                queue.print(); //[3, 6, 9, 1, 7, 2 ]
+
+                queue.size(); //5
+            shift(從前面移除)
+                class Queue {
+                    constructor(arr) {
+                        this.queue = arr;
+                    }
+                    shift() {
+                        return this.queue.shift();
+                    }
+                    size() {
+                        return this.queue.length;
+                    }
+                    print() {
+                        return this.queue;
+                    }
+                }
+                const queue = new Queue([3, 6, 9, 1, 7]);
+                queue.shift(); //3
+                queue.print(); // [6, 9, 1, 7]
+        Stack -> Queue，每次Stack做完一次任務就會檢查一次Stack，當Stack無任務，他會去檢查Queue，而如果Queue有任務，就會把
+        它放入Stack裡進行處理
+同步與非同步
+    非同步
+        有四個非同步語法，分別是 setTimeout()、ajax()、promise()、click()
+
+事件循環(Event Loop)
+    所有任務都會在主線程上執行(執行棧)，但如果有異步任務，執行環境會先調用相關的API，等異步任務的結果後，再放到任務列隊中，
+    執行棧完成所有同步任務後，會檢查任務隊列(Queue)，並把第一個任務加到執行棧中(Stack)執行，並重複執行直到所有任務完成，這
+    就是event loop
+異步任務
+    宏任務(Macro Task)
+        setTimeout()
+    微任務(Micro Task)
+        Promise()
+

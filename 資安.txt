@@ -1,0 +1,32 @@
+XSS(Cross-Site Scripting)跨腳本攻擊
+    重點:任何輸入都是危險的，包括網址列、input、任何讓使用者更動網頁內容的地方
+    what is XSS?
+        XSS 是一種藉由插入 JavaScript程式碼到網頁中達到攻擊目的
+    如何運作?
+        攻擊者利用網頁可與使用者互動的輸入框或任何可以輸入的地方，在HTML中插入惡意的code，當使用者瀏覽該頁面時，潛藏在HTML中的惡意code會
+        執行，可達到攻擊執者的目的，例如:cookie竊取、鍵盤側錄等
+    原因?
+        形成此漏洞的原因在伺服器端對輸入與輸出的控制不夠嚴謹，以至於腳本輸入後再輸出到前端時被瀏覽器解析成程式碼的一部分執行並可能產生危害
+    種類
+        Reflected XSS 反射型XSS
+            藉由伺服器回傳的HTML資料中某些數據透過URL查詢參數獲得
+            發生攻擊的位置
+                HTML 標籤之間 ex: {XSS code}
+                HTML 屬性 ex: <input name = "test" value="{XSS code}">
+                HTML 中改變URL ex:<a href={XSS code}>
+                CSS值 ex:color:{XSS code}
+                JS中 ex:var name = {XSS code}
+        Stored XSS 儲存型XSS
+            透過JS儲存到網站資料庫中的方式存到伺服器後端資料庫中，例如:無名小站的留言板，並在使用者到訪網站留言板時從伺服器端回傳到網頁上並執行
+            注意:每次瀏覽都會執行，所以又稱為"持續型XSS"
+        DOM Based XSS
+            透過前端的JS渲染DOM時，渲染出來並執行
+    what is can do?
+        竊取Cookie
+            攻擊者可在 JavaScript 中透過 document.cookie 取得 cookie 訊息，因為 cookie 會用來當網頁辨認使用者身分的機制，當使用者輸入帳密後，會存到 cookie 中以便
+            下次可自動登入，所以當攻擊者取得帶有資料的 cookie 後即可不需登入就可更改他人密碼，取得帳戶使用權
+        跳站惡意網站
+            透過在網址列中插入惡意 JS code，使訪問的網站跳轉到惡意或釣魚網站，使得機敏資料洩漏
+        鍵盤側錄
+            JS 還可以用來記錄使用者在瀏覽器中的操作，例如:鍵盤側錄，將使用者的密碼一覽無遺等
+        不只以上這些還有許多威脅

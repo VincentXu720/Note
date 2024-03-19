@@ -1,0 +1,371 @@
+關聯式資料庫(SQL)
+    關聯式資料庫管理系統(RDBMS)
+        資料會用表格進行儲存，再對這些表格做連結，透過SQL語言在資料庫中進行新增、查詢、更新、刪除資料等操作
+        同時也能建立和修改資料庫模式，資料表需先設定好架構(schema)和預先定義好資料表間的關係，讓資料間關聯明確
+        但在資料量龐大下，會困難於修改Schema，所以不適用在資料龐大時，在明確資料格式，並不會有大變更、注重資料
+        操作的準確與一致性，則非常適合用"關聯式資料庫"
+        MySQL
+        Oracle
+        PostgreSQL
+        SQL Server
+        四個軟體間的差異
+            1.開發與適用環境
+                MySQL => 開源的資料庫，適用於Web和輕量級應用
+                Oracle => 閉源的資料庫，適用於大型或企業級應用
+                PostgreSQL => 開源的資料庫，適用於需頻繁寫入或複雜查詢等操作的企業級應用
+                SQL Server => 閉源的資料庫，適用於公司或企業
+            2.授權成本
+                MySQL => 可免費使用，但也有企業版提供進階功能和支援須付費
+                Oracle => 商業軟體，所以需要支付授權費用，提供了豐富的功能與支援
+                PostgreSQL => 可免費使用，並提供廣泛的擴展性
+                SQL Server => 可免費使用開發者版本，但也有商業版本須付費
+            3.擴展性
+                MySQL => 在輕量級到中型應用可使用，但在大規模數據處理會有需求的限制
+                Oracle => 用在大型企業的應用中，有出色的擴展性
+                PostgreSQL => 以高度可擴展性聞名，適用於各種規模應用
+                SQL Server => 在Microsoft生態中提供良好的擴展性，特別是在windows環境中
+            4.功能與標準支援
+                MySQL => 具有基本的RDBMS功能，隨著版本發展也新增一些進階功能
+                Oracle => 提供豐富的功能級，包括高度安全性、業務智能、高可用性等
+                PostgreSQL => 具有遵從標準和豐富功能級，包括支援JSON、地理空間數據等
+                SQL Server => 提供深度整合到Microsoft技術堆棧中，並支援商業智能、數據倉庫等
+            5.跨平台支援
+                MySQL => 提供了跨平台版本，可在多個操作系統上運行
+                Oracle => 原生支援多種操作系統，但在非Unix/Linux環境中的支援相對有限
+                PostgreSQL => 提供了跨平台版本，可在多個操作系統上運行
+                SQL Server => 提供了跨平台版本，可在多個操作系統上運行
+            6.社群支援
+                MySQL => 有強大社群支援，有廣泛的文檔和在線支援
+                Oracle => 有強大社群支援，但由於商業性質而受限
+                PostgreSQL => 有強大社群支援，有廣泛的文檔和在線支援
+                SQL Server => 有強大社群支援，但由於商業性質而受限
+    運作方式
+        以YT來說
+        YT => MySQL(也可是其他的) => 關聯式資料庫
+        YT會透過SQL語言與MySQL溝通，在MySQL中進行尋找後回傳給YT
+    table and key
+        ex
+            id name major
+             1 小黑 生物
+             2 小白 歷史
+             3 小綠 英語
+             4 小白 歷史
+             5 小黃 生物
+            每筆資料獨特的部分可設定為primary key(主鍵)，透過primary key可以表示唯一的每一筆資料
+            像:表格中有兩個小白，可以透過id去區分要找哪一個小白
+            
+            Employee
+            emp_id name birth_date sex salary branch_id sup_id
+              206  小黃 1990/10/8   F  50000     1       NULL
+              207  小黃 1985/9/16   M  29000     2       206
+              208  小黃 2000/12/19  M  35000     3       206
+              209  小黃 1997/1/22   F  39000     4       207
+            
+            Branch
+            branch_id   branch_name  manager_id
+                1           研發        206
+                2           行政        207
+                3           資訊        208
+            branch_id 可設定成foreign key(外鍵)，可以透過foreign key對應到另一個表格的primary key，形成一個連結
+            manager_id 為foreign key 對應到Employee表格中的emp_id
+            sup_id 為foreign key，他會對應到Employee前面的emp_id
+
+            emp_id client_id total_sales
+              206     400       700000  
+        結論
+            在表格中每一個row代表一筆資料，每一個column代表一個屬性
+            每筆資料不同的屬性都可設定為"primary key"，ex:email、id等
+            "foreign key"不僅可以對應別的表格，也可以對應到自己的表格
+            當這個表格的每一個屬性都不可以表示唯一的一筆資料，所以可以用兩個或以上的"primary key"
+            表格可根據需求設定多個"primary key" or "foreign key"
+    語法
+        不一定要用大寫，名稱可以使用 "``" 包住，這樣才不會跟關鍵字有衝突
+        執行時，需要將要執行的程式碼選起來，然後按閃電符號，" -- " 註解
+        資料庫
+            CREATE DATABASE "資料庫名稱(自取)" =>創建一個資料庫
+                CREATE => 創建
+                DATABASE => 資料庫
+                database_name => 資料庫名稱
+            SHOW DATABASES; => 查看資料庫
+            DROP DATABASE "資料庫名稱"; => 刪除資料庫
+            USE "資料庫名稱" => 使用資料庫
+        表格
+            CREATE TABLE "表格名稱(自取)"() => 創建表格
+                一定要先選擇資料庫，再創鍵表格，名稱也可用"``"包住
+                "()"中可填入創建表格的屬性名稱
+                CREATE TABLE `student`(
+                    `student_id` INT PRIMARY KEY, => 設定成primary key
+                    `name` VARCHAR(20),
+                    `major` VARCHAR(20)
+                    // 也可以把設定Primary key指令寫在下面
+                    PRIMARY KEY("屬性名稱")
+                );
+                裡面會透過","區分
+            DESCRIBE "表格名稱"; => 查看表格
+            DROP TABLE "表格名稱"; => 刪除表格
+            ALTER TABLE "表格名稱" ADD gpa DECIMAL(3,2); => 新增名為gpa的屬性
+            ALTER TABLE "表格名稱" DROP COLUMN gap; => 刪除 gpa 屬性
+        填入資料
+            primary key如果被重複使用會出現錯誤
+            INSERT INTO "表格名稱" VALUES () => 填入所以資料
+                ()中要根據table裡面的屬性去填
+                INSERT INTO "表格名稱" VALUES (1,'小白','歷史')
+                    字串型態的要用 '' or "" 包住
+                INSERT INTO `student` VALUES (3,'小綠',NULL);
+                INSERT INTO `student`(`name`,`major`,`student_id`) VALUES ('小藍','英語',4);
+                    (`name`,`major`,`student_id`) 可以改變輸入的資料的順序
+                INSERT INTO `student`(`major`,`student_id`) VALUES ('英語',5); === INSERT INTO `student` VALUES (NULL,'英語',3);
+            SELECT * FROM "表格名稱"; => 搜尋表格全部的資料
+        限制資料
+            CREATE TABLE `student`(
+                `student_id` INT,
+                `student_id` INT AUTO_INCREMENT, => 在每次輸入資料時，值會+1，如果是一開始輸入就會是1
+                `name` VARCHAR(20) NOT NULL, => 表示該屬性的值不能為NULL
+                `major` VARCHAR(20) UNIQUE, => 表示該屬性的值不可以重複
+                `major` VARCHAR(20) DEFAULT '歷史', => 新增該屬性的預設值(即使沒輸入也會有值)
+                PRIMARY KEY(`student_id`)
+            );
+        修改/刪除資料
+            需先Workbench的預設更新模式關閉
+            SET SQL_SAFE_UPDATES = 0; => 關閉預設更新
+            SQL_SAFE_UPDATES 是在沒有WHERE或LIMIT條件的UPDATE或DELETE會拒絕執行，而即使有這兩個條件，但沒有KEY column的WHERE還是會拒絕執行
+            修改
+                UPDATE `student` => 表示要修改屬性的表格
+                SET `major` = '英語文學' => 設定屬性為"其他的值"
+                SET `name` = '小灰', `major` = '物理' => 也可以設定多值
+                WHERE `major` = '英語' => 設定在條件下，更改
+                WHERE `major` = '生物' OR `major` = '化學' => 也可以設定多個條件
+                不加條件
+                SET `major` = '物理' => 會讓`major`屬性值全部變成物理
+            刪除
+                DELETE FROM `student` => 表示要刪除屬性的表格
+                WHERE `student_id` = 4; => 設定在條件
+                WHERE `name` = '小灰' AND `major` = '物理'; => 多個判斷條件
+                WHERE `score` < 60; => 可以直接寫條件
+                不加條件
+                DELETE FROM `student` => (不加條件)會刪除表格內所有資料
+        取得資料
+            SELECT * FROM `student`; => "*" 取得表格中所有屬性
+                SELECT `name` FROM `student`; => 取得表格中`name`的屬性
+                SELECT `name`,`major` FROM `student`; => 也可以用多個
+            SELECT * FROM `student` ORDER BY `score`; => ORDER BY 排序，根據`score`進行排序(升冪)
+                SELECT * FROM `student` ORDER BY `score` ASC; => ASC 將排序變成升冪(預設)
+                SELECT * FROM `student` ORDER BY `score` DESC; => DESC 將排序變成降冪
+                SELECT * FROM `student` ORDER BY `score`,`student_id`; => 先對score做排序，當score相同會根據student_id做排序
+            SELECT * FROM `student` LIMIT n; => 取得前n筆資料
+            SELECT * FROM `student` ORDER BY `score` LIMIT 3; => 排序後回傳前3筆資料
+                SELECT * FROM `student` ORDER BY DESC `score` LIMIT 3;
+                SELECT * FROM `student` ORDER BY ASC `score` LIMIT 3;
+                SELECT * FROM `student` WHERE `major` = '英語' AND `student_id` = 1; => 搭配WHERE做判斷，AND 要兩個都符合才行
+                SELECT * FROM `student` WHERE `major` = '英語' OR `score` > 20; => OR 只要兩個符合一個就成立
+                SELECT * FROM `student` WHERE `major` = '英語' OR `score` <> 20; => "<>" 不等於(!=)
+                SELECT * FROM `student` WHERE `major` = '英語' OR `score` <> 20 LIMIT 2;
+            SELECT * FROM `student` WHERE `major` IN ('歷史','英語','生物'); => 判斷major有沒有等於歷史、英語、生物 === WHERE `major` = '歷史' OR `major` = '英語' OR `major = '生物';
+    實戰
+        創建資料
+            foreign key 在最初的表格在創建時無法設定，因為在創立前沒有對應的表格
+            設定foreign key
+                FOREIGN KEY (`manager_id`) REFERENCES `employee`(`emp_id`) ON DELETE SET NULL
+                (FOREIGN KEY "該表格的屬性" REFERENCES "對應的表格名稱" "對應表格的屬性")
+                
+                ALTER TABLE `Employee` => 在Employee表格
+                ADD FOREIGN KEY(`branch_id`) => 對Employee中的branch_id新增foreign key
+                REFERENCES `Branch`(`branch_id`) => 對應Branch中的branch_id屬性
+                ON DELETE SET NULL;
+
+                FOREIGN KEY (`client_id`) => 對表格中的client_id加上foreign key
+                REFERENCES `Client`(`client_id`) => 對應到Client表格中的client_id
+                ON DELETE CASCADE
+        取得資料
+            當取得的資料會有重複的，可以加 DISTINCT
+            SELECT DISTINCT `sex` FROM `Employee`;
+        聚合函數(aggregate function)
+            count
+                取得員工人數
+                    SELECT COUNT(*) FROM `Employee` <= 
+                    // * 可以寫其他屬性，上面會看表格中資料有幾筆
+                    SELECT COUNT(`sup_id`) FROM `Employee`;
+                取得員工生日與性別資料
+                    SELECT COUNT(*) FROM `employee`
+                    WHERE `birth_date` > '1970-01-01' 
+                    AND `sex` = 'F';
+                取得員工薪水平均
+                    SELECT AVG(`salary`) FROM `Employee`; <= AVG 計算平均的函式
+                取得員工薪水總和
+                    SELECT SUM(`salary`) FROM `Employee`; <= SUN 計算總和的函式
+                取得員工中最高或最低的薪水
+                    SELECT MAX(`salary`) FROM `Employee`; <= MAX 取得資料中的最高值
+                    SELECT MIN(`salary`) FROM `Employee`; <= MIN 取得資料中的最低值
+        萬用字元(wildcards)
+            %(表示多個字元)
+                SELECT * FROM `Client` WHERE `phone` LIKE '%335' <= %335 只要尾數為335都成立 %可以省去前面其他字元
+                SELECT * FROM `Client` WHERE `phone` LIKE '254%'; <= %也可以放前面
+                SELECT * FROM `Client` WHERE `phone` LIKE '%354%'; <= %也可以放前後
+                SELECT * FROM `Client` WHERE `client_name` LIKE '艾%'; <= 用中文也是可以
+            _(表示單個字元)
+                SELECT * FROM `Employee` WHERE `birth_date` LIKE '_____12%'; <= 2000-12-19，2000- 有5個字元，可以使用"_"表示12後面放"%"表示-19
+        聯集(Union)
+            合併的屬性數量要相同 且 合併的屬性資料形態要相同
+            1.員工名子 union 客戶名子
+                SELECT `name` FROM `Employee`
+                UNION  <= 合併兩筆尋找到的資料
+                SELECT `client_name` FROM `Client`;
+            2.員工id+員工名子 union 客戶名子
+                SELECT `emp_id`,`name`
+                FROM `Employee`
+                UNION
+                SELECT `client_id`,`client_name`
+                FROM `Client`;
+
+                SELECT `emp_id` AS `total_id`  ,`name` AS `total_name` <= AS 可以改變印出的屬性名稱
+                FROM `Employee`
+                UNION
+                SELECT `client_id`,`client_name`
+                FROM `Client`;
+            3.員工薪水 union 銷售金額
+                SELECT `salary` AS `total_money`
+                FROM `Employee` 
+                UNION
+                SELECT `total_sales` 
+                FROM `Works_With`
+        連接(join)
+            將表格間相連
+            1.取得所有部門經理的名子
+                SELECT * FROM `Employee` 
+                JOIN `Branch` <= 連接另外一個表格
+                ON `emp_id` = `manager_id`;  <= 設定條件
+
+                SELECT `emp_id`,`name`,`branch_name`
+                FROM `Employee`
+                JOIN `Branch` 
+                ON `emp_id` = `manager_id`;
+
+                當表格與表格中的屬性有相同的名稱可以在屬性名稱前加上"表格名稱"."表格中的屬性名稱"
+                SELECT `Employee`.`emp_id`,`Employee`.`name`,`Branch`.`branch_name`
+                FROM `Employee`
+                JOIN `Branch` 
+                ON `Employee`.`emp_id` = `Branch`.`manager_id`;
+
+                加上LEFT JOIN(左邊的表格無論條件是否成立，都會回傳所有資料，但右邊的表格一定要條件成立才會回傳)
+                SELECT `Employee`.`emp_id`,`Employee`.`name`,`Branch`.`branch_name`
+                FROM `Employee` LEFT JOIN `Branch` <= 左邊為`Employee` 右邊為`Branch`
+                ON `Employee`.`emp_id` = `Branch`.`manager_id`; <= 這裡為條件
+
+                加上RIGHT JOIN(與LEFT JOIN 相反)
+        子查詢(subquery)
+            1.找出研發部門的經理名子
+                SELECT `name` FROM `Employee`
+                WHERE `emp_id` = (
+                    SELECT `manager_id`
+                    FROM `Branch`
+                    WHERE `branch_name` = '研發' // 206
+                );
+                相當於
+                WHERE `emp_id` = 206;
+            2.找出對單一客戶的銷售金額超過50000的員工名子
+                SELECT `name` FROM `Employee`
+                WHERE `emp_id` IN (  <= IN 檢查某個列中是否與給定的值是否成立
+                    SELECT `emp_id` FROM `Works_With`
+                    WHERE `total_sales`> 50000
+                );
+        on Delete
+            ON Delete set NULL
+                當Foreign key對應不到時，就設定成NULL，而當屬性是Foreign key又是primary key時
+                設定成NULL時，會出錯，因為primary key不能設定成NULL
+                FOREIGN KEY (`manager_id`) REFERENCES `employee`(`emp_id`) ON DELETE SET NULL <= 如果Employee中的emp_id被刪掉了就把manager_id設成NULL
+            ON Delete set CASCADE
+                當Foreign key對應不到時，將對應的資料一起刪除
+                FOREIGN KEY (`emp_id`) REFERENCES `Employee`(`emp_id`) ON DELETE CASCADE <= 如果Employee中的emp_id被刪掉了就把前面的emp_id在表格中的資料一起刪除
+        node.JS連接MySQL
+            需先安裝mysql的組件
+                mysql組件可讓node.js操作MySQL，對資料庫進行增、刪、改、查等操作
+                npm install --save mysql
+            使用async/await封裝使用mysql
+                由於node.js是單線程設計，可以透過async/await，用同步的寫法操作資料庫
+            用Promise進行封裝async/await模組
+                因為會使用到非同步方式處理資料，所以用Promise保證程式的運作
+            用另一個js檔案使用async/await進行資料庫的連接
+            ex
+                async-db.js
+                    var mysql = require('mysql');
+                    var pool = mysql.createPool({
+                        host:'localhost',
+                        user:'root',
+                        password:'Alex0720',
+                        database:'sql_test' 
+                    });
+
+                    let query = function(sql,values){
+                        console.log('SQL',sql)
+                        console.log('values',values)
+                        return new Promise((resolve,reject)=>{
+                            pool.getConnection(function(err,connection){
+                                if(err){
+                                    reject(err)
+                                }else{
+                                    connection.query(sql,values,(err,rows)=>{
+                                        if(err){
+                                            reject(err)
+                                        }else{
+                                            resolve(rows)
+                                        }
+                                        // 結束連接
+                                        connection.release()
+                                    })
+                                }
+                            })
+                            
+                        })
+                    }
+                    module.exports = {query}
+                app.js
+                    const { query } = require('./async-db')
+                    async function selectAllData( ) {
+                        // 放SQL指令sql參數中
+                        let sql = 'SELECT * FROM t_account'
+                        // 導入sql到另一個js檔案的query函式中
+                        let dataList = await query( sql )
+                        // 將結果回傳
+                        return dataList
+                    }
+
+                    async function getData() {
+                        // 去接外部的selectAllData()
+                        let dataList = await selectAllData()
+                        console.log( dataList )
+                    }
+
+                    getData()
+            CRUD操作語法
+                C(POST)
+                    INSERT INTO 表格名稱 (表格中的屬性) VALUES (`jess`,500)
+                R(GET)
+                    SELECT 表格中的屬性 FROM 表格名稱 WHERE 表格屬性=2647374
+                U(PUT)
+                    UPDATE 表格名稱 SET 表格屬性=`jess`,表格屬性=300
+                D(DELETE)
+                    DELETE FROM 表格名稱 WHERE 表格屬性=`jess`
+    資料型態
+        INT => 整數
+        DECIMAL(m,n) => 有小數點的數,m 幾位數 n 小數幾位
+        VARCHAR(n) => 字串，n 限制字元長度
+        BLOB => (Binary Large Object) 圖片、影片、檔案...
+        DATE => 'YYYY-MM-DD',日期
+        TIMESTAMP => 'YYYY-MM-DD HH:MM:SS',紀錄時間
+    補充
+        增加索引
+            在創建foreign key時，MySQL會要求該屬性上存在索引，除非該屬性設定為primary key，要不然就須自行設定
+            CREATE INDEX `idx_addressID` ON `address`(`AddressID`);
+
+非關聯式資料庫(NoSQL/not just SQL)
+    非關聯式資料庫管理系統(NRDBMS)
+        在NoSQL中沒有Schema架構(相當於Schema-Free)，自由定義資料文件(Document)的結構，自由新增欄位
+        對於格式不確定，要保留彈性調整空間，且沒有複雜的關聯、注重快速讀取資料與可用性時，可以使用"非關聯式資料庫"
+        而儲存資料的方式會根據軟體的特定的方式進行資料儲存
+        MongoDB
+        Redis
+        DynamoDB
+        Elaticsearch
+    運作方式
+        在非關聯式中每個軟體都有不同的語言
+

@@ -1,0 +1,170 @@
+JavaScript
+    基礎、型別
+        在 JavaScript 中 0.1 + 0.2 會是多少？為什麼？如何避免相關問題？
+            0.1 + 0.2 = 0.30000000000000004
+            why?
+                因為運算時，是使用二進制浮點數的方式，JS 是採用 IEEE 754 六十四位元的雙精度浮點數，所以會遇到該問題
+            一般情況
+                一般使用十進位，要能夠精確表達十進位，而10的值數為5和2，所以只有1/2、1/4、1/5、1/8、1/10能夠被十進位的小數表達清楚，
+                而1/3、1/6、1/7、1/9則不行，以1/3會是0.3直到無窮盡
+                使用二進位制來說，只有 1/2、1/4、1/8 等可以被清楚表達，其他則會無窮無盡地延伸下去，然而電腦的memary有限，所以程式語言會分配給一個數字的memary也有限，所以在
+                精準度的表達下會有限制，這就是導致0.30000000000000004原因
+            避免
+                可以透過 toFixed or toPrecision 等數字操作語法，讓我們能夠設定精準度
+                    console.log((0.1 + 0.2).toFixed(1)); // 0.3
+                    console.log((0.1 + 0.2).toPrecision(1)); // 0.3
+            結論
+                因為JS在進行浮點數運算中使用六十四位元的雙精度浮點數，計算的結果是無法被清楚表達的，而由於記憶體限制問題，所以在表達結果時也會出現問題
+                所以如果使用 toFixed or to toPrecision 就可以解決此問題
+        嚴格模式 (use strict) 的用途？有什麼好處？
+            寫法
+                在 JS 檔案中加上 "use strict" 在頂部，該腳本就會以"嚴格模式"執行
+                    "use strict"
+                    ...
+                    ... <= 其他 JS code
+                在 Function 中也可以使用
+                    function myStrictFunction(){
+                        "use strict";
+                        // other code
+                    }
+            用途
+                提高 JS 程式碼的安全性和可讀性，通過使用嚴格模式，可以更好控制程式碼，避免一些常見錯誤
+                ex:
+                    禁止使用未經聲明的變數
+                        "use strict";
+                        x = 10; // Uncaught ReferenceError: x is not defined
+                    禁止重複定義變數
+                        "use strict";
+                        function sum(a, a) {
+                            return a + a; // Uncaught SyntaxError: Duplicate parameter name not allowed in this context
+                        }
+                    禁止刪除不可刪除的屬性
+                        "use strict";
+                        var y = 20;
+                        delete y; // Uncaught SyntaxError: Delete of an unqualified identifier in strict mode.
+        [] == [] 等於甚麼?為什麼?
+            當[] == []，他們是相同的型別(array)，所以不會被 JS 強制轉換型別，但是彼此間的記憶體位置是不同的，所以結果是false，{} == {} 也是同樣結果
+        [] == ![] 等於甚麼?為什麼?
+            因為"!"優先於"=="，所以會優先轉換![] => false，所以導致兩邊不同型別，JS 會啟動強制轉換型別機制，所以會變成 Number([]) == Number(false) => 0 == 0，所以會等於true
+            但是用在 {} == !{}時，會有不同
+        {} == !{} 等於甚麼?為什麼?
+            因為"!"優先於"=="，所以會優先轉換!{} => false，所以導致兩邊不同型別，JS 會啟動強制轉換型別機制，所以會變成 Number({}) == Number(false) => NaN == 0，當有一個數為 NaN 時，就會回傳 false
+    變數、作用域、閉包
+    Map and object
+        Map
+            ES6 推出的 Map 物件，可以透過特製的資料結構進行鍵值對(key-value pairs)的操作
+        Map 物件與原始物件(object)的不同 ?
+            key 方面
+                在原始物件(object)中的 key 只能是字串，但是在 Map 中的 key 可以是任何東西
+            迭代方式
+                Map
+                    在 Map 物件中可以使用 for...of、forEach 去迭代
+                    ex:
+                        for(let k of m){  // 可以出現[key,屬性值]
+                            console.log(k)
+                        }
+                        m.forEach((k)=>{  // 只會出現屬性值
+                            console.log(k)
+                        })
+                Object
+                    在 Object 中，只能使用 Object.entries、Object.keys 去實現迭代
+                    ex:
+                        {
+                            name:'小名',
+                        }
+                        Object.entries
+                            [['name','小名']]
+                        Object.keys
+                            ['name']
+            順序性
+                在原始物件中，每次迭代的結果順序有可能會不同，但在 Map 物件中，是可以幫值保留位置，所以可以保留順序
+            物件長度
+                Map 有 size 方式可以查看 // 輸出時，會有一個 size 可以查看
+                ex:
+                    0:{"name":"小黑"}
+                    size:1
+                Object 就需要透過 Object.keys 搭配 length 查看物件長度
+                ex:
+                    Object.keys("物件").length
+            刪除鍵值
+                Map
+                    可以透過 clear() 刪除所有鍵值
+                    ex:
+                        "Map 物件".clear()
+                Object
+                    只能使用delete一個一個刪除屬性
+                    ex:
+                        delete obj."屬性"
+            添加資料方式
+                object
+                    1.Object.assign
+                        Object.assign("物件",{"key,值"})
+                    2.直接加入屬性(key)並賦值
+                        O.name = '小黑'
+                    3.直接放入
+                        O = {
+                            name : '小黑'
+                        }
+            實作方面
+                object
+                    let O = {
+                        name:'小黑',
+                        age:18,
+                    }
+                Map
+                    let M = new Map()
+                    const age = '年齡' 
+                    M.set('name','小白')
+                    M.set(age,18) // 裡面可以放字串或變數等其他型態
+                    console.log(M)  // { 'name'=>'小白','年齡'=>18 }
+    not defined and undefined and undeclared and null
+        is not defined : 未宣告
+        undefined : 宣告，但未賦值
+        undeclared : 未宣告，但有賦值(這是不會爆錯，但是不建議)
+        null : 空值
+    Set and Map
+        Set
+            數據結構類似 array，但裡面的元素值都是唯一，不會有重複的值，無論是原始型別或引用型別
+            Set 本身就是建構函式，所以需要透過 new 去生成實例
+    function declaration(函式宣告式) vs function expression(函式表達式) 差別？
+        (介紹)https://ithelp.ithome.com.tw/m/articles/10316372
+        1.hosting
+            function declaration 有 hosting 的特性，所以先呼叫該函式也不會出現錯誤
+            function expression 沒有，所以如果先呼叫該函式的話，會出現 "is not defined"的錯誤
+        2.儲存位置
+            由於 function declaration 有 hosting 的特性，所以他會先被儲存到全域物件中
+            而 function expression 就不會放到全域物件中，不過如果此函式式透過全域變數呼叫的就可以儲存到全域變數中
+    By value vs by reference
+        By value => 變數間的傳值
+        By reference => 物件間的傳址
+    在不同情況下 this 指向對象會是什麼？
+        假設在物件中使用 this，他會指向該物件的內容，如果在一般情況下，會指向全域物件，
+        而在箭頭函式中使用 this 他會指向的是全域物件而不是該物件中內容
+    原型 (prototype) 是什麼 ?
+        他是在 JS 的每個物件中都存在著一個隱藏的屬性，這個屬性有可能是 null 也有可能是另一個物件，但此原型無法"直接"被訪問到，所以只能透過 __proto__ 方法訪問
+    什麼是原型鍊（prototype chain）？
+        當我們試圖訪問某個屬性或方法(method)時，如果該實例沒有所需屬性，就會在原型尋找，如果也沒有，就會在上一層(__proto__)繼續尋找，直到找到或為 null 為止，這個條路徑就稱為"原型鏈"
+    什麼是原型繼承 (Prototypal inheritance)?
+        當實例想要使用到"物件"的方法時，可以透過 prototype 將屬性或方法加到"物件"上，這個方式可以讓每個實例都"共用"該方法，這就叫做"原型繼承"
+TypeScript
+    type any vs. unknown 的差別 ?
+        any 比較像是告訴 TS 不用檢查這個變數型別
+        unknown 像是告訴 TS 我還不確定該變數(資料)的型別，除了賦值或比較外，不能對她做任何事
+    type 跟 interface 的差別在哪？
+        這兩種都是用來定義內容型別，但差別在於 interface 可以再透過另外定義同樣物件的內容型別，去擴大這個物件的內容型別規範
+    請說明泛型（generics）是什麼？
+        我只要輸入一個 Function 並自訂他的型別，就可以加入不同型別的參數到這個 function
+        function generics<T>(x:T,y:T){
+            console.log(x)
+            console.log(y)
+        }
+    extend 在泛型中的用途？
+        可以去限制泛型帶進來的型別
+        function generics<T>(arr:T[]):T{
+            const [firstElement] = arr
+            return firstElement
+        }
+        generics<number>([123,456])
+    const enum 和 enum 的差別是什麼？
+        1.const enum 是不會被編譯成 JS 的語法
+        2.const enum 有著 const 的特點，宣告好的屬性，無法再對其改變值

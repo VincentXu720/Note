@@ -1,0 +1,232 @@
+偽元素
+    他是透過 CSS 憑空創造一個區塊出來，所以在HTML程式碼後台你並不會看到它存在，但在 F12 時可以看到
+    運作
+        透過 CSS 增加東西到 HTML 內文的方式，實務上可加入文字內容，還可增加各種不同的東西在畫面上，也搭配 position 屬性
+    有三種:
+        ::before
+            將創造的內容放在整塊<div>的前面，如果需要加入文字可以直接放在content屬性中
+            ex
+                .XX::before{
+                    content:"" <= 就算不放文字，也要使用並用 " " 空著
+                }
+        ::after
+            將創造的內容放在整塊<div>的後面，如果需要加入文字可以直接放在content屬性中
+            ex
+                .XX::after{
+                    content:"" <= 就算不放文字，也要使用並用 " " 空著
+                }
+        ::selection
+            改變文字被反選後的樣式，支援樣式有color、background、background-color、text-shadow
+            ex
+                &::selection{
+                    background: black 
+                    color: white
+                }
+CSS Reset and CSS normalize
+    W3C 制定 HTML 與 CSS 時，沒有強制規定各種 browser 該如何去實作每個 HTML tag 的 CSS 預設樣式，最早是由 IE 獨霸時期，所以 Reaset 需求會在 IE 各版本之間的調整
+    而後來又出現了 Firefox、safari、Chrome，讓 CSS Reset 需求變多
+    CSS Reset 
+        將各家瀏覽器不同的地方強制歸0，剛開始的一大串就全部設為0
+        常見的CSS Reset
+            1.Reset CSS => Eric Meyer 版本
+                樣子
+                    html, body, div, span, applet, object, iframe,
+                    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+                    a, abbr, acronym, address, big, cite, code,
+                    del, dfn, em, font, img, ins, kbd, q, s, samp,
+                    small, strike, strong, sub, sup, tt, var,
+                    dl, dt, dd, ol, ul, li,
+                    fieldset, form, label, legend,
+                    table, caption, tbody, tfoot, thead, tr, th, td {
+                        margin: 0;
+                        padding: 0;
+                        border: 0;
+                        outline: 0;
+                        font-weight: inherit;
+                        font-style: inherit;
+                        font-size: 100%;
+                        font-family: inherit;
+                        vertical-align: baseline;
+                    }
+                    /* remember to define focus styles! */
+                    :focus {
+                        outline: 0;
+                    }
+                    body {
+                        line-height: 1;
+                        color: black;
+                        background: white;
+                    }
+                    ol, ul {
+                        list-style: none;
+                    }
+                    /* tables still need 'cellspacing="0"' in the markup */
+                    table {
+                        border-collapse: separate;
+                        border-spacing: 0;
+                    }
+                    caption, th, td {
+                        text-align: left;
+                        font-weight: normal;
+                    }
+                    blockquote:before, blockquote:after,
+                    q:before, q:after {
+                        content: "";
+                    }
+                    blockquote, q {
+                        quotes: "" "";
+                    }
+            2.HTML5 Reset Stylesheet => HTML5 Dotor 網站修改 Eric 的版本
+                樣子
+                    html, body, div, span, object, iframe,
+                    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+                    abbr, address, cite, code,
+                    del, dfn, em, img, ins, kbd, q, samp,
+                    small, strong, sub, sup, var,
+                    b, i,
+                    dl, dt, dd, ol, ul, li,
+                    fieldset, form, label, legend,
+                    table, caption, tbody, tfoot, thead, tr, th, td,
+                    article, aside, canvas, details, figcaption, figure,
+                    footer, header, hgroup, menu, nav, section, summary,
+                    time, mark, audio, video {
+                        margin:0;
+                        padding:0;
+                        border:0;
+                        outline:0;
+                        font-size:100%;
+                        vertical-align:baseline;
+                        background:transparent;
+                    }
+
+                    body {
+                        line-height:1;
+                    }
+
+                    article,aside,details,figcaption,figure,
+                    footer,header,hgroup,menu,nav,section {
+                        display:block;
+                    }
+
+                    nav ul {
+                        list-style:none;
+                    }
+
+                    blockquote, q {
+                        quotes:none;
+                    }
+
+                    blockquote:before, blockquote:after,
+                    q:before, q:after {
+                        content:'';
+                        content:none;
+                    }
+
+                    a {
+                        margin:0;
+                        padding:0;
+                        font-size:100%;
+                        vertical-align:baseline;
+                        background:transparent;
+                    }
+
+                    /* change colours to suit your needs */
+                    ins {
+                        background-color:#ff9;
+                        color:#000;
+                        text-decoration:none;
+                    }
+
+                    /* change colours to suit your needs */
+                    mark {
+                        background-color:#ff9;
+                        color:#000;
+                        font-style:italic;
+                        font-weight:bold;
+                    }
+
+                    del {
+                        text-decoration: line-through;
+                    }
+
+                    abbr[title], dfn[title] {
+                        border-bottom:1px dotted;
+                        cursor:help;
+                    }
+
+                    table {
+                        border-collapse:collapse;
+                        border-spacing:0;
+                    }
+
+                    /* change border colour to suit your needs */
+                    hr {
+                        display:block;
+                        height:1px;
+                        border:0;  
+                        border-top:1px solid #cccccc;
+                        margin:1em 0;
+                        padding:0;
+                    }
+
+                    input, select {
+                        vertical-align:middle;
+                    }
+            3.CSS Reset - YUI Library，由 Yahoo UI Library v3 提供的 CSS Reset 版本
+                <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css"> <= 透過引入的方式使用
+        優點
+            統整、重製各 browser 的樣式設定
+        缺點
+            必須全部重新設定、彈性低、在 develop tool 中會看到一大坨 css
+    CSS normalize
+        要修正 reset.css 中有用與常用標籤的默認樣式會被修改的問題
+        目標
+            1.保留有用的 browser 默認設置，而不是刪除
+            2.為廣泛的 HTML 元素提供一般化樣式
+            3.修正 browser 的 bug 與不一致
+            4.透過微妙的改善提高可用性
+            5.有詳細文檔解釋代碼
+        所以像:Twitter Bootstrap、HTML5 Boilerplate、GOV.UK、Rdio、CSS Tricks等framework和網站上
+        特色
+            保留原本預設的 HTML 標籤樣式，僅針對不同的 browser 和版本間不相容做微調整
+權重
+    指的是 CSS 的優先權
+    例如
+        1.相同權重，但後寫的 css，可以覆蓋先寫的 css
+        2.當選擇器兩個同時作用在一個元素，權重高者先生效
+    計算方式
+        * <= 全站預設值(為0-0-0-0)只要權重超過就可覆蓋
+        Element
+            Element 的權重都為 0-0-0-1，包含
+                div, p, ul, ol, li, em, header, footer, article...
+        Class
+            也就是"."，每個權重都是 0-0-1-0
+        Id
+            也就是"#"，每個權重都是 0-1-0-0
+        inline style attribute (在HTML標籤寫css)
+            也就是<div style="color:red">，每個權重都是 1-0-0-0
+        psuedo-class(偽類)
+            也就是:nth-child()、:link、:hover、:focus等，每個權重都是 0-0-1-0
+        attribute(屬性選擇器)
+            也就是[type:checkbox]、[attr]，每個權重都是 0-0-1-0
+        !important (1-0-0-0-0)
+            最高的，只能被 important 蓋過，如果想要覆蓋原本的 css 又不直接修改該檔案時，後面寫的 css 也需要加上 important，會變得雜亂
+    結論
+        !important > inline style > ID > Class/psuedo-class(偽類)/attribute（屬性選擇器） > Element
+單位的差別
+    單位
+        px => 絕對單位(像素)
+        em => 相對單位，每個"子元素"透過"倍數"乘以"父元素"的 px 值
+            父元素 16 px，子元素 0.5em，子元素em = 16*0.5 = 8px
+        rem => 相對單位，每個"子元素"透過"倍數"乘以"根元素(<html> or :root)"的 px 值
+            <html> 16 px，子元素 0.5em，子元素em = 16*0.5 = 8px
+        % => 相對單位，每個"子元素"透過"百分比"乘以"父元素"的 px 值
+    差別
+        rem 會比 em 方便許多，因為他是透過根元素去調整 px 值，而使用 em 的話是根據父元素調整 px 值，所以每次都需要再設定一次父元素，才能 em 產生除不同的 px 值，而 rem 只需要設定一次 <html> or :root 就可以讓全部的元素使用並統一 rem 產生的 px 值
+排版方式
+    inline
+        又稱行內元素，有<a>、<img>、<span>，強調段落中的文字，本身不佔一行，會與其他元素並排在同一列，不能設定高度與寬度，會讓元素本身的內容被撐開
+    block
+        會獨佔一行
+    inline-block
+        結合了行內元素和塊級元素的特點，會像 inline 元素一樣的同行排列，但同時擁有 block 元素可以設定寬高的特性

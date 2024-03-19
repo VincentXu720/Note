@@ -1,0 +1,183 @@
+css
+    bootstrap中的input點擊後會出現藍色的陰影
+        form>.form-control:focus{
+            border:none;
+            box-shadow:none;
+            outline:none;
+        }
+        在input中使用:focus可以對點擊後進行更改
+    text-align:justify 左右對齊
+JS
+    繁中 => zh-cht
+    英文 => en-US
+    fetch屬於異步API方式，所以他會返回一個Promise物件，如果要抓這物件中的資料就必須要用"then"
+    AJAX寫法
+        $.ajax({
+            type:"GET",
+            url:Movie_url+Home_url+key,
+            dataType:"json",
+            success:function(response){
+                const charge = []
+                charge.push(response)
+                console.log(charge)
+            },
+            error:function(thrownError){
+                console.log(thrownError);
+            }
+        })
+    展開運算符([...])
+        必須要是可迭代對象(array)，才可使用
+        AJAX嚴僅寫法
+            $.ajax({
+                type:"GET",
+                url:Movie_url+Home_url+key,
+                dataType:"json",
+                success:function(response){
+                    const charge = []
+                    if(Array.isArray(response)){ // 判斷回傳值是否為array
+                        charge.push(...response)
+                    }else{
+                        console.log("response is not iterable) // Iterable 可迭代的
+                    }
+                    console.log(charge)
+                },
+                error:function(thrownError){
+                    console.log(thrownError);
+                }
+            })
+    
+    要在object中建立新array
+        const obj = {}
+        obj = []
+    在object中建立屬性的array
+        const obj = {}
+        const genreId = // fetch genreid
+        if(!obj[genreId]){
+            obj[genreId] = []   // 為新的id建立array
+        }
+    把東西分類到object中的array裡
+        const obj = {}
+        const MovieId = // fetch movie id
+        const genreId = // fetch genre id
+        if(!obj[genreId]){
+            obj[genreId] = []   // 為新的id建立array
+        }
+        if(MovieId.includes(genreId)){
+            obj[genreId].push(MovieId)  // 把movie和genre做id配對，相同就放到id的array裡面
+        }
+    Jquery操作元素添加css
+        $(element).css({ 要添加樣式:"值" })
+    Jquery讓scroll滾動方式
+        manite()
+            $("html , body").animate({  // 有些瀏覽器只支援其中一種
+                scrollTop:0,
+            },0)  // 啟動的秒數
+Promise 
+    會接受executor參數，而這參數會有兩個參數函式 resolve、reject，使用時，一定要加new表示創建Promise物件
+    resolve(value) 成功
+        當Promise成功時，會傳遞value給成功的回調函數(會使用then()中的函數)
+    reject(reason) 失敗
+        當Promise失敗時，會傳遞reason給失敗的回調函數(會使用catch()中的函數)
+    ex:
+        await fetch(TW_url).then(res=>res.json()).then(data=>{
+          // Promise 成功時跑下面的程式，並回傳
+          return new Promise((resolve)=>{
+            $.each(data.translations,(index,movie)=>{
+              if(movie.iso_639_1 === "zh" && movie.iso_3166_1 === "TW"){
+                movieArray.push(movie.data);
+              }
+            })
+            // 表示Promise成功運行中
+            resolve()
+          })
+        })
+    Promise.all
+        會等待所有資料都拿到了，才會進行回傳並繼續往下執行
+    Promise.race
+        每完成一個Promise就會回傳，會取最快完成的結果，回傳後就不會繼續進行，適用於多個異步操作
+    專案使用Promise(後來沒使用)
+           let movieObj = {
+             TW:[],
+             EN:[],
+           }
+           const movie_EN_Array = [];
+           const movie_TW_Array = [];
+           // 等待這裡的fetch內容先跑完再繼續往下跑，這裡設置async是因為要在裡面使用到await
+           await fetch(Search_url).then(res=>res.json()).then(async data=>{
+             // async 是要讓fetch可以使用await，這裡的map是為了建造一個新的Promise陣列
+             const promises = data.results.map(async (movieData)=>{
+               // 如果物件中沒有movieArray，就在TW屬性中建立array
+             if(!movieObj[movie_EN_Array]){
+                movieObj.EN = movie_EN_Array;
+                // 如果物件的TW屬性中沒有movieData，就把movieData放到array裡面
+                if(!movieObj.EN.includes(movieData)){
+                    movie_EN_Array.push(movieData);
+                }
+            }
+            // 把movie_EN_Array當成物件中EN屬性的值
+            movieObj.EN = movie_EN_Array
+            const TW_url = Movie_url + `/movie/${movieData.id}/translations?`+key;
+            // 等待fetch部分處理完再往下進行，如果不使用await資料會不完整
+            await fetch(TW_url).then(res=>res.json()).then(data=>{
+            // Promise 成功時跑下面的程式，並回傳
+            return new Promise((resolve)=>{
+            $.each(data.translations,(index,movie)=>{
+                if(movie.iso_639_1 === "zh" && movie.iso_3166_1 === "TW"){
+                    // 判斷title是否包含著輸入的文字
+                    if(movie.data.title.includes(SearchValue)){
+                        // 判斷物件中TW屬性是否有array
+                        if(!movieObj.TW[movie_TW_Array]){
+                            // 沒有就加入array
+                            movieObj.TW = movie_TW_Array;
+                            // 判斷物件中TW屬性是否有值
+                            if(!movieObj.TW.includes(movie)){
+                            // 沒有就加入值
+                            movie_TW_Array.push(movie)
+                        }
+                       }
+                      }
+                    }
+                   })
+                    // 把movie_TW_Array當成物件中EN屬性的值，如果放在each中，輸出會跑出[object,Object]
+                    movieObj.TW = movie_TW_Array
+                    // 表示Promise成功運行中
+                    resolve()
+                })
+            })
+        })
+        // 等待promises中的程式全跑完
+           await Promise.all(promises);
+           console.log(movieObj)
+           runView(movieObj)
+        })
+        // 把movie_TW_Array當成物件中EN屬性的值，如果放在each中，輸出會跑出[object,Object]
+        movieObj.TW = movie_TW_Array
+        // 表示Promise成功運行中
+        resolve()
+遍歷
+    可以在array中找尋資料
+    map
+        map可以回傳一個新的array，所以用在會用到Promise的部分會非常適合
+    each
+        each只能對於array去進行遍歷，但無法回傳新array
+    grep
+        grep會有條件，將符合條件放入回傳的新array中
+事件觸發
+    off("事件")
+        此語法，可解除上一個事件的聯繫
+        ex
+            $(".button").off("click").click(()=>{...})
+            先解除事件聯繫，在綁上新的事件
+讀取圖動畫
+    border-radius: 50%;
+    border-top <= 指定border的邊框
+    keyframes
+        設定動畫
+        ex
+            @keyframes loading{ <= loading是動畫名稱(自取)
+                0%{transform:rotate(0deg)} <= 容器原本的位置
+                100%{transform:rotate(360deg)} <= 讓容器轉動
+            }
+    animation: infinite; <= 動畫無限重複
+關閉input的歷史紀錄
+    autocomplete="off" // 加上該屬性即可

@@ -1,0 +1,186 @@
+變數類型
+    值類型(Value types)
+        此類型變數可以直接分配一個值，它是從System.ValueType 派生的
+        可用值類型
+            1.bool(布林) => True or False
+            2.byte(8為不帶正負號的整數) => 0 ~ 255
+            3.char(16位元 Unicode 字元) => U +0000 ~ U +ffff 
+            4.decimal() => ±1.0 x 10^-28 ~ ±7.9 x 10^28，精度為 28-29 位(小數點後28~29位)
+            5.double(64位雙精度浮點型) => (+/-)5.0 x 10^-324 ~ (+/-)1.7 x 10^308
+            6.float(32位單精度浮點型) => -3.4 x 10^38 ~ + 3.4 x 10^38
+            7.int(32位元有符號整數類型) => -2,147,483,648 ~ 2,147,483,647
+            8.long(64位元有符號整數類型) => -923,372,036,854,775,808 ~ 9,223,372,036,854,775,807
+            9.sbyte(8位元有符號整數類型) => -128 ~ 127
+            10.short(16位元有符號整數類型) => -32768 ~ 32767
+            11.unit(32位不帶正負符號整數類型) => 0 到 4,294,967,295
+            12.ulong(64位不帶正負符號整數類型) => 0 到 18,446,744,073,709,551,615
+            13.ushort(16位不帶正負符號整數類型) => 0 ~ 65535
+    參照類型(Reference type)
+    指標類型(Pointer types)
+字串
+    方法
+        Length 字串長度(L要大寫)
+            Console.WriteLine(phrase.Length);
+        ToUpper() 字串全部轉為大寫
+            Console.WriteLine(phrase.ToUpper());
+        ToLower() 字串全部轉為小寫
+            Console.WriteLine(phrase.ToLower());
+        Contains() 檢查字串是否有包含"關鍵字"
+            Console.WriteLine(phrase.Contains("Hello"));
+            Console.WriteLine(phrase.Contains("Hi"));
+        位置找字串值 []
+            Console.WriteLine(phrase[1]); e
+        字串值找位置 []
+            Console.WriteLine(phrase.IndexOf('l')); 2 <= 會回傳最先找到的 (字元搜尋)
+            Console.WriteLine(phrase.IndexOf("Hello")); 0 <= 它會回傳該字串的開頭位置 (字串搜尋)
+            Console.WriteLine(phrase.IndexOf("qwe")); -1 <= 如果找不到會回傳 -1
+        Substring
+            Console.WriteLine(phrase.Substring(6)); Mr.white，這裡表示只會留下第六位以後的字串(包含第六位)
+            Console.WriteLine(phrase.Substring(3)); lo Mr.white 只會留下第六位以後的字串(包含第六位)
+            Console.WriteLine(phrase.Substring(6, 3)); Mr.，表示從第六位往後取三位(包含第六位)
+數字
+    方法
+        Math.Abs() 絕對值
+            Console.WriteLine(System.Math.Abs(-10)); 10
+        Math.Pow("底數","次方數") 次方
+            Console.WriteLine(System.Math.Pow(2,10)); 1024
+        Math.Sqrt() 開根號
+            Console.WriteLine(System.Math.Sqrt(64)); 8
+        Math.Max() 比較最大數
+            Console.WriteLine(System.Math.Max(2,90)); 90
+        Math.Min() 比較最小數
+            Console.WriteLine(System.Math.Min(2, 90)); 2
+        Math.Round() 四捨五入
+            Console.WriteLine(System.Math.Round(2.9)); 3
+            Console.WriteLine(System.Math.Round(2.1)); 2
+型別轉換(如前面有變數接收，要更改型別)
+    System.Convert.ToInt32() <= 轉為 int
+        int age = System.Convert.ToInt32(Console.ReadLine())
+    System.Convert.ToDouble() <= 轉為 double
+        double num = System.Convert.ToDouble(Console.ReadLine())
+Array
+    宣告
+        // int = {"整數型別"} double = {"浮點數型別"} string = {"字串型別"}
+        int[] score = {20,50,60,70} <= 裡面會用"{}"包起來
+    二維
+        int[,] nums={ <= 以 "," and "{{}}" 區分幾維陣列(","數越多維度越大，"{}"數量越多也越大)
+            {1,2,3,4},
+            {5,6,7,8},
+            {9,10,11,12}
+        };
+判斷句
+    if...else
+    while
+    do...while
+        int age = 5
+        do{ <= 再執行
+            Console.WriteLine()
+        }while(age == 5) <= 先做判斷
+    
+
+輸入
+    System.Console.ReadLine() <= 輸入後，default return string
+輸出
+    System.Console.WriteLine() 會換行的輸出方式
+    System.Console.Write() 不會換行的輸出方式
+
+Main()
+    C# 會藉由 Main() 去判斷程式執行的起點
+    static void Main(){ <= 程式會從這裡開始跑
+        Person person1 = new Person()
+    }
+class and object and using and namespace
+    namespace Person{
+        class People{ <= 這裡就是 class
+            public double height; <= 公開的變數
+        }
+    }
+    using Person <= 另一個檔案中(使用 namespace)
+    People person1 = new People() <= 可在很多地方使用
+    People person2 = new People()
+method
+    namespace ConsoleApp1
+    {   
+        class Meet
+        {
+            public double height;
+            public int age;
+            public string name;
+
+            public void SayHi() // 表示這個 method 不會回傳東西
+            {
+                Console.WriteLine("你好，我叫" + name);
+            }
+            public bool IsAdult()
+            {
+                if(age >= 18)
+                {
+                    return true;  // 會想要讓另一邊的程式，做其他的處理
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    Meet person3 = new Meet();
+    person3.name = "小橘";
+    person3.height = 170.3;
+    person3.age = 20;
+    person3.SayHi();
+    Console.WriteLine(person3.IsAdult()); 
+建構式函數(constructor)
+    class Person{
+        public double height;
+        public int age;
+        public string name;
+        建構式函數
+        class Person(double height , int age, string name){ <= 這裡一定要宣告型別
+            this.height = height
+            this.age = age;
+            this.name = name;
+        }
+    }
+    Person person1 = new Person(170.8, 32, "小白") <= 建立 Person 實例，Person 可像 function 傳入參數(但參數要宣告型別)
+    Console.WriteLine(person1.name); 小白
+getter and setter
+    class Video{
+        private string type; // 當要限制存取時，需要設定成 private
+        public Video(string type){
+            Type = type <= 把 type 的參數丟進 Type class 中做判斷
+        }
+        public string Type{
+            get{return type;}
+            set{
+                if(value == "教育" ||  value =="娛樂"){
+                    type = value;
+                }else{
+                    type = "其他";
+                }
+            }
+        }
+    }
+    Video video1 = new Video("教育") // 教育
+    Video video2 = new Video("程式") // 其他
+static(靜態宣告)
+    宣告成靜態的 class 都不能使用 new 建立實例
+public and private
+    private
+        不能被輕易取得數值，要搭配 getter and setter 使用
+inheritance
+    宣告一個 class 包含參數與方法，再用另一個 class 去繼承該 class，繼承方式使用":"
+泛型
+    ArrayList
+        長度不可變，可放 object
+        ex
+            foreach(Student stu in studentList){
+                Console.WriteLine(stu.StuName)
+            }
+            List<Student>
+    約束
+        where
+其他語法
+    readonly (唯讀)
+        當變數被宣告了，就無法再做改變

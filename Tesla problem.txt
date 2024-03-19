@@ -1,0 +1,45 @@
+當開啟Navbar時body的滾動軸沒有消失
+    body.style.overflow = 'hidden';
+    將body的overflow設定為hidden就可以讓body捲動軸消失並不滾動
+當滾動Navbar的捲動軸時body的滾動軸跟著移動(已設定為hidden)
+    content.addEventListener('wheel',(e)=>{
+        e.stopPropagation();
+    })
+    這裡是因為事件冒泡行為，由於Navbar有滾動事件，所以會導致事件冒泡到body，body就會跟著滾動
+    這時候就需要去在Navbar偵測滾輪(wheel)事件，並用stopPropagation()進行阻止事件冒泡行為
+<video>內部影片不會自動播放
+    自動播放可在<video>上加autoplay
+    有些瀏覽器規定必須讓影片靜音下才可被自動播放，所以必須在<video>上加muted(靜音)即可
+    而要連續播放同一部影片只需要在<video>上加loop即可
+RWD製作
+    html須加上<meta name="viewport" content="width=device-width, initial-scale=1.0">才可使用RWD
+    <div>會根據父元素去做調整
+    @media only screen  => 在特定支援設備的瀏覽器中生效
+    @media screen => 被所有瀏覽器解析，包括不支援設備的舊版瀏覽器(只會在"螢幕顯示"設備上生效，如果是打印設備則不會套用樣式)
+    @media (max-width:480) => 所有類型的瀏覽器都可使用
+    PC -> mobile (max-width)
+    mobile -> PC (min-width)
+    圖片切換可以在html使用<picture>+<source>
+        <picture> -> 它可以根據不同顯示器/裝置寬度提供同張圖片不同版本
+        <source>  -> 可以由<picture>、<audio>、<video>指定一個或多個資源，讓瀏覽器可以選擇所支援的資源
+    注意:
+        <picture>
+            <source srcset="xxx.jpg" media="(max-width:XXpx)">
+            <img src=XXX.jpg>
+        </picture>
+        使用時，<source>一定要在<img>前面，因為瀏覽器會挑選合適的資源，當前面都不符合，就會直接使用<img>的內容
+        srcset能在不同條件下載入符合條件的圖片，會當<source>中的屬性
+        media是條件，當網站被開啟時，瀏覽器會抓符合條件的<source>，這時就會根據所設定的media去找
+        vh = view height
+        vw = view width
+<html>與<body>完成排版後，還有一小塊超出的範圍
+    可以用overflow:hidden去做把多餘的部分去除掉
+    如果overflow:hidden還不行的話就對img使用display:block
+嵌入影片能自動播放和循環播放
+    在<video>中加入loop、autoplay即可
+ios系統尚無法播放影片問題
+    嵌入的影片必須是.mp4檔才行，要在<video>中加入controls、playsinline
+    video 隱藏進度條 video::-webkit-media-controls-timeline{ display:none }
+
+
+Tesla 網頁架構拷貝，還有導覽列的排版與

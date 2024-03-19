@@ -1,0 +1,289 @@
+what is TypeScript ?
+    由 Microsoft 主打，擁有型別系統（Type System）與介面（Interface）設計的語言，相當於在原生JS包裝一層新語法，在 TypeScript 裡面編譯原生 JS 也是可以動作的，但有可能發生錯誤，因為 TypeScript 會幫你你把原生 JS 裡潛藏的 Bug 或者是沒有補清的邏輯拋出警訊（Warning）的動作
+優點
+    減少 Bug，使得易維護，例如
+        1.打錯字或寫錯變數、物件性質或方法的名稱，他可以自動幫我們提示語法避免錯誤
+        2.可以避免物件或類別的性質與方法格式錯誤，例如
+            定義某類別包含 A 與 B 方法，但是方法的型別有很多種，透過 TS 可以幫我們確認是否有回傳相對應的型別與格式
+        3.藉由 TypeScript 在 IDE 上的 Autocomplete Feature 來協助開發並防止錯誤
+缺點
+    不是"真正的"類型檢查
+        在編譯時會雖然會爆錯，但還是會編譯成JS
+    需要編譯，CI/CD慢
+        每次都需要編譯，有用到的JS，反而讓開發變慢
+    花更多時間開發與學習
+安裝
+    不套框架
+        (npm)npm install -g typescript
+        tsc -v <= 檢查是否有安裝和檢查版本
+    React中使用typescript
+        npx create-react-app "資料夾名稱" --template typescript
+    副檔名
+        .ts
+        .tsx (JSX)
+    語法
+        string/number
+            let userName:string // 將變數用":"宣告型別
+            let userAge:number = 18; // 直接賦值
+        object
+            const person:{name:string, age:number, address?:string} = {  <= ? 非必填
+                name = 'Sharon',
+                age = 18,
+            }
+    編譯
+        ts "要編譯的TS檔案"
+        tsc <= 當設定完 config 的 rootDir，就可以判斷編譯哪裡的 TS 檔案
+        tsc -watch <= 即時編譯，但要去 tsconfig.json 設定
+            (介紹)https://adrianwangdev.medium.com/typescript-3-%E5%88%86%E9%90%98%E5%BF%AB%E9%80%9F%E5%BB%BA%E7%BD%AE%E7%92%B0%E5%A2%83%E4%B8%A6%E8%87%AA%E5%8B%95%E7%B7%A8%E8%AD%AF-f70471774559
+            "outDir": "./dist", <= 打開這兩個註解掉的 code
+            "rootDir": "./src",
+    config
+        tsc --init <= 初始化 TS，會出現tsconfig.json
+        rootDir <= 選擇要編譯的資料夾
+        outDir <= 選擇編譯完的 JS 要放的位置
+        module <= JS 的模組化格式
+        target <= 選擇要編譯成的 JS 版本(es2016、es2015等)
+        inlineSourceMap <= 在將編譯的JS檔案連接HTML後，會顯示JS檔案的內容，透過這個可以將它變成TS檔案的內容，比較好除錯
+類型
+    string
+    number
+    boolean
+    null
+    undefined
+    any <= 可以放任何類型到變數中(謹慎使用)
+    []
+        let arr1:string[] = ['a','b'] // 宣告字串陣列
+        let arr2:string[][] = [['aa','bb']] // 宣告字串的二維陣列
+    元組
+        let tuple:[number,string,boolean] = [1,'a',true] // 宣告元組，裡面放入類型的位置
+        let tuple2:[string,string][] = [['aa','bb']] // 二維元組
+    enum 枚舉
+        他像 object 又有 array 的 index
+        enum Week {
+            Sunday,
+            Monday,
+            Tuesday,
+            Wednesday,
+            Thursday,
+            Friday,
+            Saturday
+        }
+        1.像物件的呼叫方式
+            console.log(Week.Sunday) // 0，這個呼叫會產生 index
+            console.log(Week["Sunday"]) // 0
+        2.屬性值 呼叫
+            console.log(Week[0]) // Sunday，類似於 array 的索引
+        3.賦值的情況下
+            Sunday = 12 <= 賦值的方式，是透過"="
+            console.log(Week[12]) // Sunday
+            console.log(Week[13]) // Monday <= 這裡會是上一個屬性的屬性值+1，以此類推
+    type
+        可讓開發者自定義一個類型，並套用到某個地方，成為某個變數的類型宣告
+        ex
+            type Card = {
+                name:string,
+                message:string
+            }
+            const postCard : Card{  <= 套用 type 的類型
+                name:"小名"
+                message:"你好"
+            }
+    interface
+        可讓開發者自定義一個類型，並套用到某個地方，成為某個變數的類型宣告
+        ex
+            interface intro { <= 自定義類型
+                name:string
+            }
+            const a:intro ={  <= 套用 type 的類型
+                name:"小名"
+            }
+        與 type 不同之處再於更加彈性
+        ex
+            interface User{
+                name:string,
+                age:number
+            }
+            interface User{  <= 另外添加某個屬性
+                email?: string
+            }
+            就相當於
+            interface User{  <= 可達到擴充類型的目的，在 tpye 中這樣會出錯
+                name:string,
+                age:number,
+                email?: string
+            }
+        透過 class 做出來
+            export interface CarProps{  // 可以用 export 去讓所有的變數規格統一
+                name:string
+                age:number
+                start: () => void // void 表示該 Function 不會回傳任何東西
+            }
+            class Car implements CarProps{
+                name:string  // 宣告到 interface 的屬性，應該要是 public 的，所以不能設定成 private or protected
+                age:number
+                constructor(name:string,age:number){
+                    this.name = name
+                    this.age = age
+                }
+                start(){}
+            }
+    unknow
+        當抓到 API 時，無法辨別 API 的類型是甚麼，就需要透過 unknow 去定義
+        使用方式
+            as "定義的類型"
+            ex
+                type Data = {  <= 定義 JSON 中的資料類型
+                    userId: number,
+                    id: number,
+                    title: string,
+                    completed: boolean
+                }
+                async function getData(){
+                    const res = await fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    const data = await res.json() as Data <= 透過 as 來定義資料類型
+                }
+            當資料是會變動的
+            ex
+                const data1:Data = {   <= 定義為 Data 的類型
+                    "userId": 1,
+                    "id": 1,
+                    "title": "delectus aut autem",
+                    "completed": false
+                }
+                type Beta = {  <= 定義 Beta 類型
+                    name:string
+                }
+                const beta = data1 as unknown as Beta  <= 會先將 beta 轉為"未知"類型，再轉換為定義好的 Beta 類型
+    class
+        三個種類
+            1.public (公開)
+                預設的，沒有特別寫都算是 public，無論在哪裡都可以訪問到
+            2.private (私有)
+                設定後，如果在開發時，無論在外面還是在繼承的 class 中都會出現錯誤，只能在自己的 class 中才能訪問
+                ex
+                    class Live {
+                        private Id:string
+
+                        constructor(name1:string){
+                            console.log('建立直播中...')
+                            this.name = name1
+                        }
+                        start(){
+                            this.Id // 在該 class 中才能訪問
+                        }
+                    }
+                    class CarLive extends Live{
+                        constructor(name1:string)
+                        start(){
+                            this.Id <= 會出現問題
+                        }
+                    }
+                    const live = new Live('1號','000001','bruce')
+                    const carLive = new CarLive('car room','000001','bruce2')
+            3.protected (受保護)
+                設定後，如果在開發時，想要訪問他可以在該 class 中或者繼承該 class 的另一個 class 裡面訪問到
+                ex
+                    class Live {
+                        protected name:string
+
+                        constructor(name1:string){
+                            console.log('建立直播中...')
+                            this.name = name1
+                        }
+                        start(){
+                            this.Id // 在該 class 中才能訪問
+                        }
+                    }
+                    class CarLive extends Live{
+                        constructor(name1:string) <= 由於這裡是繼承，所以要和繼承的物件的 constructor 一樣
+                        start(){
+                            this.name <= 這裡可以放訪問到 Live 中的 name
+                        }
+                    }
+                    const live = new Live('1號','000001','bruce')
+                    const carLive = new CarLive('car room','000001','bruce2')
+            以上三種特性，只有在開發中才會有規定，輸出都是可以看到的
+            #
+                表示"私有"，但與 private 不同的地方在於，他在輸出的時候也不會出現裡面的內容，相當於完全隱藏整個內容
+    泛型
+        只使用一個 Function or class 可以帶入不同類型的資料，輸出不同的結果
+        ex
+            function print<T> (data:T){  <= T 可以是任何東西，只是一定要用"<>"包住，然後定義 data 的類型為 T
+                console.log("data",data)
+            }
+            print<number>(999) <= <number> 將會把 number 類型帶到 T 相當於 data:number，然後呼叫的參數只能放 number 類型的資料
+            print<string>('123')
+            print<boolean>(true)
+
+            class Print<T>{
+                data:T  // 這裡表示該 data 最後的類型一定是 T 類型
+                constructor(d:T){ // 這裡表示 d 也只收 T 的類型資料
+                    this.data = d
+                }
+            }
+            const p = new Print<number>(999)
+            const p1 = new Print<string>('bruce')
+            console.log('p',p)
+            console.log('p1',p1)
+utility 工具
+    Record
+        可以去定義物件內容的型別
+        ex
+            const obj1:Record<string,boolean> = {  <= 這裡可以設定內容的型別
+                name:true, <= 這裡面的類型，只能是 string:boolean
+                age:true
+            }
+        也可以宣告兩種 type
+            interface CatInfo {  <= 這裡定義屬性的物件內容型別
+                age: number;
+                breed: string;
+            }
+            type CatName = "miffy" | "boris" | "mordred" | "bruce"; <= 這裡定義屬性
+            const cats: Record<CatName, CatInfo> = {  // 定義物件內容
+                miffy: { age: 10, breed: "Persian" },
+                boris: { age: 5, breed: "Maine Coon" },
+                mordred: { age: 16, breed: "British Shorthair" },
+                bruce: { age: 16, breed: "British Shorthair" },
+            };  
+    Pick
+        當 type 是可以重複使用的就可以用這個工具
+        ex
+            interface Todo {
+                title: string;
+                description: string;
+                completed: boolean;
+            }
+            
+            type TodoPreview = Pick<Todo, "title" | "completed">; <= 提取 Todo 類別中的 title 和 completed 出來，放到 TodoPreview 裡面
+            
+            const todo: TodoPreview = { <= TodoPreview 就會是一個新的類別
+                title: "Clean room",
+                completed: false,
+            };
+            console.log(todo)
+    Omit
+        去掉 type 中不需要的屬性
+        ex
+            interface Todo {
+                title: string;
+                description: string;
+                completed: boolean;
+                createdAt: number;
+            }
+            
+            type TodoPreview = Omit<Todo, "description">; <= 去除 description 
+            
+            const todo: TodoPreview = {
+                title: "Clean room",
+                completed: false,
+                createdAt: 1615544252770,
+            };
+React
+    React.FC
+        也可寫成 React.FunctionComponent<Props>，是在 TS 中的一個泛型也是函式組件，他會依照 Props 定義好的屬性型別帶入參數，就像 function 參數帶入的概念
+    hook
+        useState 像是一個泛型
+        ex
+            useState('str') <= TS 會自動推導出裡面的類型應該為 string
+            useState<number | string>(1000) <= 也可以自己定義裡面的類型
+        

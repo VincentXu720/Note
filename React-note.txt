@@ -1,0 +1,2404 @@
+npx、npm 建立於nodeJS之上的工具
+React安裝
+    npx create-react-app XX 安裝整包處理好的react環境到資料夾中
+    npm create-react-app XX 安裝React的環境 (出現錯誤就用上面的)
+生命週期
+    產生、更新、結束階段
+    constructor
+        生命週期的開始
+        觸發時間
+            Componenet 執行 render 之前
+        ex
+            class App extends Component {
+                constructor() {
+                    super();
+                    console.log('app created');
+                }
+
+                render() {
+                    console.log('call render');
+                    return (
+                        <div>
+                        </div>
+                    )
+                }
+            }
+            結果
+                app created
+                call render
+            就算把 constructor 位置與 render 交換也是相同，就代表著 constructor 會在 render 前執行
+        重點
+            1.constructor 是會在 Componenet 建立時，自動執行的一個function
+            2.寫 constructor 時，要加上 props 參數，確保正確初始化，如果 Componenet 沒有需要初始化的可以不用 constructor
+            3.在 React 中要隱藏元素時，有兩種做法
+                1.用判斷式要 render (Componenet 會被徹底移除)
+                    const {isShow} = this.state;
+                    return (
+                        <div>
+                            <button onClick={() => { // => 按下按鈕會觸發 onClick 事件
+                                this.setState({
+                                    isShow: !this.state.isShow
+                                })
+                            }}>Toggle</button>
+                            {isShow && <Title />} // => 如果是 ture 才會 render <Title>
+                        </div>
+                    )
+                2.用 CSS 控制 (Componenet 會被隱藏起來)
+    componentDidMount and  componentWillUnmount
+        componenetDidMount
+            當 render 到 DOM 上，就稱為" Mount 掛載"，觸發時間在"constructor()後，且也在render()之後"
+            ex
+                class App extends Component {
+                    constructor(props) {
+                        super(props);
+                        // => 選不到 button，因為還沒加到 DOM 裡面
+                        console.log('1. construcotr: ', document.querySelector('.test'));
+                    }
+
+                    componentDidMount() {
+                        // => 成功選取 button，因為此階段已經加到 Dom 裡面
+                        console.log('3. mount: ', document.querySelector('.test'));
+                    }
+
+                    render() {
+                        console.log('2. render');
+                        return (
+                        <div>
+                            <button className='test'></button>
+                        </div>
+                        )
+                    }
+                }
+                output
+                    1. construcotr:  null
+                    2. render
+                    3. mount:  <button class=​"test">​</button>​
+            what need componenetDidMount ?
+                他適合用來做初始化相關的事
+        componenetWillUnmount
+            觸發時間在 Componenet 銷毀前，消除在 componenetDidMount 時初始的內容
+        兩者搭配
+            class Title extends Component {
+                constructor(props) {
+                    super(props);
+                    this.state = {  <= 剛開始狀態，this 指向 props 物件
+                        title: 'Titile'
+                    }
+                }
+                componentDidMount() { <= 將
+                    // => 將 timer 存起來
+                    this.timer = setTimeout(() => {  <= 2秒後，執行
+                        console.log('changed title!');
+                        this.setState({  <= 更改 state，this 指向 props 的 state，觸發渲染
+                            title: 'new Title'
+                        })
+                    }, 2000);
+                }
+                componentWillUnmount() {
+                    // => 當 Component 要被銷毀時，也要順便清除 timer
+                    clearTimeout(this.timer);  <= 消除 componenetDidMount 的內容
+                }
+
+                render() {
+                    const { title } = this.state;
+                    return <h1>{title}</h1>
+                }
+            }
+    shouldComponentUpdate
+        用來決定是否需要 Update，觸發時間在改變 state 之後，執行 render 之前，預設為true
+        ex
+            shouldComponentUpdate() {
+                console.log('shouldComponentUpdate is called'); // => 出現 1.
+                return true; <= 這裡可以設定 true(預設) or false
+            }
+        如果設定 false 連 render 都不觸發，因為她決定了 Componenet 在 state 改變時，要不要 call render function
+        當遇到兩種情況，可以使用參數 nextProps and nextState 檢查
+            1.某種條件下，不想更新畫面
+            2.檢查 state 或 props 是否有更新，沒有更新就不需要進行渲染
+        nextState
+            改變後的 state，依據 state 狀態，決定要不要 call render
+                shouldComponentUpdate(nextProps, nextState) {
+                    console.log('nextState: ', nextState);
+                    if (nextState.counter > 3){
+                        return false; <= 超過 3 就不要 call render()
+                    } 
+                    return true;
+                } 
+        nextProps
+            改變後的 props 物件，依據 props 物件，決定要不要 call render
+                class Title extends Component {
+                    shouldComponentUpdate(nextProps, nextState) {
+                        // => 改變後的 props 跟原本一樣的話就不要 call render()
+                        if (nextProps.title !== this.props.title) return true;   
+                        return false;
+                        
+                        // [ 注意 ] 以下錯誤寫法： 不能只寫一個情況。
+                        // if (nextProps.title === this.props.title) return false;  
+                    }
+
+                    render() {
+                        console.log('render title');
+                        return <div>{this.props.title}</div>
+                    }  
+                }
+                當 parent Componenet call render 時，children Componenet 也會被強制 call render，所以可以藉由這個參數檢查 props 有無變動
+    PureComponent
+        自動偵測 props or state 的變動，沒有更新就不會 call render
+            1. 使用 PureComponent 會自動 shallowly compares
+                class Title extends PureComponent { <= PureComponent 也可以用在繼承 
+                        render() {
+                        ...
+                    }  
+                }
+            2. 自己寫 shouldComponentUpdate 判斷
+                class Title extends Component {
+                    shouldComponentUpdate(nextProps, nextState){
+                        return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState); <= 使用 shallowEqual() 判斷
+                    }
+
+                    render() {
+                        ...
+                    }  
+                }
+        適用場景
+            1.state or props 少變動的 Component
+                不然因為每次都進行 shallowEqual() 比對，如果元件一直頻繁更新，根本沒必要阻止 render()，到頭來反而會拖慢效率。
+            2.state or props 結構簡單的情況
+                因為 PureComponent 只會幫你做 shallowEqual()，如果是多層的陣列或物件並沒有用處
+        搭配
+            當結構複雜的 Component 可以搭配類似 Immutable 等的 library 使用
+    componenetDidUpdate
+        當每次更改 Componenet 需要用到 setState 的第二參數當 callback function，但當改變 state function 變多時，會很不方便，所以需要透過 componenetDidUpdate 來代替
+        觸發時間會在 state 改變之後，所以會在 render 之後
+        參數
+            裡面會有兩參數 prevProps、prevState，一個是原本 props 物件，另一個是原本 state 狀態
+        注意
+            如果 shouldComponentUpdate 回傳 false，那該 componenetDidUpdate 不會被觸發
+    總結
+        Life cycle 就是一個 Component 從 "建立(Mount)" -> "更新(Update)" -> "銷毀(Unmount)" 的過程
+        三個方式
+            一、Mounting 建立初期
+                1.constructor()
+                2.static getDerivedStateFromProps() <= 傳回新的 state 物件或在 props 改變時傳回更新 state 物件
+                3.render()
+                4.componentDidMount()
+            二、Updating 當 Componenet 更新時
+                當 state or props 改變
+                1.shouldComponentUpdate <= 如果 return false 就不會繼續往下執行
+                2.render()
+                3.getSnapshotBeforeUpdate() <= 讀取更新前的訊息
+                4.componentDidUpdate()
+            三、Unmounting 當 Component 銷毀時 (清理操作，像:setTimeout、網路請求、訂閱)
+                1.componentWillUnmount()
+                2.render()
+                3.React 畫面處理到 DOM 上
+React and NextJS
+    React(宣告式函式庫)
+        為JS的函式庫，可以透過ReactDOM.render()(由react-dom中提供)，告訴React去哪裡做哪件事
+        引入檔案往上，參數(屬性)傳遞往下
+        二種函式庫
+            命令式
+                相當於告訴廚師，這份菜的製作過程
+            宣告式
+                相當於告訴廚師，你要甚麼菜
+        ex:
+            <script type="text/javascript">
+                const app = document.getElementById('app');
+                ReactDOM.render(<h1>Hi I'm APP</h1>,app)
+            </script>
+            告訴React在app中要渲染<h1>並在裡面包著"Hi I'm APP"字串
+        不過以例子的方式在browser中執行會出現語法錯誤，因為<h1>...</h1>這裡並不是用JS的語法，而是用JSX的語法寫成的
+    JSX
+        JS的語法擴展，允許在JS中寫類似HTML的語法去規劃UI，除了要遵守三個規則外，就不須額外學習其他語法
+        三個規則
+            1.Return a single root element
+                ex:
+                    從元件回傳多個元素時，需要用單一的父元素標籤進行包裝
+                    <div>
+                        <h1>Hi first rule</h1>
+                        <img src="XX.jpg"/>
+                    </div>
+                    但如果不想用<div>之類的額外標籤回傳，也可使用<></>進行包裝
+                    <>
+                        <h1>Hi first rule</h1>
+                        <img src="XX.jpg">
+                    </>
+                    <>為空標籤，加上他之後可稱為這是一個片段，片段可讓開發者將內容進行分組，而不會在browser的HTML tree中呈現
+            2.Close all the tags
+                ex:
+                    JSX要求不管甚麼標籤都需要明確的關閉<img> => <img/>和包裝標籤<li> => <li></li>
+                    <>
+                        <img
+                            src="XX.jpg"
+                            alt="Hedy Lamarr"
+                            className="photo"
+                        /> <= two rule
+                        <ul>
+                            <li>two rule</li>
+                        </ul> <= two rule
+                    </>
+            3.camelCase most of the things! (內容大部分採取駝峰式命名)
+                ex:
+                    由於JS在variable name上有限制不可有破折號或像class一樣的保留字，所以在JSX中會使用駝峰式命名class => className or stroke-width => strokeWidth
+                    <img
+                        src="XX.jpg"
+                        alt="Hedy Lamarr"
+                        className="photo"  <= three rule
+                    />
+                    (props list)https://react.dev/reference/react-dom/components/common
+        不過browser為無法直接理解JSX，所以需要透過JS編譯器將JSX語法轉為JS，Babel就可以做到
+    Babel
+        一個將JSX語法轉為JS語法的JS編譯器
+        如何加入Babel
+            <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        如何使用
+            加入後接下來的<script>都要加上type=text/jsx，即可告知Babel要撰寫腳本的語法類型(JSX)
+    React 核心概念
+        元件
+            將UI分解成一塊一塊的區塊，稱為元件
+            元件可構建獨立的、可重複使用的代碼片段，相當於積木，可用單獨的積木組成大型的結構，如果需要更新某個UI，只需要更新特定的積木或元件
+            又稱為"模塊化"，當程式碼增長時更容易維護，可輕鬆刪減、新增、更新元件，而不會影響其餘的元件，以JS角度編寫元件
+            創建(Create)元件
+                <script type="text/jsx">
+                    const app = document.getElementById("app")
+                    function header(){
+
+                    }
+                    ReactDOM.render(<h1>Here is Create a component</h1>,app)
+                </script>
+                元件可返回UI Element的函數，所以在JSX也可寫成
+                <script type="text/jsx">
+                    const app = document.getElementById("app")
+                    function header(){
+                        <h1>Here is Create a component</h1>
+                    }
+                    ReactDOM.render(,app)
+                </script>
+                要將此元件渲染到DOM，可將其當作第一參數傳遞給ReactDOM.render()
+                <script type="text/jsx">
+                    const app = document.getElementById("app")
+                    function header(){
+                        <h1>Here is Create a component</h1>
+                    }
+                    ReactDOM.render(header,app)
+                </script>
+                但如果直接使用，會收到錯誤訊息，要解決問題，並正常運行，需做兩件事
+                首先，React元件應該大寫區別於一般HTML和JS
+                    <script type="text/jsx">
+                        const app = document.getElementById("app")
+                        function Header(){
+                            <h1>Here is Create a component</h1>
+                        }
+                        ReactDOM.render(Header,app)    <= 不能使用header，因為在HTML中有<header>標籤
+                    </script>
+                第二個，使用React元件方式與HTML標籤方式相同，使用<>括號
+                    <script type="text/jsx">
+                        const app = document.getElementById("app")
+                        function Header(){
+                            <h1>Here is Create a component</h1>
+                        }
+                        ReactDOM.render(<Header />,app)    <= 要確實的關閉每個標籤
+                    </script>
+            巢狀元件
+                應用程式中通常包含比單個元件更多的內容，可以使用嵌套常規HTML元素一樣將React元件嵌套在彼此內部
+                ex:
+                    這是創建一個名為HomePage的新元件
+                    function Header() {
+                        return <h1>Develop. Preview. Ship. 🚀</h1>;
+                    }
+                    function HomePage() {
+                        return <div></div>;
+                    }
+                    ReactDOM.render(<Header />, app);
+                    然後將<Header>元件嵌套在新的<HomePage>元件中
+                    function Header() {
+                        return <h1>Develop. Preview. Ship. 🚀</h1>;
+                    }
+                    function HomePage() {
+                        return (
+                            <div>   <= return元素一定要用一個父元素包著，也可以使用<>
+                                {/* Nesting the Header component */}  <= JSX的註解方式
+                                <Header />
+                            </div>
+                        );
+                    }
+                    ReactDOM.render(<HomePage />, app);
+            元件樹
+                最上層的HomePage元件可包含Header、Article、Footer元件，這些元件又可包含自己的子元件，像Header中可包含Logo、Title、Navigation等元件
+                而模塊化可使這些元件在應用程式的不同位置被重複使用，由於HomePage現在是最上層元件，可以將其傳遞給ReactDOM.render()
+                function Header() {
+                    return <h1>Develop. Preview. Ship. 🚀</h1>;
+                }
+
+                function HomePage() {
+                    return (
+                        <div>
+                            <Header /> <= 呼叫Header元件
+                        </div>
+                    );
+                }
+                ReactDOM.render(<HomePage />, app); <= 使用HomePage元件
+        屬性(元件的唯讀訊息)
+            使用屬性顯示資料
+                如果重複使用<Header/>元件，每次均會顯示相同的內容
+                function Header() {
+                    return <h1>Develop. Preview. Ship. 🚀</h1>;
+                }
+
+                function HomePage() {
+                    return (
+                        <div>
+                            <Header />
+                            <Header />
+                        </div>
+                    );
+                }
+                但當想顯示不同內容或顯示的資料是從外部來源獲取的，無法提前知道內容，怎麼辦?
+                在HTML中可透過更改元素行為的屬性，像:更改<img>的src屬性會更改顯示的圖像，更改<a>的href屬性會更改導向的連結
+                在React中可將訊息作為屬性傳遞給React元件，稱為props(屬性)，與JS function類似，可以設計接受自定義參數(屬性)元件
+                參數(屬性)會透過父元件傳遞給子元件，並改變元件的行為或渲染到畫面可看見內容
+                使用屬性
+                    在HomePage元件中，將自定義的title屬性傳遞給Header元件，像傳遞HTML屬性一樣
+                    function HomePage() {
+                        return (
+                            <div>
+                                <Header title="React 💙" />
+                            </div>
+                        );
+                    }
+                    而子元件Header可接受這些屬性作為第一個函數參數
+                    function Header(props) {
+                    //   return <h1>Develop. Preview. Ship. 🚀</h1>
+                    }
+                    再用console.log()印出屬性，可以看到是一個帶有title屬性的物件
+                    function Header(props) {
+                        console.log(props) // { title: "React 💙" }
+                    //   return <h1>Develop. Preview. Ship. 🚀</h1>
+                    }
+                    也可用物件解構在函數屬性中顯示命名屬性的值
+                    function Header({title}) {
+                        console.log(title) // "React 💙"
+                    //   return <h1>Develop. Preview. Ship. 🚀</h1>
+                    }
+                    再用title變數去替換<h1>的內容
+                    function Header({title}) {
+                        console.log(title)
+                        return <h1>title</h1>
+                    }
+                    但這在網頁中會顯示title，因為React認為你要用純文字
+                JSX中使用變數
+                    可以使用{}，使用定義的變數
+                    function Header({title}) {
+                        return <h1>{title}</h1>
+                    }
+                    {}中也可視為JS，在內部可添加任何JS表達式(計算結果為單個數值的東西)
+                    1.帶有逗點符號的Object
+                        function Header(props) {
+                            return <h1>{props.title}</h1>;
+                        }
+                    2.文字模塊(Template literals)
+                        function Header({ title }) {
+                            return <h1>{`Cool ${title}`}</h1>;
+                        }
+                    3.函數回傳值
+                        function createTitle(title) {
+                            if (title) {
+                                return title;
+                            } else {
+                                return 'Default title';
+                            }
+                        }
+                        function Header({ title }) {
+                            return <h1>{createTitle(title)}</h1>;
+                        }
+                    4.三元運算子
+                        function Header({ title }) {
+                            return <h1>{title ? title : 'Default Title'}</h1>;
+                        }
+                        使用三元運算子後，會考慮到組件的默認情況，甚至無需傳遞title屬性
+                        function Header({ title }) {
+                            return <h1>{title ? title : 'Default title'}</h1>;
+                        }
+                        function Page() {
+                            return (
+                                <div>
+                                <Header />
+                                </div>
+                            );
+                        }
+                        元件現在接受通用title屬性，只需要更改title，就可以在應用程式不同的部分重複使用
+                        function Page() {
+                            return (
+                                <div>
+                                <Header title="React 💙" />
+                                <Header title="A new title" />   <= 只需更改title屬性的內容
+                                </div>
+                            );
+                        }
+                遍歷列表
+                    使用array來操作資料，並生成相同樣式，但不同訊息的UI元素
+                    (React在資料獲取方面無限制，可按照需求決定獲取方式)
+                    ex:
+                        將names array添加到HomePage元件中
+                        function HomePage() {
+                            const names = ['Ada Lovelace', 'Grace Hopper', 'Margaret Hamilton'];
+                            return (
+                                <div>
+                                <Header title="Develop. Preview. Ship. 🚀" />
+                                </div>
+                            );
+                        }
+                        再使用array.map()遍歷array，並使用arrow function將名稱映射到array中的每一項
+                        function HomePage() {
+                            const names = ['Ada Lovelace', 'Grace Hopper', 'Margaret Hamilton'];
+                            return (
+                                <div>
+                                    <Header title="Develop. Preview. Ship. 🚀" />
+                                    <ul>
+                                        {names.map((name) => (  <= JS語法一定要用{}括起來
+                                            <li>{name}</li>  <= JSX語法
+                                        ))}
+                                    </ul>
+                                </div>
+                            );
+                        }
+                        但這裡運行後，React會出現一個關於缺少key的屬性的警告，因為React需要透過key屬性來標記array中的每一項唯一的資料，以便知道DOM中更新哪些元素
+                        現在使用names array，由於目前每一項還是唯一的(沒有重複的字串)，建議使用保證唯一的名稱，例如每一項的ID
+                        function HomePage() {
+                            const names = ['Ada Lovelace', 'Grace Hopper', 'Margaret Hamilton'];
+                            return (
+                                <div>
+                                    <Header title="Develop. Preview. Ship. 🚀" />
+                                    <ul>
+                                        {names.map((name) => (
+                                            <li key={name}>{name}</li>   <= key會是告訴React這裡要放的這裡要放的
+                                        ))}
+                                    </ul>
+                                </div>
+                            );
+                        }
+                        key補充
+                            產生Component Array、處理life cycle的問題，當array中沒有分配key，React預設將會使用索引作為key
+                            但在項目順序可能改變的情況下，並不建議使用索引
+                            原因:
+                                1.會影響效能(diff變慢，這與React預測元件更新的diffing演算法有關)
+                                2.因為key基於索引值，因此更動順序，也會修改當前的key，導致不合預期的結果
+                            key值要放甚麼
+                                https://medium.com/@mengweichen/%E9%87%8D%E6%96%B0%E4%BA%86%E8%A7%A3react%E4%B8%AD%E7%9A%84key-part-1-b211f8e88527
+                            解決生命週期及元件更新
+                                https://medium.com/@mengweichen/%E9%87%8D%E6%96%B0%E4%BA%86%E8%A7%A3react%E4%B8%AD%E7%9A%84key-part-2-c59f330bb81a
+                                ps:
+                                    1.在開發中並不建議把fetch放在component的life cycle內
+                                    2.適用於在Component中使用非React的lib，如:文字編輯器、圖片編輯器等，需要在React Component中初始化及管理這些套件的應用
+                                    3.透過key值修改會觸發React進行unMount的動作，大量且頻繁的操作可能會對效能產生負擔，這方面需要在使用時進行評估
+                                
+                            小結
+                                在render時，若無使用者自訂key值，會按照層級中定義的順序當key值(index)，而在React v15以前的版本，若同層級出現兩個一樣key值，則會忽略後來出現的Component
+                                React實際修改DOM之前，會比較前一次render跟目前這一次render結果的差異，同一個層級中的所有Component
+                                1.若出現key值相同，但props不同的component進行更新
+                                2.若比對所以key值後，發現有之前不存在的key值，則新增
+                                3.若比對所以key值後，發現有之前存在的key值消失，則刪除
+        狀態(元件與用戶的互動訊息)
+            添加與狀態的互動性
+                ex:
+                    HomePage()元件中建立名為Like的按鈕，首先，在return()中添加按鈕元素
+                    function HomePage() {
+                        const names = ['Ada Lovelace', 'Grace Hopper', 'Margaret Hamilton'];
+                        return (
+                            <div>
+                                <Header title="Develop. Preview. Ship. 🚀" />
+                                <ul>
+                                    {names.map((name) => (
+                                        <li key={name}>{name}</li>
+                                    ))}
+                                </ul>
+                                <button>Like</button>   <= 添加按鈕
+                            </div>
+                        );
+                    }
+            監聽事件
+                ex:
+                    以上面例子，在按鈕點擊時執行某些操作，使用onClick事件
+                    function HomePage() {
+                        // ...
+                        return (
+                            <div>
+                                {/* ... */}
+                                <button onClick={}>Like</button>  <= 要駝峰式onClick
+                            </div>
+                        );
+                    }
+                    在React中，事件命名會用駝峰式命名規則，onClick是用來響應按鈕對用戶的互動事件，也可以對輸入框使用onChange或對表單使用onSubmit
+            事件處理
+                ex:
+                    定義一個函數在觸發事件時"處理"事件，在return()前創建名為handleClick()
+                    function HomePage() {
+                        // ...
+                        function handleClick() {   <= 創建handleClick函式
+                            console.log("increment like count")
+                        }
+                        return (
+                            <div>
+                                {/* ... */}
+                                <button onClick={}>Like</button>
+                            </div>
+                        )
+                    }
+                    然後在觸發時，調用handleClick()
+                    function HomePage() {
+                        //    ...
+                        function handleClick() {
+                            console.log('increment like count');
+                        }
+                        return (
+                            <div>
+                                {/* ... */}
+                                <button onClick={ handleClick }>Like</button> <= 點擊後調用handleClick()
+                            </div>
+                        );
+                    }
+            State和Hook
+                Hook 可以向元件添加額外的邏輯，可以將狀態視為UI中隨時變化的訊息，通常會由用戶互動觸發
+                可使用State來儲存和增加用戶點擊like按鈕的次數，也就是React管理狀態的Hook，稱為useState()
+                ex:
+                    function HomePage(){
+                        React.useState();
+                    }
+                    useState()回傳一個array，可以使用陣列解構，訪問和使用array中的數值
+                    function HomePage(){
+                        const [] = React.useState();
+                    }
+                    array中的第一項是狀態"值"，可為其命名(建議命名是具描述性的)
+                    function HomePage(){
+                        const [likes] = React.useState();  <= 為array取名，這名子會當成目前狀態的值
+                    }
+                    array中的第二項是狀態"更新"值的函數，可任意命名更新函數，但通常會以set作為前綴，後面接要更新狀態的變數名稱
+                    function HomePage(){
+                        const [likes, setLikes] = React.useState();  <= setLikes 是"更新"值的函數
+                    }
+                    可添加likes狀態的初始值0
+                    function HomePage() {
+                        const [likes, setLikes] = React.useState(0);  <= 0是likes的初始值                 
+                    }
+                    再來可用元件內的狀態變數，檢查初始狀態是否有設定好
+                    function HomePage() {
+                        const [likes, setLikes] = React.useState(0);  <= 0是likes的初始值
+                        return(
+                            // ...
+                            <button onClick={handleClick}>Like({likes})</button>  <= Like是按鈕上的文字，likes是狀態變數
+                        )             
+                    }
+                    再來，在HomePage中調用狀態更新函數setLikes，將其添加到之前定義的handleClick()函數中
+                    function HomePage() {
+                        // ...
+                        const [likes, setLikes] = React.useState(0); <= 0為Likes目前的狀態值
+                        function handleClick() {
+                            setLikes(likes + 1);   <= 在handleClick()中使用setLikes()把likes+1
+                        }
+                        return (
+                            <div>
+                                {/* ... */}
+                                <button onClick={handleClick}>Likes ({likes})</button>
+                            </div>
+                        );
+                    }
+                    按鈕點擊後，會調用handleClick()，該函數會使用當前的likes數值，傳給setLikes狀態更新函數，讓likes原本的值+1
+        渲染
+            渲染三步驟，以餐廳為例，組件是廚師，React是waiter，當客戶點完餐waiter會把菜單送到廚房給廚師，廚師並按照客戶要的餐點去做餐點
+            1.觸發(將客戶點的菜單送到廚房)
+                會有兩種觸發方式
+                1.初始的渲染
+                2.組件(祖元件之一)的狀態更新
+            2.渲染(組裝)(廚房準備餐點)
+                在應用剛啟動時，React 會先呼叫根元件，而過程會是以遞歸的方式進行，在更新的元件中，如果返回其他元件，他會呼叫該元件，並執行
+                而該元件也返回其他元件，React會再呼叫該元件，直到沒有返回其他元件為止
+                ex:
+                    A(根) ->  B ->  C
+                    B元件有返回B1元件
+                    A(根) -> B -> B1 -> C
+            3.提交(將餐點送到客戶的餐桌上)
+                對於初始渲染時，React會用appendChild()的DOM API將建立所有的DOM node放到螢幕上
+                但在重新渲染時，React會用最少的必要操作(渲染計算)，與渲染間的差異在於React只會更改DOM節點
+        React Ref
+            提供取得 DOM 節點或 render 內建立 React element 的方式，在不希望元件"記住"某訊息，但不重新渲染時可以使用ref，因為在典型的 React 資料流中，props 是唯一讓 component 和 child component 可以互動的方式
+            然而有時可能會需要在資料流外修改 child，而這個 child 有可能是 React component 其中的一個 instance or Dom element，而React提供了Ref(逃生口)
+            使用時機
+                1.管理focus、選擇文字、影音播放
+                2.觸發即時的動畫
+                3.與第三方DOM函式庫整合
+            使用方式
+                添加ref到元件中
+                    import { useRef } from 'react'
+                呼叫useRef Hook並傳遞想要引用的初始值為唯一參數
+                    const ref = useRef(0)  <= 這裡用0舉例子
+                useRef會回傳一個物件
+                    { current:0 }
+            指向
+                ref像狀態一樣，可以指向任何東西(字串、物件、函數等)，但與state不同的是，ref只是一個JS物件，具有讀取
+                與修改的目前的屬性，元件會因為設定state而重新渲染元件，但更改ref不會
+            差異
+                ref與state的差異
+                    refs沒有state"嚴格"，但大多情況下，常使用到state，不常使用refs
+                    1.return值
+                        useRef(value) return {current:value}
+                        useState(value) return ([value, setValue])
+                    2.Trigger(觸發)
+                        Ref => 不會觸發重新渲染
+                        state => 相反
+                    3.可變性
+                        Ref => 可在渲染過程之外修改和更新目前的值
+                        state => 必須使用state設定函數修改state變數才能重新渲染
+                    4.渲染期間
+                        Ref => 不可在渲染期間讀取(寫入)目前值
+                        state => 可隨時讀取狀態，每個渲染都有自己的狀態快照
+                    ex:
+                        (state) 計數會重新渲染
+                        import { useState } from 'react'
+                        export default function Counter() {
+                            const [count, setCount] = useState(0);
+                            function handleClick() {
+                                setCount(count + 1);
+                            }
+                            return (
+                                <button onClick={handleClick}>
+                                    You clicked {count} times
+                                </button>
+                            );
+                        }
+                        (ref) 不會重新渲染計數的變化
+                        import { useState } from 'react'
+                        export default function Counter() {
+                            const countRef = useState(0);
+                            function handleClick() {
+                                countRef.current = countRef.current + 1;
+                            }
+                            return (
+                                <button onClick={handleClick}>
+                                    You clicked {countRef.current} times
+                                </button>
+                            );
+                        }
+            使用時機
+                當元件需要與外部API通訊時，就須使用
+                    1.儲存逾時ID
+                    2.儲存和操作DOM元素
+                    3.儲存計算JSX不需要的其他物件
+                    如果元件需要儲存一些值，但不影響渲染邏輯，請選擇refs
+            注意事項
+                1.當使用外部系統或browser API時，ref會很有用
+                2.在渲染期間不要讀取(寫入)ref.current，如果渲染期間要用資料，就使用state，因為不知React的ref.current何時發生改變，即使在渲染時讀取，也會使元件的行為難以預測
+                  除了if(!ref.current)ref.current = new Thing()以外，這只會在第一次渲染期間設定ref
+                3.如果直接改變ref.current值時，值會直接改變
+            結論
+                1.ref會用於不用保存的渲染值，所以不會經常使用到
+                2.ref是一個普通的JS物件，具有current屬性，可讀取(設定)該屬性
+                3.透過呼叫useRef Hook要求React給你一個ref
+                4.與state一樣，允許在元件重新渲染間保留資訊
+                5.與state不同，設定ref目前值不會觸發重新渲染
+                6.渲染期間不要讀取(寫入)ref.current，會使元件難以預測
+        狀態管理(reducer)
+            將UI變更視為State變更
+                在用戶輸入後的回應中根據元件處於的狀態(初始、輸入、成功狀態)進行不同的回應
+                ex:
+                    function App() {
+                        const [answer, setAnswer] = React.useState('');
+                        const [error, setError] = React.useState(null);
+                        const [status, setStatus] = React.useState('typing');
+                        // 成功狀態時運作
+                        if(status === 'success'){
+                            return(
+                                <h1>That's right!</h1>
+                            )
+                        }
+                        // 點擊事件會以異步進行
+                        async function handleSubmit(e){
+                            // 取消表單按鈕的預設行為
+                            e.preventDefault();
+                            // 改變setStatus的狀態為submitting
+                            setStatus('submitting');
+                            // 讀取submitForm()
+                            try{
+                                // 等待submitForm()執行完，在繼續
+                                await submitForm(answer);
+                                // 讀取完後更改setStatus狀態為success
+                                setStatus('success');
+                            } catch(err){  // 抓取錯誤
+                                // 如果出現錯誤，更改setStatus狀態為typing
+                                setStatus('typing');
+                                // 更改setStatus狀態為err訊息
+                                setError(err);
+                            }
+                        }
+                        function handleTextareaChange(e){
+                            // 獲取DOM的值，target = 觸發DOM
+                            setAnswer(e.target.value);
+                        }
+                        return (
+                            <>
+                                <h2>City quiz</h2>
+                                <p>
+                                    In which city is there a billboard that turns air into drinkable water?
+                                </p>
+                                <form onSubmit={handleSubmit}>
+                                    <textarea
+                                        value={answer}
+                                        onChange={handleTextareaChange}
+                                        disabled={status === 'submitting'}
+                                    />
+                                    <br />
+                                    <button disabled={
+                                        answer.length === 0 ||
+                                        status === 'submitting'
+                                    }>
+                                    Submit
+                                    </button>
+                                    {error !== null &&
+                                        <p className="Error">
+                                            {error.message}
+                                        </p>
+                                    }
+                                </form>
+                            </>
+                        );
+                    }
+                    function submitForm(answer) {
+                        return new Promise((resolve, reject) => {
+                            // 等待1500毫秒後執行下面程式碼
+                            setTimeout(() => {
+                                // toLowerCase() 將字母都轉為小寫
+                                let shouldError = answer.toLowerCase() !== 'lima'
+                                if (shouldError) {
+                                    // 當Promise出現錯誤會把 Good guess but a wrong answer. Try again!放到reject()中，在放到catch()中
+                                    reject(new Error('Good guess but a wrong answer. Try again!'));
+                                } else {
+                                    resolve();
+                                }
+                            }, 1500);
+                        });
+                    }
+            良好的結構狀態
+                易於修改和調試組件與經常錯誤的組件產生的差異，主要是不在狀態中存在不必要的狀態
+                ex:
+                    一開始的樣子
+                    import { useState } from 'react';
+                    export default function Form() {
+                        const [firstName, setFirstName] = useState('');
+                        const [lastName, setLastName] = useState('');
+                        const [fullName, setFullName] = useState('');
+                        function handleFirstNameChange(e) {
+                            setFirstName(e.target.value);
+                            // 改變setFullName的內容
+                            setFullName(e.target.value + ' ' + lastName);
+                        }
+                        function handleLastNameChange(e) {
+                            setLastName(e.target.value);
+                            setFullName(firstName + ' ' + e.target.value);
+                        }
+                        return (
+                            <>
+                                <h2>Let’s check you in</h2>
+                                <label>
+                                    First name:{' '}
+                                    <input
+                                    value={firstName}
+                                    onChange={handleFirstNameChange}
+                                    />
+                                </label>
+                                <label>
+                                    Last name:{' '}
+                                    <input
+                                    value={lastName}
+                                    onChange={handleLastNameChange}
+                                    />
+                                </label>
+                                <p>
+                                    Your ticket will be issued to: <b>{fullName}</b>
+                                </p>
+                            </>
+                        );
+                    }
+                    可以刪除渲染時計算的fullName簡化程式碼
+                    const [firstName, setFirstName] = useState('');
+                    const [lastName, setLastName] = useState('');
+                    const fullName = firstName + ' ' + lastName;
+                    function handleFirstNameChange(e) {
+                        setFirstName(e.target.value);
+                    }
+                    function handleLastNameChange(e) {
+                        setLastName(e.target.value);
+                    }
+                    不需要每次都觸發fullName的狀態渲染，只first或lastName更新，再觸發就好
+                    在React中有許多錯誤都是可以透過這種方式修復
+            組件間的分享狀態(提升狀態)
+                想讓兩個組件的狀態一起改變，需要先把兩個組件中的狀態移除，然後透過兩組件共同的父元件儲存狀態並用props將狀態傳入兩組件中
+                又稱為"提升狀態"
+                ex:
+                    import { useState } from 'react';
+                    export default function Accordion() {
+                        const [activeIndex, setActiveIndex] = useState(0);
+                        return (
+                            <>
+                            <h2>Almaty, Kazakhstan</h2>
+                            <Panel
+                                title="About"
+                                isActive={activeIndex === 0}
+                                onShow={() => setActiveIndex(0)}
+                            >
+                                With a population of about 2 million, Almaty is Kazakhstan's largest city. From 1929 to 1997, it was its capital city.
+                            </Panel>
+                            // 用組件方式回調function
+                            <Panel
+                                title="Etymology"
+                                isActive={activeIndex === 1}
+                                onShow={() => setActiveIndex(1)}
+                            >
+                                The name comes from <span lang="kk-KZ">алма</span>, the Kazakh word for "apple" and is often translated as "full of apples". In fact, the region surrounding Almaty is thought to be the ancestral home of the apple, and the wild <i lang="la">Malus sieversii</i> is considered a likely candidate for the ancestor of the modern domestic apple.
+                            </Panel>
+                            </>
+                        );
+                    }
+                    function Panel({ title, children, isActive, onShow}) {
+                        return (
+                            <section className="panel">
+                                <h3>{title}</h3>
+                                {isActive ? (
+                                    <p>{children}</p>
+                                ) : (
+                                    <button onClick={onShow}>
+                                    Show
+                                    </button>
+                                )}
+                            </section>
+                        );
+                    }
+            保存和重置state
+                重新渲染時，React會決定保留(更新)樹中的哪個部分，以及刪除或創建哪部分，在React正常運作下，會保留樹中與先前渲染的元件"相符"的部分，但有時這並不是想要發生的
+                (官網Demo)https://codesandbox.io/p/sandbox/react-dev-v23tny?file=%2Fsrc%2FApp.js%3A9%2C16
+            reducer
+                將元件外部的所有狀態更新邏輯合併到一個函數中，讓事件程序變得更整潔，只指定使用者"操作"
+                (介紹文章)https://ithelp.ithome.com.tw/articles/10268258
+                語法
+                    import { useReducer } from "react";
+                    const [state,dispatch] = useReducer(reducer, initialState, initStateFn)
+                    說明
+                        useReducer第一參數
+                            用來設定變更state的規則，特定的action時更新state
+                        useReducer第二參數
+                            初始化的state
+                        useReducer第三參數
+                            初始化state的function，非必要的，可撰寫return初始化state的函式，放到這裡，避免重新建立初始state
+                            如果當第二參數的會在每次render呼叫
+                        dispatch用來觸發action
+                    優點
+                        dispatch不會隨著re-render重新分配記憶體位置，作為props傳入child component時，也不用擔心沒有useMemo而造成re-render問題
+                    缺點
+                        useReducer無法存取global store
+                        useReducer沒有middleware，不能像Redux能用thunk或saga來做data fetching、處理side effect
+        深度傳遞(Context)
+            讓開發者更容易從父元件傳遞state到深層的子元件，並讓多個用到的 state 資料的元件可以隨著資料變動而更新
+            (介紹)https://molly1024.medium.com/react-hooks-usecontext%E5%88%B0%E5%BA%95%E6%80%8E%E9%BA%BC%E7%94%A8-%E7%9C%8B%E5%AE%8C%E7%AF%87%E7%B5%95%E5%B0%8D%E6%87%82-125fae4a1e86
+            (練習題)https://codesandbox.io/p/sandbox/react-dev-forked-fzk592?file=%2Fsrc%2FApp.js%3A58%2C7
+            語法
+                const value = useContext(Mycontext)  // value和Mycontext都是可自行設定
+                接收一個context物件，並回傳該context內的值
+            步驟
+                1.createContext  <= 創建Context
+                2.<XX.Provider value=XX/> <= 創建Context的變數，後面加上.Provider，value裡是要傳遞的值
+                3.useContext() <= 接收由其他元件傳送的Context資料(變數)
+            ex:
+                (authContext.js)
+                import React, { useState } from "react";
+                // 建立一個Context物件
+                const AuthContext = React.createContext({
+                    isLoggedIn: false,
+                    onLogout: () => {},
+                    onLogin: (email, password) => {}
+                });
+                export const AuthContextProvider = (props) => {
+                    // 一開始 isLoggedIn = false
+                    const [isLoggedIn, setIsLoggedIn] = useState(false);
+                    const logoutHandler = () => {
+                        setIsLoggedIn(false);
+                    };
+                    const loginHandler = () => {
+                        setIsLoggedIn(true);
+                    };
+                    return (
+                        <AuthContext.Provider
+                        // 記得提供 context 給 Provider
+                        value={{
+                            isLoggedIn: isLoggedIn,
+                            onLogout: logoutHandler,
+                            onLogin: loginHandler
+                        }}
+                        >
+                        {props.children}
+                        </AuthContext.Provider>
+                    );
+                };
+                // 匯出AuthContext元件
+                export default AuthContext;
+
+                (index.js)
+                import ReactDOM from "react-dom";
+                import App from "./App";
+                // 從authContext.js引入參數
+                import { AuthContextProvider } from "./authContext";
+
+                const rootElement = document.getElementById("root");
+
+                ReactDOM.render(
+                    <AuthContextProvider>
+                        <App />
+                    </AuthContextProvider>,
+                    rootElement
+                );
+                    
+                (App.js)
+                import React, { useContext } from "react";
+                // 從authContext.js引入參數
+                import AuthContext from "./authContext";
+                const App = () => {
+                    // 使用useContext，接收AuthContext物件
+                    const ctx = useContext(AuthContext);
+                    return (
+                        <>
+                            {!ctx.isLoggedIn && (
+                                <button onClick={() => ctx.onLogin("Tom", "123")}>Login</button>
+                            )}
+                            {ctx.isLoggedIn && <button onClick={() => ctx.onLogout()}>Logout</button>}
+                        </>
+                    );
+                };
+                export default App;
+            特性
+                有使用context的元件會在context更新時re-render，所以建議用在不常變動的值上
+            缺點
+                1.拆分 context，原本 context 內有多個屬性，將它們分成好幾個 context
+                2.使用 React.memo、useMemo 避免 re-render的HOC、hook
+            想像
+                老闆 => createContext
+                經理 => XX.Provider
+                員工(下屬) => useContext
+                老闆離員工太遠，需透過經理傳達給指定員工(或部門)，員工接收訊息去做
+        useEffect
+            可以去綁定一個依賴關係(State)，載入(渲染)畫面後一定會先執行一次useEffec中的function
+            (介紹)https://ithelp.ithome.com.tw/articles/10224270
+            語法
+                import{useEffect} from 'react'
+                useEffect(<Updata>,[dependencies])
+                第二參數會是一個陣列，在每次渲染後dependencies中的元素沒有改變，useEffect裡的函式就不會被執行
+            常用寫法:
+                1.綁定State，每次State變動，就會執行一次useEffect裡的function
+                2.如果不綁定State就只會執行一次
+                3.變數如果用到,就加入useEffect的function裡，確保有變化就執行一次
+            使用情境
+                呼叫API並更新資料
+                手動更改DOM(透過browser的API或其他套件操作DOM，不是透過state改變)
+            想像
+                React => 負責給菜單到廚房，並上菜
+                Effect => 幫手
+                使用者要畫面和資料
+                一開始React會給廚房菜單，上菜(commit)，再來React去請求幫手抓取資料，幫手抓到資料
+                交給React在把資料給廚房，廚房在把資料放進菜單中，再上菜
+        結論
+            effect and ref 使用
+                (Microsoft)
+                    effect
+                        在函數組件中執行副作用操作，例如:數據獲取(API)、訂閱或手動更改組件中的DOM等，讓這些副作用操作移動到組件外
+                    ref
+                        用於訪問和操作React管理的DOM元素的工具，例如:獲得某節點的滾動、焦點、偵測尺寸或位置，這時會指向某個DOM就會透過ref實現
+                (chatGPT)
+                    effect
+                        處理副作用，例如:數據獲取(API)、訂閱、手動操作DOM等，在渲染完後執行，可以用於處理異步或副作用性的操作
+                    ref
+                        創建可變的物件，其中的current屬性可以被賦值而不引起組件重新渲染，主要用於保存和訪問組件中的變量
+                根據這兩個AI可得知effect會用於異步處理的事件中，例如:setTimeout、click、fetchAPI等，而ref會使用在不想讓元件重新渲染，但又在元件中傳遞的訊息或改變DOM元素的部分
+                例如:focus、保存組件的變量等
+    NextJS
+        是一款彈性的React框架，提供建立快速的網頁基礎要素，透過框架，新增了在React需要的工具及設定
+        為應用提供額外的架構、功能與優化
+    網站基礎要素
+        使用者介面(UI)
+            如何讓使用者願意花時間與你的網站進行互動
+        路由(Route)
+            如何讓使用者在你的網站中的不同頁面區域進行導航換頁
+        資料獲取
+            資料存儲在何處及如何在需要時取得
+        服務集合
+            使用的第三方服務（後台管理系統，權限驗證，支付服務），及如何跟他們互動
+        基礎建設
+            網站部屬、存放、運行的位置（雲服務、CDN、邊緣基礎架構等等）
+        網站效能
+            如何提升使用者瀏覽網站時的體驗
+        擴充性
+            你的網站在你的開發團隊、資料、網頁訪問量提升等等多種的變數之中是否能靈活運作且適應
+        開發者體驗
+            在開發、維護網站過程中，開發者的體驗感受
+export and import
+    預設匯出(default export)
+        使用情況
+            1.簡化匯入語法
+                當模組只有一個主要輸出，用default export可以讓匯入的語法更加簡單
+            2.提高彈性
+                可以在匯入時，自由地命名該模組
+                    export default function MyComponent()
+                    import Componenet from './MyComponent'; 
+            3.CommonJS相容性
+                在ES6前，JS模組系統是由CommonJS規範定義的，在CommonJS中使用類似於default export的匯出方式，所以
+                使用default export會讓ES6模組更易與CommonJS模組相容
+        export default function MyComponent()
+        import MyComponent from './MyComponent'; // 匯入不用{}
+    命名匯出(Named Export)
+        1.可重用性
+            命名匯出可在一個模組中導出多個函數或組件，可在其他文件單獨導入所需的函數或組件
+        2.清晰性
+            一個文件導出多個函數或組件時，使用命名可清楚知道導入的是哪個組件或函數
+        3.靈活性
+            可選擇導入的模組部分，而不是整個
+        export function func1() { /*...*/ }
+        import { func1 } from './MyModule'; // 需要用{}
+    共同使用
+        export default function DefaultFunc() { /*...*/ }
+        export function NamedFunc() { /*...*/ }
+        import DefaultFunc, { NamedFunc } from './MyModule';
+CSS in JS
+    就是把CSS編寫在JS中，最常見兩大套件
+    1.Styled Componenets
+        (官網)https://styled-components.com/
+        安裝
+            (npm) npm install styled-components
+            (yarn) yarn add styled-components
+        ex:
+            const Title = styled.h1`   <= 需使用ES6中的``來編寫
+                font-size: 1.5em;
+                text-align: center;
+                color: #BF4F74;
+            `;
+            const Wrapper = styled.section`
+                padding: 4em;
+                background: papayawhip;
+            `;
+            ender(
+                <Wrapper>
+                    <Title>
+                        Hello World!
+                    </Title>
+                </Wrapper>
+            );
+    2.Emotion
+        (官網)https://emotion.sh/docs/introduction
+        安裝
+            (不用框架) npm i @emotion/css
+            (React) npm i @emotion/react
+        ex:
+            import { css } from '@emotion/css'
+            const color = 'white'
+            render(
+                <div
+                    className={css`   <= 需使用ES6中的``來編寫
+                    padding: 32px;
+                    background-color: hotpink;
+                    font-size: 24px;
+                    border-radius: 4px;
+                    &:hover {
+                        color: ${color};
+                    }
+                    `}
+                >
+                    Hover to change color.
+                </div>
+            )
+
+            import styled from '@emotion/styled'
+            const Button = styled.button`
+            padding: 32px;
+            background-color: hotpink;
+            font-size: 24px;
+            border-radius: 4px;
+            color: black;
+            font-weight: bold;
+            &:hover {
+                color: white;
+            }
+            `
+
+            render(<Button>This my button component.</Button>)
+this
+    與 JS 不同，在 JS 中使用 Function 會根據函式被呼叫方式來決定指向目標，如果透過一個方法被物件呼叫則會指向該物件，如果是全域呼叫則會指向全域物件(window)，如果透過 new 呼叫的建構函式，this 會指向新建立的物件
+    而在 React 中使用 Function 去定義方法，而不是透過箭頭函式或建構函式綁定方法，則該方法被 React 呼叫時，this 不會指向 React 元件的實例，而是 undefined or 嚴格模式下的情況
+    JSX this 指向
+        class Demo extends Component{
+            state = {
+                count: 0
+            }
+            handleClick = () => {
+                this.setState({count: this.state.count+1})
+            }
+            render(){
+                return(
+                    <>
+                    {this.state.count}
+                    <button onClick={this.handleClick}>按钮</button>
+                    </>
+                )
+            }
+        }
+    Function函数中的this指向
+        class Demo extends Component{
+            state = {
+                count: 0
+            }
+            handleClick = function(){
+                this.setState({count: this.state.count+1})
+            }
+            render(){
+                return(
+                    <>
+                        {this.state.count}
+                        <button onClick={this.handleClick}>按钮</button>
+                    </>
+                )
+            }
+        }
+        // 点击按钮报错
+        // Cannot read properties of undefined (reading 'setState')
+    箭頭函式
+        class Demo extends Component{
+            state = {
+                count: 0
+            }
+            handleClick = () => {
+                this.setState({count: this.state.count+1})
+            }
+            render(){
+                return(
+                    <>
+                        {this.state.count}
+                        <button onClick={this.handleClick}>按钮</button>
+                    </>
+                )
+            }
+        }
+        // 点击按钮正常
+    bind this 指向
+        class Demo extends Component{
+            state = {
+                count: 0
+            }
+            handleClick = function (){
+                this.setState({count: this.state.count+1})
+            }
+            render(){
+                return(
+                    <>
+                        {this.state.count}
+                        <button onClick={this.handleClick.bind(this)}>按钮</button>
+                    </>
+                )
+            }
+        }
+        // 点击按钮正常
+    結論
+        使用 function 定義方法時，只有透過 bind 才可以抓到 React 實例並成功執行，其他時候只需透過箭頭函式去執行就可以
+React基礎
+    import React , {Componenet} from 'react'
+        {Componenet} => 從o bj提取屬性
+    class 與 extends
+        ES5
+            var Animal = function(){
+                this.type = 'animal'
+            }
+            ver human = function(height){
+                height = this.height
+            }
+            human.prototype = new Animal()
+        ES6
+            class Animal {
+                constructor(){
+                    this.type = 'animal'
+                }
+            }
+            class Human extends Animal{
+                constructor(height){
+                    super()  // 繼承父類
+                    this.height = height
+                }
+            }
+React hooks
+    兩個hook也可以一起引入 
+        import{useState , useEffect} from 'react'
+    例如
+        import {useState , useEffect} from 'react'
+        const Home = ()=>{
+            const [data , setData] = useState();
+            const [data1 , setData1] = useState(); 
+            useEffect(()=>{     // 每當data變動，就執行一次function
+                // function
+            },[data , data1])
+        }
+    useState 元件狀態(State Hook)
+        import{useState} from 'react'
+        與React Dom綁在一起,一旦useState狀態改變網頁就會重新
+        渲染，通常宣告會用const [count,setContent]=useState
+        當setContent更動，count就會更動，當useState更動，裡
+        面的兩個都會更動
+    useEffect
+        當React渲染"後"啟動
+        ex:
+            useEffect(()=>{
+                // 內容內容
+            },[])  <= 這裡可放[]當作啟動條件，也可不放(每次渲染後啟動)
+    React.Memo
+        (介紹)https://medium.com/%E6%89%8B%E5%AF%AB%E7%AD%86%E8%A8%98/react-optimize-performance-using-memo-usecallback-usememo-a76b6b272df3
+        為何使用?
+            當每次父元件的狀態被改變時，會觸發Render機制，導致父元件內部所有的子元件都會被重新渲染一次，使用 React.Memo 可以確認從父元素傳遞的 props 是否相同，就不需重新傳遞 props 導致浪費
+        語法
+            const MyComponent = React.memo(function MyComponent(props){ // render using props})
+            calculateValue
+                要減少渲染的元件，首次渲染時，React 會調用該函數，但如果 dependencies 產生變化時，React 會再次調用 calculateValue 並返回
+                最新結果，反之，React 會返回相同結果
+            dependencies
+                他會是一個由響應式變量組成的 array，響應式變量包含props、state和直接定義在元件中的變量與函數，需寫成[dep1,dep2,dep3]
+        如何使用?
+            以HOC(higher order component)方法使用，只需在減少渲染元件外圍再包一層React.memo
+            ex:
+                const MyComponent = ({ myprops }) => {
+                    const refCount = React.useRef(0);
+                    refCount.current++;
+                    return (
+                        <p>
+                            {myprops}, Ref Count: {refCount.current}
+                        </p>
+                    );
+                }
+                const MemorizeMyComponent = React.memo(MyComponent);
+            Memo會以淺拷貝的確認方式確認props的值是否相同，淺拷貝(shallow copy)在props是Number or String 會透過值比較，如果是object會透過
+            記憶體位置(reference)，當父元件重新渲染時，父元件中宣告的Object會重新分配記憶體位置，所以如果用React.Memo防止渲染會失效
+        防止失效
+            1.使用 Memo 提供的第二個參數，比較 props，讓Object不再只是比較記憶體位置
+                function MyComponent(props) {
+                    /* render using props */
+                }
+                function areEqual(prevProps, nextProps) { <= 這裡就是設定第二參數，讓React根據這裡做比較
+                    /*
+                        return true if passing nextProps to render would return
+                        the same result as passing prevProps to render,
+                        otherwise return false
+                    */
+                }
+                export default React.memo(MyComponent, areEqual);
+            2.使用useCallback，讓React自動記住Object記憶體位置
+    useCallback
+        (介紹)https://medium.com/%E6%89%8B%E5%AF%AB%E7%AD%86%E8%A8%98/react-optimize-performance-using-memo-usecallback-usememo-a76b6b272df3
+        為何使用?
+            為了解決當父元件的 props 為 Object 並重新渲染時，發生的子元件跟著重新渲染問題，更直接是因為以 Object 當 props 傳遞時，重新渲染時，會重新分配記憶體位置(reference)，導致子元件跟著渲染
+            因此 useCallback 會讓 React，在 dependencies array 中的值沒有被修改的情況下，幫我們記住 Object 的記憶體位置，防止 Object 重新分配記憶體位置
+        使用方式
+            const memoizedCallback = useCallback(() => {
+                doSomething(a, b);
+            },[a, b],);
+        例子
+            const MyComponent = React.memo(props => {
+                const refCount = React.useRef(0);
+                refCount.current++;
+                const callback = props.useCallback ? "useCallback" : "without useCallback";
+                return (
+                    <p>
+                        MyComponent {callback}. Ref Count: {refCount.current}.
+                    </p>
+                );
+            });
+            const equals = (a, b) => {
+                return a === b ? "Equal" : "Different";
+            };
+            const [someArg, setSomeArg] = React.useState("argument");
+            const handleSomethingUseCallback = React.useCallback(() => {}, [someArg]);
+        注意事項
+            使用 useCallback 時，須注意 dependencies array 中是否都包含在 useCallback 中使用的變數，否則 useCallback會失效 
+    useMemo
+        (介紹)https://medium.com/%E6%89%8B%E5%AF%AB%E7%AD%86%E8%A8%98/react-optimize-performance-using-memo-usecallback-usememo-a76b6b272df3
+        為何使用?與Memo的不同?
+            1.在與父元件無關，但重新渲染時，在元件中的 function 被重新呼叫，複雜的程式邏輯被重新執行一遍，使造成巨大的效能負擔，useMemo可以讓 React 記住 function 回傳值，如果
+              dependencies array 中的變數都沒被修改的情況下，useMemo會沿用上一次的回傳值
+            2.Memo 會使用在與父元件有關的重新渲染，而 useMemo 會是因為重新渲染導致 function 的程式邏輯被重新執行一遍時
+        使用方式
+            const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+        例子
+            const MyComponent = () => {
+                const refCount = React.useRef(0);
+                const myfunction = () => {
+                    refCount.current++;
+                    return 1;
+                };
+                const value = React.useMemo(() => {
+                    return myfunction();
+                }, []);
+                return <p>MyComponent useMemo. Value: {value}. Ref count: {refCount.current}</p>;
+            };
+        注意事項
+            不要把所有東西都放到 useMemo 中，讚需要優化時再引用，否則只會造成 React 更大的負擔
+    
+React 嚴格模式(React.StrictMode)
+    只會在開發環境中使用
+    作用
+        1.檢查生命週期方法和不安全的生命週期用法
+        2.檢測意外的Effect
+        3.檢測過時的Context API用法
+        4.檢測意外的Effect和渲染順序
+
+以碼表
+    元件:碼表
+    狀態:變動秒數
+    效果:秒數變動而顯示出秒數減少的樣子
+
+React 其他套件
+    (版本差異)https://vanessa7591.medium.com/react-router-dom-%E6%94%B9%E7%89%88%E7%AD%86%E8%A8%98-50614229dd0a
+    React-Router (換頁)
+        藉由路由進行管理與配置，來渲染不同的頁面
+        安裝
+            npm install react-router-dom
+        資料夾結構
+            src
+             |--components
+             |      |--App.jsx
+             |      |--Header.jsx
+             |--page
+                 |--HomePage.jsx
+                 |--LoginPage.jsx
+            大致長這樣(元件可以是其他的)
+        核心
+            Routes、Route、path、element、Link to
+                <Routes> // 包在最外層
+                    <Route path="/" element={<Home/>}/>
+                    <Route path="/About" element={<About/>}/>
+                    <Route path="/Services" element={<Services/>}/>
+                    <Route path="/Contact" element={<Contact/>}/>
+                </Routes>
+                BrowserRouter
+                    如果使用在瀏覽器環境中，就須使用此組件，並放在Routes外層，其作用在於他會根據瀏覽器的歷史紀錄來實現客戶端路由
+                    v5中會使用HashRouter
+                Routes === Switch(Router v5)
+                    如果不使用BrowserRouter，會包在最外層
+                Route
+                    鄉對應的子路徑，可包子層
+                path(部分匹配路徑)
+                    指定路徑，首頁不加exact(完整匹配路徑) 
+                element === children(Route v5)
+                    指定component(用<>包)
+                    <Route element={<Home />} path={'/'}></Route>
+                Link to
+                    在元件中使用，在v5時會需要透過${match.url}去連接，但在v6中能與Route path連結就不需要了
+                    如果與Outlet組件(v6添加新組件)一起使用會出現錯誤
+        hook
+            useNavigate
+                適用於事件處理中，與Link組件相似
+                實作
+                    import { useNavigate } from 'react-router-dom';
+                    function MyComponent() {
+                        const navigate = useNavigate();
+
+                        function handleClick() {
+                            // 编程式导航到指定路径
+                            navigate('/other-page');
+                        }
+
+                        return (
+                            <button onClick={handleClick}>Go to Other Page</button>
+                        );
+                    }
+            useLocation(抓取網址中的資訊)
+                import { useLocation } from "react-router"
+                const location = useLocation()
+                console.log(location)
+            useParams(抓取動態參數)
+                import { useParams } from "react-router"
+                const params = useParams()
+                console.log(params, 'params')
+            useRoutes(更靈活的配置router)
+                
+            useSearchParams(取得網址參數)
+                import { useSearchParams } from "react-router"
+                const [getParams, setParam] = useSearchParams()
+                const name = getParams.getAll('name')
+    React Context (管理共用狀態(小型project))
+    React Redux (管理共用狀態(大型project))
+        (介紹)https://hackmd.io/@Agry/BJWmCg6vq
+        who?
+            用來管理和更新應用程式狀態的JS工具，主要目的是使狀態更新可預測和簡單化，類似於倉庫
+        原則
+            1.單一來源原則
+                整個應用會存在單一的JS物件中
+            2.狀態唯讀
+                唯一改變狀態的方式是透過發送(dispatch)出一個行動(action)去改變狀態
+            3.純函數用於處理狀態變化
+                action被傳遞給純函數(reducer)後會更新狀態
+        狀態容器(State Container)
+            用於儲存和管理應用程式狀態的軟體設計模式，通常用在儲存與應用程式相關的所有數據，ex:用戶輸入表單數據、應用程式的配置
+            設置、用戶操作的歷史紀錄等，在不同組件之間共享和操作狀態數據，從而提高效率與一致性
+        when?
+            1.全局狀態管理
+                當應用越來越大，共享各組件之間的狀態變得更困難，Redux提供中央儲存庫來保存整個應用的狀態，讓全局狀態管理變容易
+            2.狀態一致性
+                多組件或大型應用中，維護狀態一致是一個挑戰，Redux透過來源真理的原則，確保任何時候狀態都會是一致的
+            3.狀態更新的可預測性
+                Redux使用純函數(reducers)處理狀態更新，對於相同的輸入，Redux返回相同的輸出，讓狀態更新是可預測的
+            4.狀態變更的追蹤與理解
+                Redux每一次狀態改變都會透過一個行動(action)觸發，更輕易地追蹤到狀態何時/如何改變
+            5.測試和除錯
+                Redux有內建開發者工具，讓開發者可追蹤狀態變化並理解狀態的改變過程
+        安裝
+            npm install react-redux  <= react-redux是Redux官方的React綁定庫
+            npm install @reduxjs/toolkit <= redux工具箱
+        四個名詞
+            1.Reducer
+                檢查要使用的action，並改變state
+                // Counter會是一個Reducer，state是初始值，action會是從別處傳進來的action.type
+                Counter = (state = 1,action)=>{
+                    switch(action.type){
+                        case "INCREMENT":
+                            return state +1;
+                        case "DECREMENT":
+                            return state -1;
+                        case "INCREASE":
+                            // 帶入action.value到判斷(Dispatch)中
+                            const newState = state + Number(action.value);
+                            return newState;
+                        default:
+                            return state;
+                    }
+                }
+            2.Action
+                將值透過dispatch傳入Reducer
+                1.一般寫法
+                    dispatch({type:"INCREMENT"}) <= 使用dispatch()將action傳到Reducer中
+                2.建立JS檔案再透過dispatch傳入reducer
+                    export const increase = (value)=>{
+                        return{
+                            type:"INCREASE"
+                        }
+                    }
+                    export const increment = ()=>{
+                        return{
+                            type:"INCREMENT"
+                        }
+                    }
+                    const dispatch = useDispatch()
+                    dispatch(increase(value))
+                    dispatch(increment())
+            3.Store
+                匯集所有的Dispatch
+                創建
+                    const store = configureStore({reducer:allReducers})
+                引入
+                    當多個Reducer匯入時
+                        import CounterReducer from "路徑"
+                        import TodoListReducer from "路徑"
+                        import { combineReducers } from "redux"
+
+                        const allReducers = combineReducers({
+                            counter:CounterReducer,  <= 這裡的命名會跟取直呼叫方式有關
+                            TodoList:TodoListReducer,
+                        })
+                        透過combineReducers整合所有的Reducer
+                呼叫
+                    const XXX = useSelector(state => state.counter) <= counter就是combineReducers裡的counter
+            4.Provider
+                創建好Store後，需要透過Provider將Store傳到最放層的父元件(APP)
+                    import { configureStore } from "@reduxjs/toolkit";
+                    import allReducers from "路徑"
+                    import { Provider } from "react-redux"
+                    const store = configureStore({reducer:allReducers});
+                    const root = ReactDOM.createRoot(document.getElementById('root'));
+                    root.render(
+                        <React.StrictMode>
+                            <Provider store={store}> <= 將Store放到最上層父元件中
+                                <App />
+                            </Provider>
+                        </React.StrictMode>
+                    )
+        RTK API(Redux Toolkit)
+            createSlice
+                主要接收一個物件裡面包含
+                    1.name => slice名稱
+                    2.initailState => 初始狀態
+                    3.reducers => 各個reducer
+                    4.extraReducers => 非同步等不能放到reducer field的reducer
+                預設使用 Immer 套件處理，且透過RTK(Redux Toolkit)建立的action creators只接受名為playload參數
+                ex
+                    import { createSlice } from '@reduxjs/toolkit'
+                    const initialState = { value: 0 } // 初始狀態
+                    const counterSlice = createSlice({ // createSlice物件
+                        name: 'counter',  // slice名稱
+                        initialState,  // 初始狀態 
+                        reducers: {  <= 改變 reducer 的地方 // reducer，如果有另外設定也可直接放到這裡
+                            increment(state) {
+                                state.value++
+                            },
+                            decrement(state) {
+                                state.value--
+                            },
+                            incrementByAmount(state, action) {
+                                state.value += action.payload // action creators 參數
+                            },
+                        },
+                        extraReducers:(builder)=>{ <= 額外再改變的地方
+                            builder
+                                .addCase('reducer',(state,action)=>{...})
+                        }
+                    })
+                    export const { increment, decrement, incrementByAmount } = counterSlice.actions
+                    export default counterSlice.reducer
+                內部整合函式
+                    createAction(自動創造action)
+                        定義Redux操作和建立action type
+                        引入方式
+                            import { createAction } from '@reduxjs/toolkit'
+                        ex
+                            import { createAction } from '@reduxjs/toolkit'
+                            const increment = createAction('counter/increment')
+
+                            let action = increment()
+                            // { type: 'counter/increment' }
+
+                            action = increment(3)
+                            // returns { type: 'counter/increment', payload: 3 }
+                    createReducer(自動創造reducer)
+                        在一般情況下建立reducer會透過switch去判斷使用的action，但用了此函數可以不用switch語法
+                        它會自動使用 immerjs 讓處理狀態更新簡單化
+                        ex
+                            import { createAction, createReducer } from '@reduxjs/toolkit';
+                            const setFilter = createAction('filter/setFilter');
+                            const initialState = 'All';
+                            const filterReducer = createReducer(initialState, (builder) => {
+                                builder
+                                    .addCase(setFilter, (state, action) => {
+                                        state = action.payload;
+                                    });
+                            })
+            createAsyncThunk
+                處理非同步，接受action type string和一個返回的promise函數
+        結論
+            流程
+                1.創建Reducer
+                    const Counter = (state = 1,action)=>{
+                        switch(action.type){
+                            case "INCREMENT":
+                                return state +1;
+                            case "DECREMENT":
+                                return state -1;
+                            case "INCREASE":
+                                const newState = state + Number(action.value);
+                                return newState;
+                                default:
+                                return state;
+                        }
+                    }
+                    export default Counter;
+                2.整合所有reducer
+                    import CounterReducer from "./counter";
+                    import { combineReducers } from "redux";
+
+                    const allReducers =  combineReducers({
+                        counter:CounterReducer,   // <= CounterReducer 是 Counter
+                    })
+                3.創建Store，存放Reduers
+                    const store = configureStore({reducer:allReducers})
+                4.將Store與最上元件連結
+                    <Provider store={store}>
+                        <App />
+                    </Provider>
+                5.寫入action
+                    export const increment = ()=>{
+                        return{
+                            type:"INCREMENT",
+                        };
+                    }
+                6.獲取action的內容
+                    import { useSelector } from "react-redux";
+                    const counter = useSelector(state=>state.counter); // counter是第二步的counter
+                7.透過事件對Store中的action做呼叫
+                    import { increment } from "./action/index"
+                    import { useDispatch } from "react-redux";
+                    <button onClick={()=>dispatch(increment())}>增加</button> // 透過dispatch呼叫倉庫中的action，傳給Reducer進行判斷
+            運作方式
+                元件藉由事件發送(dispatch)動作(action) --> Store中的Reducer(判斷執行的action) --> 改變元件的action --> 重新渲染元件
+
+SPA(Single-Page Application)
+    首次訪問網頁時，與MPA差不多都是得到網頁的code，但
+    不同的是SPA會得到的是code的框架，而不是內容，而內
+    容還需要透過取得的框架中的JS檔案去讀取才有辦法拿到
+    不過想換到別頁時他只會變動需要的部分，而其他的部分
+    不變，所以速度會比MPA快，因為不需要重新刷新一次code
+    但對於SEO來說會抓到的是網站的空殼，而不是內容，所以
+    不適用於SEO
+    特點:速度快、可做成客戶端，缺點:內容不完整、SEO不友好
+    可用於:社交網站、股票報價、後台管理系統
+MPA(Multi-Page Application)
+    每開一次新網頁就會全部讀取一次，而讀取的內容會是
+    新網頁的完整code與內容，所以對使用SEO是好的，可以
+    透過爬蟲一次取得完整的資料和code
+    特點:內容完整、SEO友好，缺點:速度慢、分工難、開發時間長
+    可用於:部落格、電商平台、公司資料/產品網站
+function Component and Class Componenet
+    function Component
+        適用於"簡單Component"
+        function Welcome(props){
+            return <h1>Hello,{props.name}</h1>;
+        }
+        function接受了一個props物件並回傳一個React element，就稱為
+        function component，它本身就是一個JS function
+    Class components
+        ES6出現class，適用於"複雜Component"
+        class Welcome extends React.Componenet{
+            render(){
+                // 想在畫面上出現甚麼就return甚麼
+                return <h1>Hello , {this.props.name}</h1>
+            }
+        }
+        extends 是 ES6 中繼承寫法在這裡可以用來繼承 React 內建的
+        組件叫 React.Componenet(這是內建的)
+    在 React中建立 class 有幾個條件要達成才行:
+        1.一定要繼承一個組件才能創建 class
+        2.裡面要放render()
+        3.render()中必須要有return
+
+React 相關概念
+    React 單/雙向資料流
+        單向資料流，所有的資料都是從父層往子層傳遞，而Components會使用
+        資料中傳遞的props是唯讀的，不能隨意改變它，而子層只能負責接收，但
+        不知道是誰傳遞給它的
+        Props and State進行傳遞
+            Props
+                是由父層傳遞下來的不可變data type
+                ex:
+                    // 父層
+                    class Example extends React.Component {
+                        render() {
+                            return (
+                                <someThing title={hello} />
+                            );
+                        }
+                    }
+                    // 子層
+                    const someThing = (props) => {
+                        return (
+                            <p>{this.props.title}</p> // this.props.title = hello
+                        );
+                    };
+                組件與組件之間可透過props進行資料傳遞
+                ex:
+                    // Function Components
+                    const someThing = (props) => {
+                        return (
+                            <p>{props.name}</p>
+                        );
+                    };
+                    // Class Components
+                    class Example extends React.Component {
+                        render() {
+                            return <p>{this.props.name}</p>;
+                        }
+                    }
+                State
+                    只存在當下聲明的組件內部的可變data type
+                    組件的元件可透過state進行資料傳遞
+                    更新state時，需用setState()
+                ex:
+                    // Class Components
+                    class Example extends React.Component {
+                        constructor(props) {
+                            super(props);
+                            this.state = {
+                                welcome: 'Hello',
+                            };
+                        }
+                        resetWelcome = () => {
+                            this.setState({
+                                welcome: 'welcome',
+                            });
+                        };
+                        render() {
+                            return (
+                                <div>
+                                    <p>{this.state.name}</p>
+                                </div>
+                            );
+                        }
+                    }
+        Component
+            有兩大類型:
+                function Components
+                    只能使用從父層傳遞下來的資料型態props
+                    屬於Stateless Componenets & Pure Components & Presentational Components(無內部狀態的state)
+                    無法使用React生命週期
+                    ex:
+                        // Function Components(Stateless Components)
+                        const someThing = (props) => {
+                            return (
+                                ...
+                            );
+                        };
+                Class Componenets
+                    可使用外部資料傳遞型態props以及內部資料傳遞型態state
+                    屬於Stateful Componenets & Container Components
+                    可使用React生命週期
+                    ex:
+                        // Class Components(Stateful Components)
+                        class someThing extends components {
+                            constructor(props) {
+                                super(props);
+                            }
+                            render(){
+                                return(
+                                    ...
+                                );
+                            }
+                        }
+                    若無需初始props，也可不使用constructor
+                    constructor會運行在components
+        補充:
+            資料流(data flow)與資料綁定(data binding)是否相同?
+                React 
+                    React’s one-way data flow (also called one-way binding) 
+                    keeps everything modular and fast.
+                    React 把資料流和資料綁定放一起說明，表示可讓一切保持模組化
+                    和快速
+                Angular 
+                    把組件與畫面渲染的過程解讀為data flow(也等於data binding)
+                Vue
+                    單向資料流，又可以做到雙向綁定
+                資料流(data flow)
+                    目前三大框架都為單向資料流，Ang是2以上的版本
+                    Vue 1.0 和 AngularJS為雙向資料流(AngularJS所有1.x版本)
+                    優點:
+                        只有一個變更入口 => 維護性高、直觀
+                    缺點:
+                        資料會經過不必要的階層，所以需要其他套件協助(ex:Redux、Vuex)
+                        code數量會增加
+                資料綁定(data binding)
+                    畫面與資料有兩種關聯:
+                        data model的變動去更新UI
+                        UI的變動去更新data model
+                    所以如果能達成"其中之一"，就為"單向綁定"，如果"兩個"都達成，就為"雙向綁定"
+    React中this
+        如何綁定this，綁定的是誰?
+            當extend React.Componenet去宣告元件時，React會綁定this
+            到元件內，但只有特定的部分會被綁定:
+                1.生命週期 ex:componenetDidMount
+                2.render內
+            自己定義的property不會被綁入this，而且this會被指到window上
+        該如何解決這些問題?
+            1.不使用class建構元件方式，改用React.createClass
+            2.render中綁定this
+                ex:<input onChange = {this.handleChange.bind(this)}/>
+            3.constructor中綁定(常見的方式)
+                ex:constructor(props){
+                        super(props);
+                        this.handleChange = this.handleChange.bind(this)
+                }
+                但要多寫程式碼，因為每次做一個property function就需要bind一次
+            4.使用箭頭函式
+                ex:<input onChange={(e)=>this.handleChange(e)}/>
+                會有效能的問題
+            5.宣告property時就使用箭頭函式
+                ex:handleChange = (e)=>{
+                    this.XXXX
+                }
+                算是好的解法，不用多寫程式，也不用在render中綁定降低效能
+    React props
+        它會是React元件(物件)中的屬性，可以想像成每個元件是一個Function，它可以
+        接受任意輸入(props)，並傳入元件後回傳該元件到畫面上
+        基本使用方式:
+            class Person extends React.Componenet{
+                render(){
+                    2.const {name , age , sex} = this.props // 解構賦值
+                    return{
+                        1.
+                            <ul>
+                                <li>姓名:{this.props.name}</li>
+                                <li>性別:{this.props.sex}</li>
+                                <li>年齡:{this.props.age}</li>
+                            </ul>
+                        2.
+                            <ul>
+                                <li>姓名:{name}</li>
+                                <li>性別:{sex}</li>
+                                <li>年齡:{age}</li>
+                            </ul>
+                    }
+                }
+            }
+            // name="tom"會被放到props屬性中
+            ReactDOM.render(<Person name="tom"/>)
+            1.ReactDOM.render(<Person name="tom" age="18" sex="男"/>)
+
+            1.直接把所有資料都輸入好，用this.props.XX的方式寫入資料
+            2.利用解構賦值的方式，先將資料都定義好，再用{XX}方法去抓資料
+        定義元件
+            JS Function
+                function Welcome(props){
+                    return <h1>Hello,{props.name}</h1>
+                }
+                props => (代表屬性)物件參數並回傳一個React元素(函數元件)
+            ES6
+                class Welcome extends React.Componenet{
+                    render(){
+                        return <h1>Hello,{this.name}</h1>
+                    }
+                }
+            上面兩種，以React角度看，是等效的
+        渲染元件
+            DOM標籤
+                const element = <div/>
+            使用者定義元件
+                const element = <Welcome name="Sara"/>
+            完整code
+                function Welcome(props){
+                    return <h1>Hello,{props.name}</h1>
+                }
+                const App = ReactDOM.createRoot(document.getElementById('app'));
+                // 把"Sara"變成props並傳入Welcome函式中
+                const element = <Welcome name="Sara"/>;
+                // dom.render => 上面const Dom = ReactDOM.create()
+                App.render(element)
+        組合元件
+            可以用於要渲染很多元件的時候
+            完整code
+                function Welcome(props){
+                return <h1>Hello,{props.name}</h1>
+            }
+            建立多元件時寫法
+            function App(){
+                return(
+                    /* 字元件 */
+                    <div>
+                        <Welcome name="Sara"/>   
+                        <Welcome name="Cahal"/>   
+                        <Welcome name="Edite"/>    
+                    </div>
+                )
+            }
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            // 建立元件
+            root.render(<App/>)
+        提取元件
+            把某個元件獨立化，當其他元件想要使用它可以進行呼叫
+            完整code
+                function formatDate(date) {
+                    // 設定現在時間
+                    return date.toLocaleDateString();
+                }
+                function Avatar(props){
+                    return (
+                        <img className="Avatar"
+                            src={props.user.avatarUrl}
+                            alt={props.user.name}
+                        />
+                    );
+                }
+                function UserInfo(props){
+                    return (
+                        <div className="UserInfo">
+                            <Avatar user={props.user} />
+                            <div className="UserInfo-name">
+                                {props.user.name}
+                            </div>
+                        </div>
+                    );
+                    
+                }
+                function Comment(props) {
+                    return (
+                        <div className="Comment">
+                            <UserInfo user={props.author} />
+                            <div className="Comment-text">
+                                {props.text}
+                            </div>
+                            <div className="Comment-date">
+                                {formatDate(props.date)}
+                            </div>
+                        </div>
+                    );
+                }
+                // 宣告物件或內容
+                const comment = {
+                    date: new Date(),
+                    text: 'I hope you enjoy learning React!',
+                    author: {
+                        name: 'Hello Kitty',
+                        avatarUrl: 'http://placekitten.com/g/64/64'
+                    }
+                };
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(
+                <Comment
+                    date={comment.date}
+                    text={comment.text}
+                    author={comment.author} />
+                );
+        props唯讀性
+            無論是function or class 都不能修改自己的props(純函數)
+                function sum(a, b) {
+                    return a + b;
+                }
+            相反的，會改變自己的輸入(不純函數)
+                function withdraw(account, amount) {
+                    account.total -= amount;
+                }
+            ##React元件在props方面必須像純函式一樣運作
+    React Componenet 生命週期
+        ES6 Class寫法
+            完整code
+                class MyComponent extends React.Component {
+                    // render 是 Class based 元件唯一必須的方法（method）
+                    render() {
+                        return (
+                            <div>Hello, {this.props.name}</div>
+                        );
+                    }
+                }
+                MyComponent.propTypes = {
+                    name: React.PropTypes.string,
+                }
+                MyComponent.defaultProps = {
+                    name: '',
+                }
+                ReactDOM.render(<MyComponent name="Mark"/>, document.getElementById('app'));
+                必須要用render()，並且render中不能有state修改或非同步方式和瀏覽器互動
+                非同步方式可以使用在componentDidMount()
+        Function Componenet
+            完整code
+                const MyComponent = (props) => (
+                    <div>Hello, {props.name}</div>
+                );
+                MyComponent.propTypes = {
+                    name: React.PropTypes.string,
+                }
+                MyComponent.defaultProps = {
+                    name: '',
+                }
+                ReactDOM.render(<MyComponent name="Mark"/>, document.getElementById('app'));
+                function component 允許return null值
+        生命週期三狀態
+            1.Mounting(插入真實DOM)
+                componentWillMount() 
+                    由於React v16.3版中被標記為不安全
+                componenetDidMount() 
+                    當DOM一開始進來時，會被調用，但DOM已存在時，就不會被調用，適用於一次性的資料加載或初始化操作等
+            2.Updating(正在被重新渲染)
+                1.componentWillUpdate(object nextProps, object nextState)
+                    React v16.3版中被標記為不安全、17版中被棄用，因為在Fetch時，會被多次調用
+                2.componentDidUpdate(object prevProps, object prevState)
+                    所以被componentDidUpdate取代，當組件將要接收到新的props時就會被調用
+                    他有兩個參數，nextPorps和nextContent，在使用時，需在裡面使用setState，防止無限循環
+                3.componenetWillReceiveProps(object nextProps) (已載入元件收到新參數時呼叫)
+                    componenetWillReceiveProps已不在被使用
+                4.shouldComponentUpdate(object nextProps, object nextState) (元件判斷是否重新渲染時呼叫，起始部會呼叫，除非呼叫forceUpdate())
+                    預設return true，若想要優化可以自行編寫判斷式(若使用immutable可以用nextProps === this.props進行對比)
+                    ex:
+                        shouldComponentUpdate(nextProps, nextState) {
+                            return nextProps.id !== this.props.id;
+                        }
+            3.Unmounting(已移除真實DOM)
+                componentWillUnmount()
+            演示code
+                class MyComponent extends React.Component {
+                    constructor(props) {
+                        super(props);
+                        console.log('constructor');
+                        this.handleClick = this.handleClick.bind(this);
+                        this.state = {
+                        name: 'Mark',
+                        }
+                    }
+                    handleClick() {
+                        this.setState({'name': 'Zuck'});
+                    }
+                    componentWillMount() {
+                        console.log('componentWillMount');
+                    }
+                    componentDidMount() {
+                        console.log('componentDidMount');
+                    }
+                    componentWillReceiveProps() {
+                        console.log('componentWillReceiveProps');
+                    }
+                    componentWillUpdate() {
+                        console.log('componentWillUpdate');
+                    }
+                    componentDidUpdate() {
+                        console.log('componentDidUpdate');
+                    }
+                    componentWillUnmount() {
+                        console.log('componentWillUnmount');
+                    }
+                    render() {
+                        return (
+                        <div onClick={this.handleClick}>Hi, {this.state.name}</div>
+                        );
+                    }
+                }
+                ReactDOM.render(<MyComponent />, document.getElementById('app'));
+                當一開始載入元件時第一個會觸發 console.log('constructor')，依序執行 componentWillMount、componentDidMount，
+                而當點擊文字觸發 handleClick() 更新 state 時則會依序執行 componentWillUpdate、componentDidUpdate
+        AJAX非同步處裡
+            只能在componentDidMount中
+            ex:取得Github API
+                class UserGithub extends React.Component {
+                    constructor(props) {
+                        super(props);
+                        this.state = {
+                        username: '',
+                        githubtUrl: '',
+                        avatarUrl: '',
+                        }
+                    }
+                    componentDidMount() {
+                        $.get(this.props.source, (result) => {
+                            console.log(result);
+                            const data = result;
+                            if (data) {
+                            this.setState({
+                                    username: data.name,
+                                    githubtUrl: data.html_url,
+                                    avatarUrl: data.avatar_url
+                            });
+                            }
+                        });
+                    }
+                    render() {
+                        return (
+                        <div>
+                            <h3>{this.state.username}</h3>
+                            <img src={this.state.avatarUrl} />
+                            <a href={this.state.githubtUrl}>Github Link</a>.
+                        </div>
+                        );
+                    }
+                }
+
+                ReactDOM.render(
+                <UserGithub source="https://api.github.com/users/torvalds" />,
+                document.getElementById('app')
+                );
+        Constructor() and Super()
+            constructor()的作用?
+                Constructor 裡面包含了甚麼時候產生、更新、結束等階段
+                在Component執行render()前會被觸發
+                    ex:
+                        class app extends Component{
+                            constructor(props){
+                                super();
+                                console.log('app created')
+                            }
+                            render(){
+                                console.log('call render');
+                                return(
+                                    <div></div>
+                                )
+                            }
+                        }
+                    結果:先看到console裡先出現app created才出現call render
+                另外如果要在constructor存取this.props的值都必須要加props
+        總結
+            生命週期三階段
+                剛啟動(預設狀態)
+                    會啟動constructor() (插入原始DOM)
+                過程(處理狀態)
+                    componentWillMount()、componenetDidMount()進行資料處理，並把資料放入渲染器中
+                    渲染器判斷有無新資料((有)渲染)
+                移除(移除狀態)
+                    componentWillUnmount() => 資料的改變
+    React Router
+        傳統網頁須向伺服器請求資料，由伺服器回傳資料並渲染到畫面，如果資料更新會重新渲染完整的html一次
+        而藉由Router只需要單元件重新渲染，而不用整個html渲染
+        可放置Route的容器
+            <Router history={hashHistory}>
+                <Route path="/" component={App}></Route>
+            </Router>
+        引入方式 {HashRouter} from "react-router-dom"
+            ex:
+                import React from 'react'
+                import { HashRouter } from "react-router-dom";
+                import ReactDOM from 'react-dom/client'
+                import App from './App'
+                import './index.css'
+
+                ReactDOM.createRoot(document.getElementById('root')).render(
+                    <React.StrictMode>
+                        <HashRouter>
+                        <App />
+                        </HashRouter>
+                    </React.StrictMode>
+                )
+        範例code
+            import React from 'react';
+            import ReactDOM from 'react-dom';
+            import { Router, Route, hashHistory, IndexRoute } from 'react-router';
+            import App from './components/App';
+            import Home from './components/Home';
+            import Repos from './components/Repos';
+            import About from './components/About';
+            import User from './components/User';
+            import Contacts from './components/Contacts';
+
+            const routes = (
+                <Route path="/" component={App}>
+                <IndexRoute component={Home} />
+                <Route path="/repos/:name" component={Repos} />
+                <Route path="/about" component={About} />
+                <Route path="/user" component={User} />
+                <Route path="/contacts" component={Contacts} />
+                </Route>
+            );
+
+            ReactDOM.render(
+            <Router routes={routes} history={hashHistory} />,
+            document.getElementById('app'));
+
+        補充
+            1.Route
+                負責URL和對應元件的關係，可以有多個Route規則也可以用嵌套Routing
+                的方式
+                    https://www.example.com/#/todolist
+                在使用Route可以寫成
+                    <Route path="/todolist" element={ <ToDoList/> }>
+                常見屬性    
+                    path
+                        定義路徑
+                    element
+                        定義對應元件
+            2.history
+                Router中有一個屬性為history規則，可以去監聽瀏覽器網址列的變化，並
+                解析URL為location物件，然後讓router使用它匹配到路徑上，並成功渲染
+                三種形式
+                    browserHistory
+                        用來處理URL，並創建一個ex:example.com/some/path的真實URL
+                        引入方式
+                            import { browserHistory } from 'react-router'
+                    hashHistory
+                        使用URL中的hasg(#)去創建ex:example.com/#/some/path
+                        引入方式
+                            import { hashHistory } from 'react-router'
+                    createMemoryHistory
+                        不會在網址列被操作或讀取，用於服務器測試和其他的渲染環境，
+                        不過與上面兩個不同的是，你必需創建它
+                            const history = createMemoryHistory(location)
+                    範例code
+                        import React from 'react'
+                        import { render } from 'react-dom'
+                        import { browserHistory, Router, Route, IndexRoute } from 'react-router'
+
+                        import App from '../components/App'
+                        import Home from '../components/Home'
+                        import About from '../components/About'
+                        import Features from '../components/Features'
+
+                        render(
+                            <Router history={browserHistory}>
+                                <Route path='/' component={App}>
+                                <IndexRoute component={Home} />
+                                <Route path='about' component={About} />
+                                <Route path='features' component={Features} />
+                                </Route>
+                            </Router>,
+                            document.getElementById('app')
+                        )  
+                摘要
+                    不過多數範例都會使用hashHistory，不需要多餘的設定，而browserHistory會
+                    使用在伺服器端渲染，但需要設定伺服器避免處理錯誤，createMemoryHistory
+                    也用於伺服器渲染，使用時會建立一個history物件，不會修改瀏覽器的網址位置
+            3.path
+                對應URL規則，ex:/repos/torvalds會對應到/repos/:name位置，並傳入參
+                數到Repos中，可以用this.props.params.name取得參數，若為查詢參數 /user?q=torvalds 
+                則由 this.props.location.query.q 取得參數
+    範例code
+        import React from 'react';
+        import { Link, IndexLink } from 'react-router';
+        import styles from './appStyles';
+        import NavLink from '../NavLink';
+
+        const App = (props) => (
+            <div>
+                <h1>React Router Tutorial</h1>
+                <ul>
+                <li><IndexLink to="/" activeClassName="active">Home</IndexLink></li>
+                <li><Link to="/about" activeStyle={{ color: 'green' }}>About</Link></li>
+                <li><Link to="/repos/react-router" activeStyle={styles.active}>Repos</Link></li>
+                <li><Link to="/user" activeClassName="active">User</Link></li>
+                <li><NavLink to="/contacts">Contacts</NavLink></li>
+                </ul>
+                <!-- 我們將 App 元件當做每個元件都會載入的母模版，因此可以透過 children 載入對應 URL 的子元件 -->
+                {props.children}
+            </div>
+        );
+
+        App.propTypes = {
+            children: React.PropTypes.object,
+        };
+
+        export default App;
+
+        補充
+            Link
+                Link元件會用於點擊後連結轉換，相當於<a>的React版本，如果希望點擊有對應的css style可以使用
+                activeStyle(inline css)、activeClassName(外部引入css)做設定
+            IndexLink
+                IndexLink元件會處理index用途，特別是當child route actived時，parent route也會被actived，
+                所以我們要透過內部的 onlyActiveOnIndex 來解決
+            Redirect and IndexRedirect
+                範例中沒使用，用於連結跳轉
+            IndexRoute
+                由於"/"下的App元件對應this.props.children會是undefinded，但使用IndexRoute後
+                當URL為"/"時，會對應到HOME元件，不過它沒有path屬性(用於設定默認頁，當訪問了"/"就會顯示出這個默認頁)
+                但不會改變網頁的URL
+                    <Router>
+                        <Route path="/" component={App}>
+                            <IndexRoute component={Home}/>
+                            <Route path="accounts" component={Accounts}/>
+                            <Route path="statements" component={Statements}/>
+                        </Route>
+                    </Router>
+            IndexRedirect
+                可以用來跳轉網頁，當訪問"/"時，直接跳轉到想要的頁面就可以使用，如不使用就會跳到默認頁(HOME)
+                不過會改變網頁的URL
+                    <Router>
+                        <Route path="/" component={App}>
+                            <IndexRedirect to="/accounts"/>
+                            <Route path="accounts" component={Accounts}/>
+                            <Route path="statements" component={Statements}/>
+                        </Route>
+                    </Router>
+                由此一來，訪問"/"後，會直接跳到/accounts的網頁中 
+Immutable JS
+    JS創建變數、賦值後是可變的(mutable)，物件會透過call by reference來共享資料來源
+    ex:
+        var obj = {
+            a: 1,
+            b: 2
+        };
+        var obj1 = obj;
+        如果設定obj1.a=999，會導致obj.a也被改變(也就是淺拷貝(shallow copy))，為了防止這種錯誤
+        就必須使用深拷貝(deep copy)，將共享變成個別擁有的資料來源，缺點:浪費記憶體
+        所以需要透過immutable解決
+    包含了三個部分
+        Immutable
+            它會在創建變數或賦值後，對其有改變(新增、修改、刪除)時，會回傳新的值
+            而處理這方式的library有immutable.js和seamless-immutable等，但在底層
+            上各有不同
+        Immutable JS (相容性低)
+            效能佳（perfermance
+                immutable.js會使用結構共享(structural sharing)的方式，所有的更新動作都會回傳新
+                的值，但會因為是結構分享，大大的降低記憶體的使用，也就是說更改的部分新建立節點，
+                而沒更改的部分維持共享
+            簡易變異追蹤（mutation tracking）reference & Value Equality Check
+                當比對兩物件是否相等不會使用 reference(指標) 比對，而是會用 value 進行比對，以此減少 reference 帶來的
+                recursive scan(遞迴掃描)，因此效能較佳
+            但immutable.js會是把JS物件外包一層做處理，而產生的物件會是immutable物件，而不是JS物件，所以跟其他的library
+            共用也許會產生一些困擾，解決方式:使用靜態類型檢查工具(TypeScript/flow) or 隱藏實作細節(Redux)來處理
+        Seamless-immutable (相容性高)
+            這個library跟其他的JS library交互使用良好，也較為輕巧，由於 seamless-immutable 會使用JS的原生物件，部會產生
+            專用的資料結構，但缺點是使用淺拷貝(shallow copy)的方式產生新值來回傳，不會有structural sharing 和 value equality check
+            所帶來的效能好處
+
+打包與部屬
+    Vite(React)
+        安裝
+            npm create vite@latest
+            進入資料夾後
+            npm install <= 安裝package.json和node_modules
+        注意
+            Vite裡的React檔只能是jsx不能是js
+    Github Page
+    React在Github Page上布置不是單純push上code就好，需要做一些調整
+    React
+        1.先推code到Github Page上
+        2.回專案中安裝gh-pages套件
+            (npm) npm i gh-pages
+            (yarn) yarn add gh-pages
+        3.到packge.json的"script"中加上兩個指令
+            "predeploy": "npm run build", // 這邊使用 npm 或 yarn 就看你啟動專案的方式
+            "deploy": "gh-pages -d build",
+        4.再加上"homepage":"https://VincentXu720.github.io/my_portfolio"(不用加到"script"設定中)(不用加github.com，只需要githubName/app-name)
+        5.輸入指令
+            (npm) npm run deploy
+            (yarn) yarn deploy
+    React+Vite
+        1.先推code到Github Page上
+        2.到vite.config.ts中
+            輸入 base:"/git資料庫名稱/"
+        3.創立.github資料夾
+        4.在.github資料夾中創建workflows資料夾
+        5.workflows資料夾中創建deploy.yml
+        6.在deploy.yml中貼上
+            name: Deploy
+
+            on:
+            push:
+                branches:
+                - main
+
+            jobs:
+            build:
+                name: Build
+                runs-on: ubuntu-latest
+
+                steps:
+                - name: Checkout repo
+                    uses: actions/checkout@v2
+
+                - name: Setup Node
+                    uses: actions/setup-node@v1
+                    with:
+                    node-version: 16
+
+                - name: Install dependencies
+                    uses: bahmutov/npm-install@v1
+
+                - name: Build project
+                    run: npm run build
+
+                - name: Upload production-ready build files
+                    uses: actions/upload-artifact@v2
+                    with:
+                    name: production-files
+                    path: ./dist
+
+            deploy:
+                name: Deploy
+                needs: build
+                runs-on: ubuntu-latest
+                if: github.ref == 'refs/heads/main'
+
+                steps:
+                - name: Download artifact
+                    uses: actions/download-artifact@v2
+                    with:
+                    name: production-files
+                    path: ./dist
+
+                - name: Deploy to GitHub Pages
+                    uses: peaceiris/actions-gh-pages@v3
+                    with:
+                    github_token: ${{ secrets.GITHUB_TOKEN }}
+                    publish_dir: ./dist
+        7.在termind輸入git add .
+        8.git commit
+        9.到github官網 => settings => actions => general => workflow permissions 點Read and write permissions後save
+        10.再到actions中，擊點剛添加的event
+        11.點Re-run jobs => Re-run failed jobs
+        12.再到setting => pages => branch
+        13.改成gh-pages後按save
+        14.大功告成
+
+補充
+    (介紹資料架構)https://ithelp.ithome.com.tw/articles/10203767
+    表單
+        (驗證電子郵件的表達式)/^([a-z\d\.-]+)@([a-z\d-]+)\.([a-z]{2,3})(\.[a-z]{2,3})?$/
+    CSS命名方式
+        .css
+            在React中".css"的CSS檔案，會被認為是全局樣式文件，對所有的組件都有效，並且會導致命名空間或樣式錯誤
+            的問題
+        .module.css
+            在React中".module.css"的CSS檔案，會被認為是局部樣式文件，只對引入他的組件有效，避免全局的問題發生

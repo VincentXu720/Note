@@ -1,0 +1,260 @@
+(介紹)https://ithelp.ithome.com.tw/m/articles/10336869
+安裝
+    一般(自動創建資料夾)
+        npx create-next-app
+        npx create-next-app --ts (加上TypeScript)
+        (啟動)npm run dev
+    整合包(自動創建資料夾)
+        npx create-next-app@latest
+        (啟動)npm run dev
+        需先 npm run build (重新建構 next)
+        再使用 npm run start
+路由
+    資料夾路由(基於資料夾名稱)
+        根據資料夾位置用"/"分隔
+        ex
+            |- src
+            |---app <= 這裡不是 app 會是 "/"
+            |----book <= 這裡就是 book
+            |------page.tsx <= 這裡就是要顯示的tsx檔案(一定要用 page 當作檔名)
+            路由是 http://localhost:3000/book
+        ex
+            |- src
+            |---app <= 這裡不是 app 會是 "/"
+            |----book <= 這裡就是 book
+            |------story <= 資料夾
+            |--------page.tsx
+            |------page.tsx <= 這裡就是要顯示的tsx檔案(一定要用 page 當作檔名)
+            路由是 http://localhost:3000/book/story
+    Pages路由(基於Pages這個資料夾) 已不被使用(在新項目中)
+        需自行創立一個 pages 資料夾
+        ex
+            |- pages <= 資料夾(需自創)
+            |---a.tsx <= jsx、js都可以
+        路由 http://localhost:3000/a <= a 是 pages 資料夾下的檔案
+        ex
+            |- pages <= 資料夾(需自創)
+            |---posts <= 資料夾
+            |-----index.tsx <= 只要用 index 就不需要在路徑後，加上檔名
+            路由 http://localhost:3000/posts
+    Dynamic 路由 (動態路由)
+        會用 [] 表示該資料夾是一個 index 的路徑
+        ex
+            |- pages <= 資料夾(需自創)
+            |----[id] <= [] 中要放甚麼都可以
+            |------index.tsx
+            路由 http://localhost:3000/1 <= 1 是由 [] 製造出來的
+        ex
+            |- pages <= 資料夾(需自創)
+            |----[id] <= [] 中要放甚麼都可以
+            |------a.tsx
+            |------b.tsx
+            路由 http://localhost:3000/1/a
+        ex
+            |- pages <= 資料夾(需自創)
+            |----[id] <= [] 中要放甚麼都可以
+            |------comments
+            |-------[cid].tsx <= [] 中要放甚麼都可以，可以當作上面 [id] - X 這樣寫路由
+            路由 http://localhost:3000/1/comments/1-1
+    catch all
+        屬於 Dynamic routes 的一種，不過差別是不需一個一個的定義動態部分，將所有動態抓起來，讓 router 更加彈性
+        寫法
+            pages/posts/[...slug].js 可以代表 /posts/a or /posts/a/b or /posts/a/b/c
+            slug 可以是任何東西，這動態資訊出現在 query 物件中會是
+            { "slug":["a","b","c"] }
+        ex
+            |- pages <= 資料夾(需自創)
+            |---posts <= 資料夾
+            |-----[...slug].tsx <= 不一定要 slug 其他東西都可以，但要用 [] 包著並用 "..." 去展開
+            路由 http://localhost:3000/posts/a <= 這裡的 a 無論輸入甚麼都可以
+            路由 http://localhost:3000/posts/a/b <= 也可以一直延伸下去
+    Optional catch all routes
+        比 catch all 更彈性，只需要把 [...slug] 外部再加上 [] => [[...slug]] 就可以了，意思是他具有 catch all 的特性
+        但多出一種路由路徑 http://localhost:3000/posts
+        ex
+            |- pages <= 資料夾(需自創)
+            |---posts <= 資料夾
+            |-----[[...slug]].tsx <= 不一定要 slug 其他東西都可以
+    自定錯誤頁面
+        在 pages 中創立一個 _error.js 檔案，這會成為自定義的錯誤頁面
+    設定檔案路由
+        在 next.config.js 中使用 pageExtensions 選項來設定要支援的路由檔案類型
+            ex
+                module.exports = {
+                    pageExtensions: [ 'jsx', 'js', 'ts', 'tsx' ]
+                }
+    NextJS 的專案結構
+        my-nextjs-app/
+        |-- .next/                # Next.js 自動產生的檔案 (不需要手動修改)
+        |-- node_modules/         # 專案的相依套件
+        |-- pages/                # 存放網頁的主要資料夾
+        |   |-- index.js          # 首頁，對應到根路徑 /
+        |   |-- about.js          # 關於頁面，對應到 /about
+        |   |-- posts/
+        |       |-- [id].js      # 動態路由，對應到 /posts/[id]
+        |-- public/               # 靜態檔案 (例如圖片、樣式表) 都放在這裡
+        |-- styles/               # 存放全域樣式的資料夾
+        |   |-- globals.css       # 全域 CSS 樣式
+        |-- .gitignore            # 設定哪些檔案要忽略版本控制
+        |-- next.config.js        # Next.js 的設定檔
+        |-- package.json          # 專案的相依套件和指令設定
+        |-- README.md             # 專案的說明文件
+CSR
+    Next 中提供兩種方式
+        1.<Link>(next/link)
+        2.useRouter(next/router)
+    缺點
+        1.SEO 不好
+            google 的搜尋，是透過爬蟲的方式，抓取所需的資料，而爬蟲時，如果能爬到 HTML 架構與完整的頁面內容，這樣網站的曝光度會更高
+            CSR 在一開始跟 Server 請求 HTML 時，只會有網頁的架構，而內容會是透過加載 JS bundle 去呈現出來，導致 google 無法爬到完
+            整的資料，所以不太適用在要求 SEO 的網站上
+        2.效能不好
+            CSR 會在 render 後載入打包的 code，當網頁變得複雜時，JS 檔案越來越大，造成 FCP 和 TTI 都增加，導致使用者開啟網頁時會有
+            一段時間呈現白頻的狀況發生，造成體驗不佳
+    優化
+        1.打包 JS 檔案，將 JS 檔案縮小
+        2.透過 code splitting 把打包切分成不同的小檔案，減少畫面白頻的情況
+            使用 Create react app or Next.js 可以直接使用 code splitting，就可以保證只在使用到這行 code 的情況下，才會引入 JS 檔案
+            ex
+                // React 中
+                // before
+                import { add } from './math' <= 一開始就會引入 JS
+                console.log(add(16,26))
+                // after
+                import("./math").then((math)=>{ <= 執行到這段再引入 JS
+                    console.log(math.add(16,26))
+                })
+        3.lazy loading
+            (介紹)https://medium.com/starbugs/react-%E7%82%BA%E5%A4%AA%E9%BE%90%E5%A4%A7%E7%9A%84%E7%A8%8B%E5%BC%8F%E7%A2%BC%E5%81%9A-lazy-loading-%E5%92%8C-code-splitting-7384626a6e0d
+            先讓網頁 render 重要部分，把不重要的資源放到必要使用時再load
+            ex
+                // React 中
+                import React,{ suspense } from "react"
+                // lazy loading
+                onst OtherComponent = React.lazy(() => import("./OtherComponent"));
+
+                function MyComponent() {
+                    return (
+                        <div>
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <OtherComponent />
+                        </Suspense>
+                        </div>
+                    );
+                }
+        4.Service worker 快去頁面，讓後續的訪問讀取更快速，並提供離線訪問功能
+    適用
+        CSR 不會在用戶切換網頁時，整個網頁不會重新載入，而是透過 JS 動態更新內容，使得切換頁面的體驗更加流暢，所以適用在 單一應用程式(SPA) 上
+    使用方式
+        透過 useEffect or 事件處理函式中發送 API 請求
+            ex
+                import { useState, useEffect } from 'react';
+                function MyPage() {
+                    const [data, setData] = useState(null); <= 一開始為空值
+
+                    useEffect(() => {
+                        fetch('https://api.example.com/data') <= 抓取 API
+                        .then(res => res.json()) <= 轉為 JSON 格式
+                        .then(data => setData(data)); <= 將資料的狀態改變成抓取到的 API 資料
+                    }, []);
+
+                    return (
+                        <div>
+                            {data && <p>{data}</p>}  <= 如果有抓到 data，才會製造 <p> 元素
+                        </div>
+                    );
+                }
+        
+    補充
+        DCL
+            全名 Document Object Model(文件物件模型)，是網頁結構的表示形式，包含要點與子要點，另一種方法是將 DOM 是為樹，頁面為樹根，頁面不同的 HTML 是樹枝
+            在瀏覽器收到 HTML 的 code 會產生該網頁的模型，代表準備好執行 code 和顯示動態內容
+        FCP
+            首次內容繪製，另一個效能指標，FCP 測量呈現 DOM 中第一個內容的時間點，第一個內容可以是文字、影像或使用者辨識為網頁部分的內容，與 FP(首次繪製) 不同
+            FP 是測量頁面中任何元素的呈現時間
+            也可以使用第一個位元組接收時間 (TTFB) 測量來自 Web 伺服器的第一個位元組何時到達瀏覽器，而 FCP 測量的是使用者可以看頁面開始成功載入的最早時間點，
+            因為使用者對 Web 效能的感知對於網頁互動很重要，以使用者角度看 TTFB 就沒有太大的重要性
+        DCL 與 FCP 如何影響 SEO
+            DCL 和 FCP 會是 Google 評估效能時強調的兩指標，雖然 Google 並未具體說明，但這兩指標肯定會考慮在內，開發者可透過許多措施改善網頁的這些效能指標，利用
+            快取和 CDN 縮短 DCL 和 FCP 時間
+        Cloudflare 如何改善 DCL 和 FCP
+            Cloudflare CDN 透過在各地快取內容，加快網站速度，更快回應 HTTP 請求，讓瀏覽器更快接收頁面 HTML，從而改善兩個指標
+        網頁運作方式
+            browser (request)-> Server (return HTML file(cloud JS and CSS file)) 
+SSR
+    當使用者透過 URL request 網站時，server 會處理好 JS 和 HTML 後再回傳一個完整的 HTML 給 browser
+    優點
+        FCP 會比較快，因為 server 已經處理完 render 的工作並回傳完整的 HTML，節省了解析 JS 時間，由於 HTML 完整，所以更容易被爬蟲解讀
+    缺點
+        1.TTFB
+            全名 "Time To First Byte"，就是從用戶端對 server 送出請求後，browser revice server 響應資料的時間
+            因為 server 會需要先生成完整的 HTML 後，再回傳給 browser，但如果有很多人同時造訪網頁或使用者網速較慢等，會造成 server 的負擔的情況會影響到 TTFB
+        2.互動性體驗差
+            每次互動都需要再到 server 重新讀取頁面，導致使用體驗跟網頁反應上不如 CSR 頁面順暢
+    適用
+        SSR 會在每次用戶切換頁面時，browser 向 Server 發送請求，讓 Server 動態生成新頁面並傳回 browser，所以適用於 多頁應用程式(MPA) 上
+    使用方式
+        getServerSideProps 從 Server 取得數據，再傳給頁面組件
+            ex
+                export async function getServerSideProps(context) {
+                    const res = await fetch('https://api.example.com/data'); <= 讀取 Server 資料
+                    const data = await res.json(); <= 將資料轉成 JSON 格式
+                    return {
+                        props: {
+                            data
+                        }
+                    };
+                }
+
+                function MyPage({ data }) {  <= 將 props 解構後，傳遞給組件
+                    // 使用從伺服器獲得的數據來渲染頁面
+                }
+
+                export default MyPage;
+        可以看 pages/ssr.tsx 範例
+    特點
+        在網頁架構中，會有一個"__N_SSP"屬性，表示是透過 server side props 產生的網站
+    個人看法
+        放完磚塊後再鋪水泥
+SSG (Static Side Generation)
+    將所有內容在 build 時，全部打包到檔案中，用戶在瀏覽時，就可以拿到完整的 HTML 檔案，利於 SEO，也可以讓 CDN 變好，因為用戶每次拿到的 HTML 都不會改變，適用資料變動小的網站
+    使用方式
+        透過 getStaticProps 和 getStaticPaths
+        getStaticProps
+            在 build 時，就抓取資料
+            ex 
+                import { GetStaticProps } from "next";
+                interface Post {
+                    userId: number;
+                    id: number;
+                    title: string;
+                    body: string;
+                }
+
+                interface HomeProps {
+                    post: Post;
+                }
+
+                export default function Home({ post }: HomeProps) {
+                    return (
+                        <div>
+                            <h1>{post.title}</h1>
+                            <p>{post.body}</p>
+                        </div>
+                    );
+                }
+
+                export const getStaticProps: GetStaticProps = async () => {
+                    const res = await fetch("https://jsonplaceholder.typicode.com/posts/1");
+                    const post: Post = await res.json();
+
+                    return {
+                        props: {},
+                    };
+                };
+        getStaticPaths
+    特點
+        在網頁架構中，會有一個"__N_SSG"屬性，表示是透過 static side generation 產生的網站
+    個人想法
+        鋪一層水泥放一塊磚塊
+

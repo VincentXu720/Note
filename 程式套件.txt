@@ -1,0 +1,39 @@
+Type JS(自動輸入動畫)
+    https://github.com/mattboldt/typed.js
+資料視覺化工具
+    D3.js
+        (介紹)https://jacychu.medium.com/d3-js-%E8%B3%87%E6%96%99%E8%A6%96%E8%A6%BA%E5%8C%96%E5%B7%A5%E5%85%B7-%E4%B8%8A-6cc4040b50d3
+        https://d3js.org/
+    chart.js
+        (介紹)https://www.chartjs.org/docs/latest/getting-started/
+    C3.js
+        (介紹)https://hsuchihting.github.io/javascript/20200715/3292510004/
+    Masonry(資訊瀑布流)
+        (介紹)https://powerkaifu.github.io/2020/11/14/lesson-masonry/
+WebSocket(網路協定)
+    (介紹)https://medium.com/enjoy-life-enjoy-coding/javascript-websocket-%E8%AE%93%E5%89%8D%E5%BE%8C%E7%AB%AF%E6%B2%92%E6%9C%89%E8%B7%9D%E9%9B%A2-34536c333e1b
+FullCalender(行事曆)
+    (介紹)https://ithelp.ithome.com.tw/articles/10197783
+SweetAlert 2(彈跳視窗)
+    (介紹)https://pluscdev.com/tutorial-sweetalert2/
+    (官網)https://sweetalert2.github.io/
+FFmpeg(音訊/視訊轉檔工具)
+    (介紹)https://blog.miniasp.com/post/2022/10/08/Useful-tool-FFmpeg
+React Slick(輪播圖)
+    (官網)https://react-slick.neostack.com/
+simplePagination.js(分頁)
+    (github)https://flaviusmatis.github.io/simplePagination.js/
+信件
+    EmailJS(客製化信件)
+        (官網)https://www.emailjs.com/
+    nodemailer(node寄信件)
+        (介紹)https://chen0625tung.medium.com/%E5%88%A9%E7%94%A8nodemailer%E4%BE%86%E7%99%BC%E9%80%81%E9%9B%BB%E5%AD%90%E9%83%B5%E4%BB%B6-node-js%E6%87%89%E7%94%A8%E7%AF%87-9ef77dc0c1f4
+    SendGrid(寄信件)
+        (介紹)https://jclassroom.net/how-to-set-smtp-domain-authentication/
+    mailgun(寄信件)
+        (介紹)https://medium.com/@xo282230/%E5%A6%82%E4%BD%95%E7%94%B3%E8%AB%8Bmailgun-smtp%E5%AF%84%E4%BF%A1-504c2d2a179e
+Shuimo design(水墨畫UI)
+    (官網)https://shuimo.design/main
+Vercal AI(前端部屬平台)
+    (官網)https://vercel.com/ai
+    (介紹)https://tools.wingzero.tw/article/sn/2387

@@ -1,0 +1,27 @@
+RESTful API
+    網頁對Server發出Request，四動作(CRUD)
+    C(create) => 創建
+    R(Read) => 讀取
+    U(Updata) => 更新
+    D(Delete) => 刪除
+
+    https://airbnb.com/api/hotels 
+        https://airbnb.com/api/ => address
+        hotels => Resource
+    通用的四Methods(GPUD)
+        G(Get) => 讀取
+        P(Post) => 新增
+        U(Updata) => 更新
+        D(Delete) => 刪除
+    進行CRUD Operation
+    C => 使用Post到Server，並附上資料，成功後Server會回傳新資料(Response)
+    R => 使用Get到Server，成功後Server會回傳資料(Response)
+    U => 使用Put到Server，並附上要更新的id和資料，成功後Server會回傳已更新後資料(Response)
+    D => 使用Delete到Server，並附上要刪除的id
+    常用的五種寫法
+    POST /api/hotels
+    GET /api/hotels => 讀取全部資料
+    GET /api/hotels/1 => 讀取單一筆資料
+    PUT /api/hotels/1
+    DELETE /api/hotels/1
+        

@@ -1,0 +1,103 @@
+打包工具有哪些?
+    Vite、Webpack、Rollup
+Rollup
+    常與Webpack做比較，但他適用於library的打包，使用上也比Webpack更加簡單
+    安裝
+        npm init -y // -y 是在npm初始化項目時，無須詢問開發者
+        npm install --global Rollup
+        rollup index.js --file dist/bundle.js --format umd --name "myBundle" <= 不需寫npm
+            -f, --format：檔案輸出格式（amd, cjs, es, iife, umd, system）
+            -n, --name：檔案全域名稱
+            -m, --sourcemap：產生 sourcemap
+            -w, --watch：監聽檔案變化即時編譯
+            -c, --config：使用 rollup.config.js 的設定
+    創建rollup.config.js
+        當需要的設定變多，可自行建立rollup.config.js來寫入設定，(官方文件)https://rollupjs.org/command-line-interface/#configuration-files
+        以下是常用設定
+            const config = {
+                input: 'index.js', // 進入點
+                plugins: [], // 插件
+                external: [], // 外部插件
+                onwarn(warning, warn) { // 自定義警告
+                    // do something...
+                },
+                treeshake: true, // 刪除沒用到的程式碼
+                output: { // 輸出檔案
+                    name: 'bundle', // 全域名稱
+                    file: 'dist/bundle.js', // 輸出檔案
+                    format: umd, // 輸出格式
+                    sourcemap: true // 是否產生 sourcemap
+                }
+            }
+            export default config
+        然後到packge.json加入指令，方便編譯
+            {
+                "scripts": {
+                    "build": "rollup -c"
+                }
+            }
+        結果
+            (function (global, factory) {
+                typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+                typeof define === 'function' && define.amd ? define(factory) :
+                (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.bundle = factory());
+                }(this, (function () { 'use strict';
+
+                const myFunction = async () => {
+                    console.log('myFunction');
+                };
+
+                myFunction();
+
+                return myFunction;
+            })));
+        其他插件
+            (介紹)https://ithelp.ithome.com.tw/articles/10255453
+    ES6 Module
+        由於Rollup會針對ES6 Module所設計的打包工具，所以必須使用ES6 Module撰寫，有兩種方式
+            1.將ES Module附檔改為 .mjs
+            2.在packge.json內加入{ "type":"module" }
+Webpack
+    (官網)https://webpack.js.org/
+    what is Webpack?
+        Webpack是一個自動化網頁打包工具，把用到的程式經過最佳化處理，然後打包成我們要用的檔案，Webpack幫助我們開發所使用的模組最佳化，並打包成經過處理的JS檔，還可以搭配轉譯套件
+        他會採用Module bundle方式進行打包
+    前置設定
+        npm init -y <= 建立 packge.json
+        主目錄下建立index.html和index.js
+        npm install webpack webpack-cli --save-dev <= 安裝Webpack，cli 允許透過terminal運行webpack，還有其他額外內容
+        在主目錄下建立webpack.config.js進行初始化設定
+            const path = require("path");
+            module.exports = {
+                entry: "./index.js",  <= 這裡表示進入點，就是路徑下的index.js
+                output: {  <= 輸出的檔名
+                    filename: "index.bundle.js",  <= 輸出在主路徑下
+                    path: path.resolve(__dirname, "./"),
+                },
+            };
+        使用方式
+            先到packge.json，在script中加入build
+                "scripts": {
+                    "test": "echo \"Error: no test specified\" && exit 1",
+                    "build": "webpack" <= 加入這段
+                },
+            安裝jQuery，並直接在index.js中引用
+                npm install jquery
+        特點
+            Webpack有自己的dev-server(本地伺服器)，而dev-server會在開發過程中自動檢測程式碼的變更更新畫面，其過程會由進入點(entry point)分析引入模組所產生依賴圖進行打包，結束後才會重啟Server
+            一旦code修改，Webpack的熱更新會再次以修改的進入點(entry point)進行打包，同時所有依賴會被重新加載
+            這樣會有兩個缺點
+                1.專案越來越大，開發時間會變長
+                2.開發體驗變慢
+    補充
+        Bundle based dev server
+            entry -> route -> module -> Bundle -> Server ready(重啟Server)
+Vite
+    Vite也有自己的dev-server，同時利用browser支援的Native ESM運作
+    這樣的運作方式好處在於即使沒對專案進行傳統打包，並根據Http的request來載入模組進行處理，實現真正的依需求加載
+    安裝
+        npm init vite@latest -> terminal 會詢問專案名和框架
+    補充
+        Native ESM based dev server
+            Server ready -> entry -> route -> module
+            Vite啟動伺服器後，當browser在HTML中讀取到<script type="module">後，針對main.js中有import的模組像伺服器發送請求，同時Vite會將browser看不懂的code，進行轉譯壓縮成js檔

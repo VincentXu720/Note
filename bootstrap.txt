@@ -1,0 +1,52 @@
+格線系統
+    關鍵字
+        格線系統會透過column 與 gutter的加總去調整
+        當超過時，不會跑出去，會跳到下一行
+        column(欄)
+            通常為12格(因為好整除)，還有其他16 or 24 欄(但不常見)
+        gutter(間距)
+            通常會用padding or margin，產生間隔
+    常用值
+        container
+            容器，作用在於置中內部元素，內部第一個標籤可以不使用row
+        row
+            內容變成一列，基底還是以flex容器，所以裡面也包含了flex-wrap，才可以讓內部的col加總超過12後，跳到下一行
+        column
+            裡面不需要再設定寬度，因為在設定col-X就已經設定好了寬度，在col中最好不要去調margin or padding的左右，因為會導
+            致已設定好的格線跑掉，而border不會影響到，因為有box-sizing:border-box
+            如果col不加值，row會根據比例去做排列
+    基本語法
+        <div class="container">  <= 定義這是個容器
+            <div class="row">   <= 將內容排成列
+                <div class="col-3">  <= class中的col只要div大小不超過12放幾個都可
+                    <h1>選單</h1>   <= 隨便放，這裡面可以去調整margin or padding，但不要
+                </div>
+                <div class="col-9">  <= row裡面的第一層固定是column，不能是<h2>或其他的，就像ul > li or tr > td 一樣
+                    <h2>內容</h2>
+                </div>
+            </div>
+        </div>
+    RWD
+        在bootstrap 5 中都會以手機板為優先(col-X)，在平板的話(col-md-X)，如果先用PC版(col-md or lg)
+        Xs => < 576px max-width:none
+        sm => >= 576px max-width:540px
+        md => >= 768px max-width:720px
+        lg => >= 992px max-width:960px
+        xl => >= 1200px max-width:1140px
+        xxl => >= 1400px max-width:1320px
+    元件與容器
+        元件 => 元件
+        容器 => 容器
+        不要相互混雜在一起
+    通用類型搭配
+        可以元件在斷點時增加某些功能
+        d-md-none => 在平板寬度時，display:none
+        mb-md-5 => 在平板寬度時，margin-bottom:3rem
+    細節
+        選單基本不會用column去做排列，因為不知道選單中會有多少的項目
+        .d-{size}-{flex屬性} => .d-md-justify-content-center
+        由小到大or由大到小去寫(比較不會亂)樣式也是
+            ex:
+                <div class="col-12 col-md-11 col-lg-4 d-none d-md-block"></div>
+                <div class="col-lg-4 col-md-11 col-12"></div>
+        col 內部可以再加 row

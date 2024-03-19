@@ -1,0 +1,258 @@
+終端機
+    指令
+        (window) dir 顯示資料夾裡的檔案 (mac)ls
+        (window mac) mkdir 新增資料夾
+        (window) 無 (mac) touch 開新檔案
+        (window) copy 複製 (mac) cp
+        (window) move 移動 (mac) mv 
+        (window) del 刪除 (mac) rm 
+        (window) cls 清除畫面上的指令 (mac) clear 
+Git
+    安裝
+        (官網) https://git-scm.com/ <= 到官網下載
+        確認
+            git --version 
+    新增 repositories (本地)
+        到要新建的專案資料夾中輸入
+            git init
+            出現"Initialized empty Git repository in "路徑" "
+        設定環境
+            git config --global user.name = "用戶名"
+            git config --global user.email = "Email"
+            git config --list (按q或+Enter就可退出) <= 確認是否設定完成
+    基本操作
+        流程
+            工作目錄(專案資料夾) => 索引(add) => 本地數據庫(commit) (到此處算更新完成) => 遠端數據庫(push)
+        git status 查看資料狀態
+            Untracked files <= 裡面會顯示未追蹤檔案
+        git add . 將檔案加入索引
+        git commit -m "訊息" 更新檔案 (此處就算完成更新)
+        git reflog 查看詳細歷史紀錄
+        undo 回到上一頁
+        git fetch 從遠端下載檔案
+        git checkout -b f/e 創建並切換到該分支
+    Sourcetree
+        (介紹)https://teafatesanya.blog.fc2.com/blog-entry-111.html
+        安裝
+            (官網)https://www.sourcetreeapp.com/
+            建議將advanced Options中的內容全部勾起，這樣就不需後來的設定
+                Configure auto line ending by default 對應的是不同平台的行尾字元處理
+                Configure Global Igonre 對應的是安裝好SourceTree後，Tools->Options->Git->Global Igonre List會先幫開發者建好預設文件，沒有勾的話就沒有預設的文件檔
+        使用
+            Clone 連接遠端數據庫
+            Add 已有本地端數據庫
+            每次先更改檔案他會及時同步到Sourcetree上
+    新增 repositories (GitHub)
+        到GitHub官網 https://github.com/ 新增 repositories
+        兩種方式綁定到GitHub數據庫
+            1.在本地端開啟數據庫
+                git init
+                git add README.md
+                git commit -m "first commit"
+                git branch -M main
+                git remote add origin git@github.com:VincentXu720/git_example.git  // origin 是數據庫名稱
+                git push -u origin main
+            2.本地端已有數據庫
+                // 與GitHub建立連接
+                git remote add origin git@github.com:VincentXu720/git_example.git
+                git branch -M main <= 強制將當前分支改名為 main (-M 強制改名指令)
+                git push -u origin main
+        確認是否綁定成功
+            大開 ".git" 資料夾中的 config 裡出現 [remote "origin"] 就表示綁定成功
+    常用指令
+        git config --global allias.co checkout === git checkout <= 切換不同分支、恢復文件、創建新分支
+            1.切換分支
+                git checkout <branch name>
+                git checkout master // 將工作目錄切換到主分支
+            2.創建分支
+                git checkout -b <new-branch-name>
+                git checkout -b feature-branch // 創建一個名為 feature-branch 的新分支並切換到它
+            3.切換到前分支
+                git checkout -
+            4.撤銷文件修改
+                git checkout --<file>
+            5.切換到特定提交
+                git checkout <commit-hash>
+            6.切換標籤
+                git checkout tags/<tag-name>
+            7.看查工作區與暫存區的差異
+                git diff "file name"
+                git diff "commit ID"
+                git diff "commitA ID" "commitB ID"
+        git config --global allias.br branch === git branch <= 用於列出、創建、刪除分支
+            1.列出分支
+                git branch <= 列出所有本地分支，當前分支前會被標記為綠色並有星號
+            2.創建分支
+                git branch <branch-name> <= 創建新的分支，但不會切換到新分支
+                git branch feature-branch // 創建一個名為 feature-branch 的新分支
+            3.刪除分支
+                git branch -d <branch-name> <= 如果分支未被合併，則"-d"無法刪除分支並會有錯誤，必須使用"-D"強制刪除
+                git branch -d feature-branch // 刪除名為 feature-branch的分支
+            4.重命名分支
+                git branch -m <new-branch-name>
+                git branch -m new-feature-branch // 將當前分支重命名為 new-feature-branch
+        git config --global allias.st status === git status
+        git config --global allias.ct commit === git commit
+    多個數據庫
+        為什麼要多個數據庫?
+            多人協作、不同單位
+            有可能會有一個數據庫(本地)，一個(測試主機)、一個(正式主機)
+        流程
+            本地 -> 測試主機 -> 正式主機
+    指令分解
+        -u:追蹤預設要push的分支
+    HEAD 指標
+        可以透過指標回朔到之前的commit去找bug，回朔方式會透過checkout
+        控制HEAD
+            git checkout "編號"
+    Checkout
+        切換分支
+            git checkout "commit編號"
+            git checkout aaff037
+    還原檔案
+        新增檔案時，還沒加入追蹤(commit)，清空工作目錄
+            git clean -n  <= 查看將被清除的檔案
+            git clean -f  <= 強制清除檔案
+        加入追蹤(commit)後，清空工作目錄 // 追蹤是指檔案以commit過(數據庫追蹤)，當對檔案使用add後就會失效
+            git checkout --<file>
+        加入索引(add)後，退回工作目錄 // 當檔案被add後，就要使用這個方式，才可以復原檔案，這個指令不限於追蹤前後
+            git reset HEAD
+            git reset HEAD^ <= 還原前一個版本，"^"代表上一個的，如果要兩個就用"^^"
+            git reset HEAD^ --hard <= 還原前一版本並放棄更新檔案
+        當用 git reset HEAD^ --hard 刪除的 commit 要還原時
+            git reset reflog <= 透過這個去找被刪除的 commit 紀錄
+            git reset "被刪除的 commit 編號" <= 這裡就可以把 commit 找回來
+            git reset "被刪除的 commit 編號" --hard <= 但上面那個會有索引資料產生，不需要就加上"--hard"
+    分支(branch)
+        主要用途在於給在測試主機中給使用者觀看結果，再放到正是主機上線
+        開新分支
+            git branch "分支名稱"
+        查看分支
+            git branch  <= * 是顯示目前的分支
+        切換分支
+            git checkout "分支名稱"
+        結論
+            branch 是便利貼，他會貼在commit的位置上(分支上)
+            git checkout "分支名稱"，HEAD 會依照對應位置指定 commit 位置
+        合併分支
+            主支要擁有分支的資料必須先 checkout 到主支
+            git merge "要合併的分支名稱"
+            git merge "要合併的分支名稱" --no-ff <= 可以在合併時有新的commit紀錄 === git commit -m ""
+            何時用到 --no-ff
+                當你想知道在甚麼時候將分支合併的情況下就可以使用，只是會多個commit紀錄
+                記法
+                    當不同分支commit出來的要合併就不需要 --no-ff
+                    同分支要合併的就要 --no-ff
+    PR (pull request)
+        流程
+            1.透過 fork 去抓到專案 (相當於在你的 repo 中建立一條分支)
+            2.fork 後在使用 git clone 抓到 repo 中的資料夾，並進到(cd)該資料夾中
+            3.透過 git add . -> git commit -m "訊息" -> git push "repo名稱" "分支"
+            4.對方的 repo 的 Pull requests -> new pull request(新增PR) -> Create pull request(創建PR)
+            5.在對方的 commit 紀錄中會有我們 commit 的紀錄(我方每個 commit 紀錄，在對方會有兩個)
+    合併衝突
+        衝突檔案都會放到工作目錄中，需要加入索引(add)，再加入追蹤(commit)
+        原因
+            當更改在同一個位置時(code 行數)，就會發生錯誤
+        本地衝突
+            1.兩個分支在 commit 後，git 發現改到相同的位置(code 行數相同)
+            2.這時檔案中會出現要更改的訊息，接受後，在終端機輸入 git add . -> git commit <= 如果輸入 git commit -m "訊息" 就不出現第3步驟 
+            3.終端機會告訴你發生錯誤的訊息，使用在終端機輸入":wq"就可以退出
+        遠端衝突
+            與本地衝突相同，只會在合併的語法會使用"git pull"將 repo 的資料，拉下來與我的資料作合併，輸入完後檔案會出現更改訊息，接受後
+            也是使用 git add . -> git commit -> git push "repo name" "分支名稱"
+    保護分支
+        在 GitHub 中的 repo 中的 setting -> Branches 有 Branch protection rule 可以防止分支被刪除
+    重點
+        1.使用"git add ." => 將資料加入索引
+        2.使用"git commit -m" => 加入數據庫追蹤清單
+        3.被加入"索引"，就必須用"git reset HEAD"，讓HEAD回到工作目錄
+        4.如果沒加入"索引"，就可以直接使用"git checkout -- XX"
+        5.當檔案被更改後，如果要切換分支要先 commit 過後才行，但如果不想 commit 就可以使用 git checkout -- <file>，"--" 與 <file> 中間要空白
+        6.當分支各自都有 commit 過了。合併時就不需要用 git merge XX --no-ff
+        7.當分支源頭沒有 commit 另一個分支有，合併時就需要用 git merge XX --no-ff 
+    git rebase
+        與 merge 不同，merge 後會多一個 commit 紀錄，但使用 rebase 不會
+        實作
+            1.無衝突:遠端沒有 commit，直接發 PR，並申請合併 (適用於2人)
+                拿到資料(fork -> clone) -> git branch (建立分支) -> 修改並commit -> push into repo -> open PR (new pr) -> 審核 (if agree 就會讓 main merge branch) -> 透過 Sourcetree (使用 Fetch 將檔案同步更新)
+            2.無、有衝突:遠端直接 merge，遠端有新 commit，本地推 feature 
+                X 拿到資料(Fetch)(假設對方已經有修改過了) -> 切換到對方修改前的一筆 commit 紀錄 (git checkout "commit 編號") -> 建立分支 -> 修改內容並 commit -> 把修改的分支推上去(push) -> open PR -> 審核 -> Fetch 資料(查看同步狀態) (方法不好，會有問題)
+                (這狀況會出現的問題是如果對方在github修改跟你相同的行數時，會發生合併衝突，導致需要線上合併才能解決)
+                (需要在本地端解決衝突再推)
+            3.無衝突:使用 Rebase，先下 fetch 遠端有新 commit，本地也要推 feature
+                到主分支(origin/master)(本地端的)上 -> 建立分支 -> 修改並commit -> 先Fetch資料下來 (Fetch origin/master(本地端的)) -> 用rebase將分支與origin/master(本地主分支)合併 -> 推f/d(push branch) -> open PR -> 審核 -> Fetch 資料下來查看狀況
+            4.有衝突:使用 Rebase，先下 fetch 後解決衝突，再推上去
+                創建分支 (f/e) -> 修改並commit -> 對方同時也跟新同個位置 (這時不能push上去，要用Fetch將狀況先抓下來) -> (知道現在有兩commit)使用 rebase 進行合併 (rebase origin/master(本地主分支)) -> 發生衝突到編輯器(VScode)解決衝突 -> (解決完成)儲存檔案並加入索引(add)(這裡不commit) -> git rebase --continue (會出現訊息，用:wq離開)(相當於commit) -> push 到 repo (git push origin "分支") -> open PR -> 審核 -> Fetch 狀況
+        重點
+            1.當要更改時，需先建立一條 branch，再去做修改
+            2.commit 時，訊息第一個建議用動詞 "新增 index.html"
+            3.當你建立分支並 commit 完後，push 上去時，不用在repo特別設定分支，repo 會直接加 branch 進去
+            4.審核通過並 merge 後，commit 會多一個因為在 merge 時會多加一筆紀錄
+            5.當作每件事情前需要先 Fetch 將目前的狀況抓下來
+            先Fetch一次 -> 到master建立分支(f/a) -> 修改分支(f/a)並commit -> 再Fetch一次看有沒有會發生衝突的狀況 -> 將該分支與本地端的主分支(origin/master)，用rebase做合併 -> 出現衝突並解決衝突 -> 儲存file並加入索引 -> rebase --continue，會出現訊息，用:wq離開 -> 將檔案push into repo -> open PR -> 審核 -> Fetch 狀況
+            (如果沒有衝突，合併完後就可push上去 -> open PR -> 審核 -> Fetch)
+            6.加入 production 分支
+                這個分之一定會落後於開發分支，但如果要及時觀看現在開發的進度，就直接 open PR 做合併，就可以
+Bitbucket
+    數據庫的品牌，可架設私人數據庫，五人以下團隊可用免費方案
+    (註冊)https://yhhuang1966.blogspot.com/2020/01/git-bitbucket.html
+    使用方式
+        到(個人數據庫)https://bitbucket.org/test-use-git/git_test/src/main/ 中創立新數據庫
+        使用 "git push -u bit main" 將檔案推到 bit main 中(會要登入帳號)
+        可到commits中看到歷史紀錄
+Git Flow
+    介紹
+        特點是有兩條長期存在的分支，不會被刪除，分別為
+            主分支 Master(對外發布版本)
+                每個 repo 中只會有一個主分支，所有上限版本都是主分支版本，平時開發會在另一條分支上，只有開發進展到可以發布才會與主分支合併
+            開發分支 Develop(最新開發版本)
+                此分支用來存放最新開發版本的代碼，是開發過程中代碼的中心分支，以 develop 分支為起點新建 feature 分支，在feature 分支中進行新功能的開發或者代碼的修正，在合併回 Develop 分支
+                在默認情況下，Git 的merge為（fast-farward merge），會直接將Master分支指向Develop分支，而如果使用 --no-ff 參數 merge，則會執行正常合併，在主分支上生成一个新節點
+            1.功能分支(feature branch) --> 當要新增某功能或需求時
+                通常用 feature-\* 的形式命名，為了某工功能而開發的分支，從Develop分支拉出來當feature分支，開發完成後要再併入Develop分支，是開發者直接更改代碼發送提交的分支
+            2.修復分支(hotfix branch) --> Master 版本有 bug 時
+                通常用 fixbug-\* 的形式命名，hotfix 分支是從 Master 分支分出來，Master 分支分支發布以後如有 bug 需要修復，這時就需要創建一個分支進行 bug 修復，修復結束後再合併進 Master 和 Develop 分支，最後删除 hotfix 分支
+            3.預發分支(release branch) --> 需要測試 develop 版本是否滿足需求(可修改些許bug)
+                通常用 release-\* 的形式命名，release 分支是指合并到 Master 分支之前，需要進行版本測試而產生出來的分支，在 release 分支裡，只處理與發布前相關的提交，該分支絕對不能包含需求變更或者功能變更等重大修正，release 分支是從 Develop 分支分出來的，在預發布結束以後，必須合併進 Develop 和 Master 分支，最後刪除 release 分支
+GitHub Flow
+    what is GitHub Flow ?
+        當在多人開發時，會有一套規則，規定所有開發者的 commit 的方式
+    流程
+        1.在 master 建立分支來新增功能 ( create branch )
+        2.開始開發功能
+        3.開始 Pull Request 申請合併
+        4.團隊 discuss and code review ( 討論與檢視 code )
+        5.部屬到測試主機上 ( Deploy )
+        6.合併 ( merge )
+    實務
+        1 create master -> create branch (dev) -> two push repo -> wait next people -> revice 2 people PR -> start discuss and code review -> agree PR (1 file merge 2 dev file) (將dev和f/view做合併) -> wait -> (都修改完了)把檔案抓下來(Sourcetree/Fetch) -> git merge dev(將主檔合併開發檔) -> git push origin master
+        2 clone repo file -> create branch (f/view) -> revise file (f/view) -> add . -> commit -> push repo -> open PR -> if not agree -> fix file (f/view) -> add . -> commit -> push (直到 PR 被同意) 
+        3 clone repo file -> create branch (f/view) -> revise file (t/view) -> add . -> commit -> push repo -> open PR -> if not agree -> fix file (t/view) -> add . -> commit -> push (直到 PR 被同意)
+    Issue Tracker (問題追蹤)
+        開發者可以透過 Issue Tracker 去知道還有沒有沒做完的事情，對提出意見的人可以透過 issue tracker 去了解問題進度或是新功能開發情況等
+        使用方式
+            到GitHub repo 上 -> Issues 中就會有正在被討論的問題
+            新增可透過 New issue 去開新的問題
+GitLab
+    版控是甚麼?
+        工程師在建構的過程中，能階段性紀錄好每個版本，當專案出現錯誤時，回朔到前一版本並了解其中間差異性
+    Git 是甚麼?
+        Git是一套版本控制軟體，相對於SVN(subversion)的中心式版控，Git是分散式版控，設計上只會增加資料，不要太怕出事，東西都可輕鬆復原，不受主線開發拘束
+        而GitLab是Git倉庫管理工具
+    安裝Git
+        (官網) https://git-scm.com/ <= 到官網下載
+        安裝後需進行初始設定，在Git資料夾中的Git Bash，寫入
+            $ git config --global user.name "<使用者名字>"
+            $ git config --global user.email "<電子信箱>"
+        若在輸入密碼的時候輸入錯誤而導致無法正常git clone，或是需要設定SSH key
+            (Git指令-user or password error) https://www.796t.com/content/1550251812.html
+            (GitLab setting SSH) https://ithelp.ithome.com.tw/articles/10305020
+    建立範例專案
+GitLab Flow
+    此方式有個主要原則叫"上游優先"，只存在一個主分支 master，此分支是所有其他分支的上游，所以分支合併的順序很重要，要一次和並且確保通過測試才可以往下游合併，除非是緊急情況，才允許跳過上游直接在下游操作合併
+    流程
+        1.持續發布
+            持續發布的專案，建議在多出一個分支，為預發分支 pre-production，在每個環境中都有對應分支，當 production(發布分支)出現問題時，需建立一條新分支修改，修改完後合併到 master 上並經過測試後，在與 pre-production 合併，再經過一次測試後，才能往下合併到 production 上
+        2.版本發布
+            在版本發布的項目，建議每一個穩定的版本都要從 master 分支拉出來創建一個新分支，根據對應的 release 分支分支在創建一個修復分支，修補 bug 後，一樣要照著上游優先規則，先合併到 master 分支，確認沒問題過後，才能夠合併到 release 分支，並且要更新版本號

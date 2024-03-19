@@ -1,0 +1,17 @@
+.net5 and .net core MVC
+    支援
+        MVC => only Windows
+        .net5 => 跨平台
+    差異
+        MVC => HTTP Module and HTTP Handler
+        net5 => Middleware
+    Route
+        MVC => Route Table design controller
+        net5 => Route Attribute
+    Logging
+        MVC => 第三方 Logging 套件輔助 ex: NLog、Serilog、log4net
+        net5 => 也可藉由套件，但也有原生的 Logging 機制
+    Task scheduler (工作排程)
+        MVC => 工作排程器、Windows Service and Hangfire 進行工作排程
+        net5 => 本身為 Hosted Service 整合排程
+    

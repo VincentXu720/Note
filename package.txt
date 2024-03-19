@@ -1,0 +1,23 @@
+Babel
+    {
+        "scripts": {
+            // src (要編譯的檔案，需自創) -d(編譯後檔案的目的地) lib(編譯後檔案存放地，需自創)
+            "build": "babel src -d lib"
+            // 在terminal中輸入npm run build 就會執行裡面的內容
+        },
+        "devDependencies": {
+            "@babel/cli": "^7.0.0",
+            "@babel/core": "^7.0.0"
+        }
+    }
+what is npm script ?
+    npm 允許在 packge.json 中使用 script 字段定義 script 命令
+    ex
+        {
+            // ...
+            "scripts": {
+                "build": "node build.js"
+            }
+        }
+        terminal 中只要輸入 npm run build rather node build.js
+    

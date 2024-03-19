@@ -1,0 +1,55 @@
+Firebase
+    what is Firebase?
+        Firebase 是一個同時支援android、ios、網頁的app雲端開發平台，可協助app開發者在雲端建置後端服務
+        提供資料庫、縮短app開發時間，讓開發者專注於前端開發，經過改版後分為一個main core 和三大類功能
+        核心
+            Analytics(分析):無限量的數據分析為 Firebase 的核心，目前為"免費"，有500種預設的事件類型
+            提供無上限的事件紀錄並且可自定關鍵事件與使用者屬性，視覺化儀表板(Dashboard)讓使用者看到
+            所有重要的使用者行為和行銷活動的成效分析
+        三大類
+            開發(Develop)
+                讓App能有安全且高效能，提供後端服務即時資料庫（Realtime database）、簡單的身分驗證模組（Authentication）
+                雲端訊息（Cloud Messaging）、主機（Hosting）、檔案儲存（Storage）、及遠端配置（Remote Config），並提供
+                Android測試實驗室(Test Lab for Android)和當機報告(Crash Reporting)，讓使用者快速發現問題並確保App運行
+                品質
+            成長(Grow)
+                讓開發者可以輕鬆設定訊息推播系統 （notifications）、app 索引功能（App Indexing）、動態連結（Dynamic Links）
+                email 及 sms 邀請功能（Invites）、以及與 Google AdWords 的深度整合串接 app 行為資料
+                ps:Google AdWords:Google的廣告投放服務
+            獲利(Earn)
+                與AdMob整合，加入廣告聯播網，輕鬆放入廣告版位，以及多元化的廣告格式，以及更清楚的追蹤機制，幫助 app開發者輕鬆獲利。
+        主要功能
+            事件紀錄無上限
+                Firebase 有 500 種預設的事件類型，而且記錄總量無上限，還有只要使用 Firebase SDK，無需編寫額外的程式碼即可自動收集的事件
+                    First_open ：使用者初次開啟應用程式時
+                    App_update：當應用程式更新為新版本並再次啟動時。應用程式前一版的版本 ID 會回傳到系統做為參數。
+                    App_remove（僅限 Android）：當應用程式套件移除或從 Android 裝置中「解除安裝」時
+                    os_update：當裝置的作業系統更新為新版本時。前一個作業系統的版本 ID 會回傳到系統做為參數。
+                    App_exception ： 當應用程式當機或擲回例外狀況時。
+                    notification_open：當使用者開啟 Firebase 雲端通訊傳送的通知時。
+                    App_update：當應用程式更新為新版本並再次啟動時。應用程式前一版的版本 ID 會回傳到系統做為參數。
+                    App_remove（僅限 Android）：當應用程式套件移除或從 Android 裝置中「解除安裝」時
+                    os_update：當裝置的作業系統更新為新版本時。前一個作業系統的版本 ID 會回傳到系統做為參數。
+                    App_exception ： 當應用程式當機或擲回例外狀況時。
+                    notification_open：當使用者開啟 Firebase 雲端通訊傳送的通知時。
+            支援原始資料自動匯出
+                支援 BigQuery 的自動匯出功能 （Google雲端資料倉儲分析服務，可讓企業針對PB等級的資料執行類似 SQL 的分析查詢），設定連結後
+                即可輕鬆存取未取樣的原始事件資料和所有參數及使用者屬性，一旦連接到BigQuery專案後，Firebase 數據分析會每日將事件資料匯出至
+                對應的 BigQuery 資料集，BigQuery也可整合其他資料進行分析，像將外部來源(顧客終身價值 (LTV)等)資料紀錄，加入到Firebase數據
+                分析集
+                注意:BigQuery會收取資料儲存與查詢的費用，但資料載入和匯出是免費
+            可直接行動的分析工具(不須一定的專業背景)
+                自訂目標對象(Custom Audiences)
+                    讓你可以按裝置、事件 (例如 session_start 或 level_up) 或使用者資源 (例如年齡、性別、語言) 來區隔使用者，應用上可以推
+                    播給特定區隔，廣告上可將專案連結至 AdWords 之後，就可以將目標對象清單匯出到 AdWords，也可以和 AdMob 連結後，在AdMob 
+                    中使用 Firebase 數據分析資料，
+                A/B Testing
+                    遠端設定（Remote Config）的功能可以讓使用者無須更新 APP 就可以看到新的 app 內容或外觀，還可以設定只顯示更新給特定的目
+                    標對象，或隨機挑選一定比例的使用者，讓開發者更容易進行準確的 A/B 測試
+                動態連結 (Dynamic Links)
+                    應用程式中的深層連結（deep links）的進一步應用，可以設定使用者在不同 device 環境下開啟連結後觸發不同的動作，例如:google play廣告
+                    可以針對不同行銷活動，不同目標族群設計客製化的抵達頁面，大幅提升新使用者體驗，也能使用不同的動態連結，清楚掌握不同行銷渠道的成效
+        結論:如果網站需要分析可使用GA(google Analytics)，如果App則可以使用Firebase做分析，不過Firebase的功能還不完善，像 Dashboard 缺乏時間屬性來進
+             一步篩選與分析，也無法輸出為CSV做分析，需要透過BigQuery，還有 iOS 要等 24 小時才會有數據等等，所以最適用於新創公司
+                
+            
