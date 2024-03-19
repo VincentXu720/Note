@@ -70,7 +70,7 @@ Web API
             (Tools 的指令，需下載 Tools)
             1.連接資料庫
                 1.指令
-                    Scaffold-DbContext "Data Source=Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force
+                    Scaffold-DbContext "Server=Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force
                     Scaffold-DbContext "Server= Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force
                         -OutputDir => 輸出的東西要放到哪裡 (這裡是 Models 資料夾中(如果沒創立，它會自動創立))
                         -Force => 如果已經有了檔案，用這個指令可以覆蓋過去
@@ -530,6 +530,10 @@ Web API
 
     U (PUT、PATCH)
     D (DELETE)
+        當 DELETE 的資料有子資料時，必需說明有哪些子資料，才能將父資料刪除
+            (from a in _NewTodoContext.TodoList
+                where a.TodoId == id
+                select a).Include(c => c.{子資料表}).SingleOrDefault();
 屬性與語法
     屬性
         [AllowAnonymous] -> 限制已有驗證的使用者才可存取元件
@@ -741,3 +745,4 @@ Web API
                     }
     重點
         1.Models 資料夾中會放入很多獨立的資料表(不算主鍵和外鍵的話)
+
