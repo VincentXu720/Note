@@ -40,12 +40,476 @@ PutTodoItem
     以 HTTP 要求，Client 需要 send 整個更新的實體，如部分更新，要使用HTTP PATCH
 Blazor
     有助於生成 Web 應用，從 Client and server 的可重組件生成 Web 應用
+Web API
+    HTTP 方法
+        Get() 如果以設定一種方式了，就不能再使用相同的方式
+            1.不引入字串 => /api/hello
+                [HttpGet]
+                public IEnumerable<string> Get()
+                {
+                    return new string[] { "123", "456" }; <= string 就是泛型進來的
+                }
+            2.引入字串 => /api/hello/world
+                [HttpGet("world")]
+                public IEnumerable<string> Get()   <= 只要泛型引入甚麼型態的參數
+                {
+                    return new string[] { "123", "456" }; <= 這裡就要用甚麼型態的
+                }
+            3.引入 id  => /api/hello/id (id 打甚麼都可以)
+                [HttpGet("{id}")]
+                public string Get(int id) <= 傳進來的 id 為整數型態
+                {
+                    return id + "";  <= 後面一定要加 ""
+                }
+    Database First (資料庫建好資料後，從 VSstudio 讀取)
+        安裝
+            Microsoft.EntityFrameworkCore.SqlServer
+            Microsoft.EntityFrameworkCore.Tools
+        主控台輸入 (檢視 -> 其他視窗 -> 套件管理主控台)
+            對專案右鍵 -> 編輯專案檔 -> 刪掉 <Nullable>enable</Nullable>、<InvariantGlobalization>true</InvariantGlobalization>
+            (Tools 的指令，需下載 Tools)
+            1.連接資料庫
+                1.指令
+                    Scaffold-DbContext "Data Source=Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force
+                    Scaffold-DbContext "Server= Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force
+                        -OutputDir => 輸出的東西要放到哪裡 (這裡是 Models 資料夾中(如果沒創立，它會自動創立))
+                        -Force => 如果已經有了檔案，用這個指令可以覆蓋過去
+                        -UseDatabaseNames => 不讓產生的檔案，自動改名，要與資料庫中的相同
+                        -NoPluralize => 防止改變駝峰式命名
+                        -NoOnConfiguring => 不要產生 DbContext.OnConfiguring
+                2.伺服器總管 and SQL Server 總管
+                    伺服器總管 -> 連線到伺服器 -> Microsoft SQL Server 資料庫檔案 -> 瀏覽找資料庫檔案(.mdf)
+                更新資料庫
+                    更新完資料庫後需要再透過 "Scaffold-DbContext "Server= Computer UseName/SQLEXPRESS; Database=資料庫名稱; User ID=帳號; Password=密碼; TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -NoOnConfiguring -UseDatabaseNames -NoPluralize -Force"
+                    再連接一次資料庫 VS studio 才會變更
+                    當程式出現錯誤時，使用連接的指令也會出現錯誤，所以要先找出程式的錯誤
+            2.DI 注入 (加入到 Program.cs 中)
+                builder.Services.AddDbContext<TodoContext>(options =>  // 這段是做 DI 注入，將資料庫透過泛型的方式加入
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("連接字串的屬性"))); // 取得連接字串內容(appsettings.json 裡的 ConnectionStrings 的內容)
+            3.掛上本地的
+                Scaffold-DbContext "Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\SQL\Todo\Todo.mdf(mdf檔案路徑);Integrated Security=True;Connect Timeout=30" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force -CoNtext TodoContext
+        GET
+            取得資料 (GET)
+                1.編程寫法
+                    // from => 自定一個變數 in => 在某個目的地找
+                    var result = from a in _todoContext.TodoLists
+                        // where => 判斷式
+                        // 透過物件方式呼叫屬性值
+                        where a.Name == "去開會"
+                        // select 收集
+                        select a;
+                    return result;
+                2.lambda 寫法
+                    var result2 = _todoContext.TodoLists.Where(a => a.Name == "去上課");
+                    return result2;
+            取得資料(透過字串)
+                1.
+                    [HttpGet("{id}")]
+                    public IEnumerable<TodoList> Get(int id)
+                    {
+                        var result4 = from a in _todoContext.TodoLists
+                                    where (a.Orders == id) <= 引用了 TodoList.cs 裡面的 public int Orders
+                                    select a;
+                        return result4;
+                    }
+                2.更嚴謹
+                    [HttpGet("{id}")]
+                    public TodoListSelectDto Get(Guid id)
+                    {
+                        var result4 = (from a in _todoContext.TodoLists
+                                    where (a.TodoId == id)
+                                    select new TodoListSelectDto
+                                    {
+                                        Enable = a.Enable,
+                                        InsertEmployeeName = a.InsertEmployee.Name,
+                                        InsertTime = a.InsertTime,
+                                        Name = a.Name,
+                                        Orders = a.Orders,
+                                        TodoId = a.TodoId,
+                                        UpdateEmployeeName = a.UpdateEmployee.Name,
+                                        UpdateTime = a.UpdateTime,
+                                    }).SingleOrDefault(); <= SingleOrDefault 是如果沒有取到資料 result 會變成 null
+                                    // 另一個 Single() 只要取到兩筆或以上的資料會當機，而如果沒取到也會當機
+                        return result4;
+                    }
+            取得資料(資料表有無外鍵設定)
+                有外鍵
+                    [HttpGet("{id}")]
+                    public TodoListSelectDto Get(Guid id)
+                    {
+                        var result = (from a in _todoContext.TodoLists
+                                    where a.TodoId == id
+                                    select new TodoListSelectDto
+                                    {
+                                        Enable = a.Enable,
+                                        InsertEmployeeName = a.InsertEmployee.Name, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        InsertTime = a.InsertTime, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        Name = a.Name,
+                                        Orders = a.Orders,
+                                        TodoId = a.TodoId,
+                                        UpdateEmployeeName = a.UpdateEmployee.Name, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        UpdateTime = a.UpdateTime // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                    }).SingleOrDefault();
+                        return result;
+                    }
+                無外鍵
+                    [HttpGet("{id}")]
+                    public TodoListSelectDto Get(Guid id)
+                    {
+                        var result = (from a in _todoContext.TodoLists
+                                    // 將別的資料表的資料加進來，equals 確定兩個資料表是否相等
+                                    join b in _todoContext.Employees on a.InsertEmployeeId equals b.EmployeeId
+                                    join c in _todoContext.Employees on a.UpdateEmployeeId equals c.EmployeeId
+                                    where a.TodoId == id
+                                    select new TodoListSelectDto
+                                    {
+                                        Enable = a.Enable,
+                                        InsertEmployeeName = b.Name, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        InsertTime = a.InsertTime, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        Name = a.Name,
+                                        Orders = a.Orders,
+                                        TodoId = a.TodoId,
+                                        UpdateEmployeeName = c.Name, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        UpdateTime = a.UpdateTime // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                    }).SingleOrDefault();
+                        return result;
+                    }
+            關鍵字搜尋
+                /api/todo?{name}
+                Contains() and IsNullOrWhiteSpace()
+                    [HttpGet]
+                    public IEnumerable<TodoListSelectDto> Get(string name,bool? enable,DateTime? UpdateTime)
+                    {
+                        // Include => 將資料表從別的地方撈過來
+                        var result = _todoContext.TodoLists.Include( a => a.UpdateEmployee).Include( a => a.InsertEmployee)
+                            .Select ( a => new TodoListSelectDto
+                            {
+                                Enable = a.Enable,
+                                InsertEmployeeName = a.InsertEmployee.Name,
+                                InsertTime = a.InsertTime,
+                                Name = a.Name,
+                                Orders = a.Orders,
+                                TodoId = a.TodoId,
+                                UpdateEmployeeName = a.UpdateEmployee.Name,
+                                UpdateTime = a.UpdateTime
+                            });
+                        if(!string.IsNullOrWhiteSpace(name)) <= IsNullOrWhiteSpace() 確認是不是空值
+                        {
+                            // 只有字串能使用 Contains
+                            result = result.Where(a => a.Name.Contains(name)); <= Contains 只要有部分相同就可以
+                            result = result.Where(a => a.Name == name);
+                        }
+                        if(enable != null) // 要將上面的 enable 參數設定成 bool? enable 表示不一定會傳進來
+                        {
+                            result = result.Where(a => a.Enable == enable);
+                        }
+                        if(InsertTime != null)
+                        {
+                            result = result.Where(a => a.InsertTime.Date == InsertTime);
+                        }
+                        return result;
+                    }
+            參數化並過濾接受值
+                尋找參數機制
+                    資料繫結
+                        語法
+                            [FromQuery] => 要求查詢字串參數(?Enable=true 就是查詢字串)
+                            [FromBody] => 要求本文(JSON or XML 取得參數值)
+                            [FromRoute] => 來自目前要求的路由資料 ex:HttpGet("{id}") // id 就會被取的參數值
+                            [FromForm] => 來自目前要求的路由資料
+                            [FromHeader] => 要求標頭
+                            [FromServices]：作為動作參數插入的要求服務
+                        使用情境
+                            1.大多數情況，都會有預設值
+                                public IActionResult Get(string id)
+                                {
+                                }
+                                public IActionResult Get([FromQuery]string id)
+                                {
+                                }
+                                id 來源會是 [FromQuery]
+                            2.FromRoute
+                                [HttpGet("{id}")] <= 這裡加 "{id}" 下面的 Get() 中就不用再特別寫 [FromRoute]
+                                public IActionResult Get(string id)
+                                {
+                                }
+                                [HttpGet("{id}")]
+                                public IActionResult Get([FromRoute]string id) <= 而如果這裡寫 [FromQuery] 就不會取得路由的 id
+                                {
+                                }
+                                因為會從 HttpGet("{id}") 取得 {id} 參數使用
+                            3.[FromBody]
+                                將所有參數都變成一個類別，預設就會變成 [FromBody]，還有在取得 JSON 或 XML 等 API 資料時，預設也是 [FromBody]
+                                ex
+                                    [HttpGet("{id}")]
+                                    public IActionResult Get(TodoSelectParameter value)
+                                    {
+                                    }
+                                    [HttpGet("{id}")]
+                                    public IActionResult Get([FromBody] TodoSelectParameter value)
+                                    {
+                                    }
+                            4.[FromForm]
+                                通常會使用在上傳檔案時
+                保留字
+                    @ 
+                        1.保留字
+                            當要使用 C# 中的保留字當變量時，就需要"@"當前綴
+                            (https://xianlee.gitbooks.io/csharp-basic/content/syntax/identifier.html)
+                        2.避免跳脫字元(字面量識別符)
+                            告訴編譯器將字符串視為原始字面量，也就是將字串視為字串，而不是語法使用
+                                @"\n" => 加了"@"，編譯器會解釋為"\n"字串，而不是換行語法
+                正則表達式
+                    Regex => 使用正則表達式時需要使用，並建立一個 Regex 的實例
+                    ^ => 開始位置
+                    \d => 表示零個或多個數字
+                    * => 比較出現次數(零次或多次) ex:Gooo*gle => 可以匹配 Gooogle or Google 等
+                    + => 比較出現次數(至少一次或多次) ex:Gooo*gle => 可以匹配 Gooogle or Goooogle 等，但不能匹配到 Google
+                    - => 連字符
+                    $ => 結束位置
+                ex
+                    // 參數方
+                    public class TodoSelectParameter
+                    {
+                        public string name { get; set; }
+                        public bool? enable { get; set; }
+                        public DateTime? InsertTime { get; set; }
+                        public int? minOrder { get; set; }
+                        public int? maxOrder { get; set; }
+                        public string _order;
+                        public string Order
+                        {
+                            get { return _order; }  // 必須使用 {}
+                            set
+                            {
+                                // 經過這裡就可以寫成 Order=3-5
+                                // 如果是符合 2-3 這種類型的參數
+                                Regex regex = new Regex(@"^\d*-\d$");
+                                if (regex.Match(value).Success)
+                                {
+                                    // 以"-"為分界點
+                                    // Int32.Parse => 將字串轉為整數型別
+                                    // [0] => 以"-"分割後第一個數字，2
+                                    minOrder = Int32.Parse(value.Split('-')[0]);
+                                    // [1] => 以"-"分割後第二個數字，3
+                                    maxOrder = Int32.Parse(value.Split('-')[1]);
+                                }
+                                _order = value;
+                            }
+                        }
+                    }
+                    // 控制器方
+                    // [FromQuery] 指定要從哪裡找資料
+                    public IEnumerable<TodoListSelectDto> Get([FromQuery]TodoSelectParameter value)
+                    {
+                        // Include => 將資料表從別的地方撈過來
+                        var result = _todoContext.TodoLists.Include( a => a.UpdateEmployee).Include( a => a.InsertEmployee)
+                            .Select ( a => new TodoListSelectDto
+                            {
+                                Enable = a.Enable,
+                                InsertEmployeeName = a.InsertEmployee.Name,
+                                InsertTime = a.InsertTime,
+                                Name = a.Name,
+                                Orders = a.Orders,
+                                TodoId = a.TodoId,
+                                UpdateEmployeeName = a.UpdateEmployee.Name,
+                                UpdateTime = a.UpdateTime
+                            });
+                        if(!string.IsNullOrWhiteSpace(value.name))
+                        {
+                            // result = result.Where(a => a.Name.Contains(name));
+                            result = result.Where(a => a.Name == value.name);
+                            result = result.Where(a => a.Name.IndexOf(value.name)>-1);
+                        }
+                        if(value.enable != null) // 要將上面的 enable 參數設定成 bool? enable 表示不一定會傳進來
+                        {
+                            result = result.Where(a => a.Enable == value.enable);
+                        }
+                        if(value.InsertTime != null)
+                        {
+                            result = result.Where(a => a.InsertTime.Date == value.InsertTime);
+                        }
+                        if (value.minOrder != null && value.maxOrder != null) // 要將上面的 enable 參數設定成 bool? enable 表示不一定會傳進來
+                        {
+                            result = result.Where(a => a.Orders >= value.minOrder && a.Orders <= value.maxOrder);
+                        }
+                        
+                        return result;
+                    }
+                    一般的宣告也可以使用
+                    public TodoListSelectDto Get([FromQuery] Guid id){...}
+            DTO 函式化
+            將兩處相同(一致)的地方，用函式帶入，減少程式碼量與提高重用性
+            單筆資料(將多筆資料轉為一筆資料輸出)
+                有使用 join
+                    public TodoListSelectDto Get(Guid id)
+                    {
+                        var result =(from a in _todoContext.TodoLists
+                                    // 將別的資料表的資料加進來，equals 確定兩個資料表是否相等
+                                    join b in _todoContext.Employees on a.InsertEmployeeId equals b.EmployeeId
+                                    join c in _todoContext.Employees on a.UpdateEmployeeId equals c.EmployeeId
+                                    where a.TodoId == id
+                                    // 函式化 Dto
+                                    select new TodoList
+                                    {
+                                        Enable = a.Enable,
+                                        InsertEmployee = b, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        InsertTime = a.InsertTime, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        Name = a.Name,
+                                        Orders = a.Orders,
+                                        TodoId = a.TodoId,
+                                        UpdateEmployee = c, // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                        UpdateTime = a.UpdateTime // 資料表中有設定成外鍵，所以才能從別的地方撈到
+                                    }).SingleOrDefault();
+                        // 將回傳的類型轉換成 ItemToDto 類型
+                        return ItemToDto(result);
+                    }
+                無使用 join
+                    [HttpGet("{id}")]
+                    public TodoListSelectDto Get(Guid id)
+                    {
+                        var result = (from a in _todoContext.TodoLists
+                                    where a.TodoId == id
+                                    // 函式化 Dto
+                                    select a)
+                                    .Include(a => a.UpdateEmployee)
+                                    .Include(a => a.InsertEmployee).SingleOrDefault();
+                        // 將回傳的類型轉換成 ItemToDto 類型
+                        return ItemToDto(result);
+                    }
+            多筆資料
+                public IEnumerable<TodoListSelectDto> Get([FromQuery]TodoSelectParameter value)
+                {
+                    // Include => 將資料表從別的地方撈過來
+                    var result = _todoContext.TodoLists.Include( a => a.UpdateEmployee).Include( a => a.InsertEmployee)
+                        // 透過函式帶入
+                        .Select ( a => ItemToDto(a));
+                }
+                private static TodoListSelectDto ItemToDto(TodoList a)
+                {
+                    return new TodoListSelectDto
+                    {
+                        Enable = a.Enable,
+                        InsertEmployeeName = a.InsertEmployee.Name,
+                        InsertTime = a.InsertTime,
+                        Name = a.Name,
+                        Orders = a.Orders,
+                        TodoId = a.TodoId,
+                        UpdateEmployeeName = a.UpdateEmployee.Name,
+                        UpdateTime = a.UpdateTime
+                    };
+                }
+        Post
+            可以透過 Postman 測驗
+            POST 資料
+                1.先用 GET 取得資料
+                2.將 URL 放到 Postman 上，然後改成 POST -> body -> Raw -> JSON
+                3.程式碼範例
+                    [HttpPost]
+                    // 第一個 int 是傳出去的值 第二個 int 輸入的類別
+                    public void Post([FromBody] TodoList value)
+                    {
+                        _todoContext.Add(value);
+                        // 兩種寫法都可以
+                        _todoContext.TodoLists.Add(value);
+                        _todoContext.SaveChanges();
+                        return;
+                    }
+                4.上面框可以輸入要新增資料(設定成 JSON 要用 JSON 格式輸入)
+                5.再用 GET 確認資料是否成功
+            新增子資料與父資料
+其他套件
+    AutoMapper
+        1.安裝 AutoMapper.Extensions.Microsoft.DependencyInjection
+        2.到 Startup(or Program) 的 ConfigureServices Class 中添加 services.AddAutoMapper(typeof(Startup)); // 如果是用 Program 就把 Startup => Program
+        3..創建 Profiles 資料夾 -> 創建一個類別項目 -> 引入 Profile
+            public class TodoListProfile : Profile // 引入  Profile
+            {
+                public TodoListProfile()
+                {
+                    CreateMap<TodoList, TodoListSelectDto>() // AutoMapper 提供的物件 (用來映射兩個物件)
+                    // CreateMap<"原物件","被對應物件">()
+                }
+            }
+        4.到 Controller 中注入 DI
+            public class TodoController : ControllerBase{
+                private readonly IMapper _mapper <= IMapper 是 AutoMapper 給予的物件
+                public TodoController(IMapper _mapper){ <= TodoController 是建構函式
+                    _mapper = mapper;
+                }
+            }
+        大致寫法
+            多筆資料
+                [HttpGet("AutoMapper")]
+                public IEnumerable<TodoListSelectDto> GetAutoMapper([FromQuery] TodoSelectParameter value)
+                {
+                    // Include => 將資料表從別的地方撈過來
+                    var result = _todoContext.TodoLists
+                        .Include(a => a.UpdateEmployee)
+                        .Include(a => a.InsertEmployee)
+                        // 這裡做轉換有可能會出錯(關鍵字查詢時)
+                        .Select(a => a);
+                    // 透過函式帶入
+                    // .Select(a => ItemToDto(a));
+                    if (!string.IsNullOrWhiteSpace(value.name))
+                    {
+                        // result = result.Where(a => a.Name.Contains(name));
+                        result = result.Where(a => a.Name == value.name);
+                        result = result.Where(a => a.Name.IndexOf(value.name) > -1);
+                    }
+                    if (value.enable != null) // 要將上面的 enable 參數設定成 bool? enable 表示不一定會傳進來
+                    {
+                        result = result.Where(a => a.Enable == value.enable);
+                    }
+                    if (value.InsertTime != null)
+                    {
+                        result = result.Where(a => a.InsertTime.Date == value.InsertTime);
+                    }
+                    if (value.minOrder != null && value.maxOrder != null) // 要將上面的 enable 參數設定成 bool? enable 表示不一定會傳進來
+                    {
+                        result = result.Where(a => a.Orders >= value.minOrder && a.Orders <= value.maxOrder);
+                    }
+                    // result (映射) TodoListSelectDto 後存到 map 中
+                    var map = _mapper.Map<IEnumerable<TodoListSelectDto>>(result);
 
+                    return map; ;
+                }
+            單筆資料
+                // Profiles 資料夾中的設定檔
+                public TodoListProfile()
+                {
+                    // 將 TodoList 轉換成 TodoListSelecDto
+                    // 可以不用 ForMember 
+                    CreateMap<TodoList, TodoListSelectDto>()
+                        .ForMember(
+                            des1 => des1.InsertEmployeeName,
+                            opt => opt.MapFrom(src => src.InsertEmployee.Name + "(" + src.InsertEmployee + ")")
+                        )
+                        .ForMember(
+                            des1 => des1.InsertEmployeeName,
+                            opt => opt.MapFrom(src => src.UpdateEmployee.Name + "(" + src.UpdateEmployee + ")")
+                        );
+                }
+                // Controller 資料夾中的檔案
+                [HttpGet("AutoMapper/{id}")]
+                public TodoListSelectDto GetAutoMapper(Guid id)
+                {
+                    // Include => 將資料表從別的地方撈過來
+                    var result = (from a in _todoContext.TodoLists
+                                where a.TodoId == id
+                                select a).Include(a => a.InsertEmployee)
+                        .Include(a => a.UpdateEmployee)
+                        .SingleOrDefault();
+                    var map = _mapper.Map<TodoListSelectDto>(result);
+                    return map; ;
+                }
 資料庫串接流程(0~1)
     安裝 Microsoft.EntityFrameworkCore.SqlServer、Microsoft.EntityFrameworkCore.Design、Microsoft.EntityFrameworkCore.Tools
     1.創建新資料庫23
     2.創建資料庫的資料表
-    3.VStudio 創立一個 Web API 專案
+    3.VStudio 創立一個 Web API 專案 (專案設定)
+        1. [使用控制器 (取消核取以使用最小 API)] 核取方塊
+        2. [啟用 OpenAPI 支援] 核取方塊
     4.新增 Models 資料夾
     5.新增類別(看有幾筆資料或資料的共通類別)(這裡的檔案相當於一筆資料)
     6.VStudio 用 SQL Server Object Explorer => 加入 SQL Server => 伺服器:SQL 連接的資料庫名稱(從屬性查看)
@@ -94,6 +558,186 @@ Blazor
         透過 SQL Server 物件總管 -> 加入 SQL Server
             伺服器名稱 => MSSQL 伺服器名稱
             資料庫名稱 => MSSQL 伺服器下的資料庫名稱
-    DTO
-        只要不想把多餘的資料傳輸出去就可以使用
-        透過 Models 中的資料內容，去除一些不必要內容(增加新內容)，這就是 DTO
+    資料庫不可變更資料情況下
+        工具–>選項–>Designers(設計師)–>資料表和資料庫設計工具–>防止儲存需要資料表重建的變更–>取消勾選 即可
+    伺服器
+        名稱
+            .\SQLEXPRESS <= 本機 "."是正式版可以使用的
+    Restful api
+        規範
+            GET 取得 => api/todo
+            GET 取得指定 => api/todo/1
+            POST => api/todo
+            PUT 更新指定資料 => api/todo/1
+            PATCH 更新(指定資料的部分欄位) => api/todo/1
+            delete 刪除 => api/todo/1
+    LinQ
+        只需要理解 LinQ 語法就可以用來查詢各種對象(SQL、Object、XML等)
+    Postman
+        post => body => raw => JSON => 輸入內容
+    DTO (建立資料傳輸物件)
+        只要不想把多餘的資料傳輸出去就可以使用，透過 Models 中的資料內容，去除一些不必要內容(增加新內容)，這就是 DTO
+        作用
+            1.省略不必要屬性
+            2.避免過度張貼
+        原理
+            對原本的資料屬性刪減、新增、更改
+        流程
+            創建 Dtos 資料夾 -> 新增項目類別 -> 將原本的項目類別的內容貼過來新增的類別 -> 修改(刪減、新增) 
+            到控制器中
+
+                var result = _todoContext.TodoLists.Include(a => a.UpdateEmployee).Include(a => a.InsertEmployee)
+                    .Select(a => new TodoListSelectDto
+                    {
+                        Enable = a.Enable,
+                        InsertEmployeeName = a.InsertEmployee.Name,
+                        InsertTime = a.InsertTime,
+                        Name = a.Name,
+                        Orders = a.Orders,
+                        TodoId = a.TodoId,
+                        UpdateEmployeeName = a.UpdateEmployee.Name,
+                        UpdateTime = a.UpdateTime,
+                    });
+                return result;
+    回傳狀態碼
+        200
+            [HttpGet]
+            public IActionResult Get(){
+                var var result = _todoContext.TodoLists.Include(a => a.UpdateEmployee).Include(a => a.InsertEmployee)
+                    .Select(a => new TodoListSelectDto
+                    {
+                        Enable = a.Enable,
+                        InsertEmployeeName = a.InsertEmployee.Name,
+                        InsertTime = a.InsertTime,
+                        Name = a.Name,
+                        Orders = a.Orders,
+                        TodoId = a.TodoId,
+                        UpdateEmployeeName = a.UpdateEmployee.Name,
+                        UpdateTime = a.UpdateTime,
+                    });
+                return Ok(result); <= Ok() 是 IActionResult function 的方法
+            }
+        透過狀態碼方法
+        [HttpGet]
+        public IActionResult Get()
+        {
+            // DTO
+            // Include 將多個相關內容包含至單一查詢
+            var result = _todoContext.TodoLists.Include(a => a.UpdateEmployee).Include(a => a.InsertEmployee)
+                .Where(a => a.Name == "ae")
+                .Select(a => new TodoListSelectDto
+                {
+                    Enable = a.Enable,
+                    InsertEmployeeName = a.InsertEmployee.Name,
+                    InsertTime = a.InsertTime,
+                    Name = a.Name,
+                    Orders = a.Orders,
+                    TodoId = a.TodoId,
+                    UpdateEmployeeName = a.UpdateEmployee.Name,
+                    UpdateTime = a.UpdateTime,
+                });
+            if(result == null || result.Count() == 0)
+            {
+                // NotFound 是一個狀態碼的方法
+                return NotFound("找不到"); <= NotFound 中也可以放訊息
+            }
+            return Ok(result);
+        }
+        直接寫
+            [HttpGet]
+            public IEnumerable<TodoListSelectDto> Get()
+            {
+                // DTO
+                // Include 將多個相關內容包含至單一查詢
+                var result = _todoContext.TodoLists.Include(a => a.UpdateEmployee).Include(a => a.InsertEmployee)
+                    .Where(a => a.Name == "ae")
+                    .Select(a => new TodoListSelectDto
+                    {
+                        Enable = a.Enable,
+                        InsertEmployeeName = a.InsertEmployee.Name,
+                        InsertTime = a.InsertTime,
+                        Name = a.Name,
+                        Orders = a.Orders,
+                        TodoId = a.TodoId,
+                        UpdateEmployeeName = a.UpdateEmployee.Name,
+                        UpdateTime = a.UpdateTime,
+                    });
+                if (result == null || result.Count() == 0)
+                {
+                    Response.StatusCode = 404; // 直接更改代碼
+                }
+                return result;
+            }
+    C#構造函式運作方式
+        Program.cs and Startup.cs
+            Program
+                // 表示 Web App
+                var builder = WebApplication.CreateBuilder(args);
+
+                // 添加各種 Service 到容器中
+                builder.Services.AddControllers();
+                builder.Services.AddEndpointsApiExplorer();
+                builder.Services.AddSwaggerGen();
+
+                // 實例化，使用 Build 建立
+                var app = builder.Build();
+
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                // HTTP 自動導向到 HTTPS
+                app.UseHttpsRedirection();
+
+                // 啟用權限驗證
+                app.UseAuthorization();
+
+                // 映射 Controller
+                app.MapControllers();
+
+                app.Run();
+            Startup
+                常見寫法
+                    namespace Todo
+                    {
+                        public class Startup
+                        {
+                            public Startup(IConfiguration configuration)
+                            {
+                                
+                                Configuration = configuration;
+                            }
+                            // IConfiguration 承接 IHostBuilder 的 IConfiguration
+                            public IConfiguration Configuration { get; }
+                            
+                            // 添加服務
+                            // (必須是 public，名稱也不能改)
+                            public void ConfigureServices(IServiceCollection services)
+                            {
+                                services.AddControllers();
+                            }
+
+                            // 設定 HTTP Request 處理細節的 Configure
+                            // (必須是 public，名稱也不能改)
+                            public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+                            {
+                                if (env.IsDevelopment())
+                                {
+                                    app.UseDeveloperExceptionPage();
+                                }
+
+                                app.UseHttpsRedirection();
+                                app.UseRouting();
+                                app.UseAuthorization();
+                                app.UseEndpoints(endpoints =>
+                                {
+                                    endpoints.MapControllers();
+                                });
+                            }
+                        }
+                    }
+    重點
+        1.Models 資料夾中會放入很多獨立的資料表(不算主鍵和外鍵的話)
