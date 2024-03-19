@@ -76,7 +76,102 @@ Array
         do{ <= 再執行
             Console.WriteLine()
         }while(age == 5) <= 先做判斷
-    
+常用
+        數字
+            int => 表示約 -2.1 億到 2.1 億之間的整數
+            long => 比 int 範圍更大
+            Int32.Parse() => 將字串轉為數字型別
+            三元運算子
+                int num1 = 10;
+                int num2 = 20;
+
+                int maxValue = num1 > num2 ? num1 : num2;
+                Console.WriteLine(maxValue);//三元運算式 (A ? B : C)
+            Math.Max
+                會比較兩個數值並返回其中較大的那個
+                int num1 = 10;
+                int num2 = 20;
+
+                int maxValue = Math.Max(num1, num2);
+
+                Console.WriteLine(maxValue); // 20
+        字串
+            連接方式
+                字串插值
+                    使用$"{}"在字串中插入變數($要在""外面)
+                    ex
+                        string name = "Alice";
+                        int age = 18;
+                        Console.WriteLine("我叫" + " " + $"{name}" + " " + "今年" + " " + $"{age}" + " " + "歲");
+                string.Format
+                    string.Format ("字串","要插入的參數")
+                    ex
+                        string name = "Charlie";
+                        int age = 31;
+                        DateTime birthday = new DateTime(2024, 3, 19);
+                        string template = "Hi,{0},您的年齡是,{1},生日是{2}";
+                        string template2 = "Hi,{0},生日是{2}";
+                        string template3 = "Hi,{0},您的年齡是,{1},生日是{2}";
+                        string template4 = "Hi,{0},生日是{2},您的年齡是,{1}";
+                        // 套用模板的感覺
+                        // 透過 "{}" 插入到模板中
+                        // string.Format ("字串","要插入的參數")
+                        Console.WriteLine(string.Format(template, name, age, birthday));
+                        Console.WriteLine(string.Format(template4, name, age, birthday));
+        布林值
+            ex
+                bool isRaining = true;
+                bool isSunny = false;
+                if (isRaining)
+                {
+                    Console.WriteLine("今天下雨了");
+                }else if (isSunny)
+                {
+                    Console.WriteLine("今天天氣晴朗");
+                }
+                else
+                {
+                    Console.WriteLine("不知道今天天氣如何");
+                }
+        轉換語法
+            int.Parse()
+                string numberString = "42";
+                int number = int.Parse(numberString); // 將字串 "42" 轉換為整數 42
+            bool.Parse()
+                將字串轉換成布林值資料型別
+                ex
+                    string boolString = "true";
+                    bool isTrue =  bool.Parse(boolString); // 將字串 "true" 轉換為布林值 true
+            (int or bool).TryParse()
+                更安全的轉換語法，它會把字串轉換為目標資料類型，如果成功，則返回 true ，並將轉換後的值存儲在指定的變數中
+                ex
+                    string numberStr = "123";
+                    int result;
+                    bool success = int.TryParse(numberStr, out result);
+
+                    if (success)
+                    {
+                        Console.WriteLine("轉換成功，結果是：" + result);
+                    }
+                    else
+                    {
+                        Console.WriteLine("轉換失敗，無效的數字格式");
+                    }
+規則
+    變數命名
+        1.遵循命名慣例
+            使用駝峰式命名法（CamelCase）或蛇形命名法（snake_case）來命名變數
+        2.可使用"_"開頭，但數字開頭不行
+        3./* */ 多行註解
+        4.描述性名稱
+        5.避免保留字
+        6.避免使用縮寫
+        7.不要使用特殊字符
+            變數名稱通常應該只包含字母、數字和底線（_），不應包含特殊字符或空格
+        8.大小寫敏感
+            例如，myVariable 和 myvariable 是不同的變數
+        9.意義清晰
+            讓其他開發者容易理解
 
 輸入
     System.Console.ReadLine() <= 輸入後，default return string
@@ -184,3 +279,15 @@ inheritance
 其他語法
     readonly (唯讀)
         當變數被宣告了，就無法再做改變
+    internal
+        表示這個類別只能在相同的組件（或程式集合）中訪問，為 C# 中的一個可訪問性層級
+    ///<summary>
+        用來說明下方的類別、方法、屬性的用途與功能
+    逸出字元
+        "\\"(反斜線)
+            我當成擴充 "" 的符號
+                string quoted = "這是一個\"逸出字元\"的示範"; <= 如果沒用"\"逸出字元就會出現錯誤
+            \r (回車)
+            \n (換行)
+            @(逐字識別項)
+                讓原本有功能的語法，變成一般的變數(ex:class 等)
