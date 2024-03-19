@@ -20,6 +20,13 @@ Git
             git config --global user.name = "用戶名"
             git config --global user.email = "Email"
             git config --list (按q或+Enter就可退出) <= 確認是否設定完成
+    創建 SSK 金鑰
+        1.在終端輸入
+            ssh-keygen -t rsa -b 4096 -C "{UserEmail}"
+        2.找金鑰儲存位置
+            Your public key has been saved in
+        3.到 GitHub 用戶設定中 -> SSH and GPG keys -> SSH keys -> New SSH key
+        4.輸入金鑰
     基本操作
         流程
             工作目錄(專案資料夾) => 索引(add) => 本地數據庫(commit) (到此處算更新完成) => 遠端數據庫(push)
