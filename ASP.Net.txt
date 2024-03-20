@@ -42,6 +42,14 @@ Blazor
     有助於生成 Web 應用，從 Client and server 的可重組件生成 Web 應用
 Web API
     HTTP 方法
+        有兩種元素
+            路由模板
+                一個 URL 模式，用來匹配傳入的 URL 模板，包含靜態(/api/)和動態部分({id})
+                ex
+                    /api/articles/{id} 是一個路由模板，它匹配 /api/articles/1、/api/articles/2 等 URL
+            處理程序
+                有可能是方法或函式所匹配的 URL，通常位於控制器類別中，根據 HTTP 請求類型(GET、POST、PUT、DELETE等)
+
         Get() 如果以設定一種方式了，就不能再使用相同的方式
             1.不引入字串 => /api/hello
                 [HttpGet]
@@ -399,6 +407,118 @@ Web API
                         UpdateTime = a.UpdateTime
                     };
                 }
+            IActionResult and ActionResult
+                多筆資料
+                    private static TodoListSelectDto ItemToDto(TodoList a)
+                    {
+                        return new TodoListSelectDto
+                        {
+                            Enable = a.Enable,
+                            InsertEmployeeName = a.InsertEmployee.Name,
+                            InsertTime = a.InsertTime,
+                            Name = a.Name,
+                            Orders = a.Orders,
+                            TodoId = a.TodoId,
+                            UpdateEmployeeName = a.UpdateEmployee.Name,
+                            UpdateTime = a.UpdateTime
+                        };
+                    }
+
+                    // 多筆資料
+                    [HttpGet]
+                    public IActionResult Get([FromQuery] TodoSelectParamerter value)
+                    {
+                        var result = _NewTodoContext.TodoList
+                            .Include(a => a.InsertEmployee)
+                            .Include(a => a.UpdateEmployee)
+                            .Select(a => a);
+                        if (!string.IsNullOrWhiteSpace(value.name))
+                        {
+                            // Contains 包含就為 True
+                            result = result.Where(a => a.Name.Contains(value.name));
+                        }
+                        if (value.enable != null)
+                        {
+                            result = result.Where(a => a.Enable == value.enable);
+                        }
+                        if (value.InsertTime != null)
+                        {
+                            result = result.Where(a => a.UpdateTime.Date == value.InsertTime);
+                        }
+                        if (value.minOrder != null && value.maxOrder != null)
+                        {
+                            result = result.Where(a => a.Orders >= value.minOrder && a.Orders <= value.maxOrder);
+                        }
+                        if (result == null || result.Count() <= 0)
+                        {
+                            return NotFound("找不到資料");
+                            // 用在新增或更新上
+                            // return NoContent();
+                        }
+                        return Ok(result.ToList().Select(a => ItemToDto(a)));
+                    }
+                單筆資料
+                    private static TodoListSelectDto ItemToDto(TodoList a)
+                    {
+                        return new TodoListSelectDto
+                        {
+                            Enable = a.Enable,
+                            InsertEmployeeName = a.InsertEmployee.Name,
+                            InsertTime = a.InsertTime,
+                            Name = a.Name,
+                            Orders = a.Orders,
+                            TodoId = a.TodoId,
+                            UpdateEmployeeName = a.UpdateEmployee.Name,
+                            UpdateTime = a.UpdateTime
+                        };
+                    }
+
+                    [HttpGet("{id}")]
+                    public ActionResult Get(Guid id)
+                    {
+                        var result = (from a in _NewTodoContext.TodoList
+                        where a.TodoId == id
+                        select a)
+                        .Include(a => a.InsertEmployee)
+                        .Include(a => a.UpdateEmployee).SingleOrDefault(); <= 這裡如果找不到會回傳 null
+                        if (result == null)
+                        {
+                            return NotFound("找不到資料");
+                        }
+                        return Ok(ItemToDto(a));
+                    }
+                如有明確回傳資料
+                    private static TodoListSelectDto ItemToDto(TodoList a)
+                    {
+                        return new TodoListSelectDto
+                        {
+                            Enable = a.Enable,
+                            InsertEmployeeName = a.InsertEmployee.Name,
+                            InsertTime = a.InsertTime,
+                            Name = a.Name,
+                            Orders = a.Orders,
+                            TodoId = a.TodoId,
+                            UpdateEmployeeName = a.UpdateEmployee.Name,
+                            UpdateTime = a.UpdateTime
+                        };
+                    }
+                    [HttpGet("{id}")]
+                    // 確定資料為 <TodoListSelectDto> 的型別
+                    // 就不需要使用 OK 將回傳東西包住
+                    public ActionResult<TodoListSelectDto> Get(Guid id)
+                    {
+                        var result = (from a in _NewTodoContext.TodoList
+                                    where a.TodoId == id
+                                    select a)
+                            .Include(a => a.InsertEmployee)
+                            .Include(a => a.UpdateEmployee).SingleOrDefault();
+
+                        if (result == null)
+                        {
+                            return NotFound("找不到Id:" + id + "的資料");
+                        }
+                        return ItemToDto(result);
+                    }
         Post
             可以透過 Postman 測驗
             POST 資料
@@ -418,7 +538,81 @@ Web API
                 4.上面框可以輸入要新增資料(設定成 JSON 要用 JSON 格式輸入)
                 5.再用 GET 確認資料是否成功
             新增子資料與父資料
-其他套件
+    常用
+        屬性
+            DateTime => 讀取電腦的時間 
+                屬性介紹(https://learn.microsoft.com/zh-tw/dotnet/api/system.datetime?view=net-8.0)
+            Guid => 常用在 id 上
+            List<T> => 將 array 轉換成 List集合
+                1.動態大小的數據結構
+                2.有序集合
+                3.支持泛型
+                4.提供許多有用的方法 => 提供 Add(添加元素)、Remove(刪除元素)、Contains(檢查是否包含某元素)等
+                5.支持 LinQ 語法 => 查詢與過濾
+            Task<T> => 設立一個任務，搭配 async/ await 完成
+
+        語法(LinQ and C# 可以搭配使用)
+            LinQ
+                from in => 到哪個資料庫的資料表中
+                where => 條件式
+                select => 收集資料
+            C#
+                Include => 包含某些屬性
+                    (from a in _NewTodoContext.TodoList
+                          where a.TodoId == id
+                          select a)
+                    .Include(a => a.UpdateEmployee)
+                SingleOrDefault => 取得單筆資料(防呆機制)
+                    (from a in _NewTodoContext.TodoList
+                          where a.TodoId == id
+                          select a)
+                    .Include(a => a.UpdateEmployee).SingleOrDefault();
+                Single => 取得單筆資料(如果回傳為 null or not data 會出現錯誤)
+                    (from a in _NewTodoContext.TodoList
+                          where a.TodoId == id
+                          select a)
+                    .Include(a => a.UpdateEmployee).Single();
+                NotFound => 回傳狀態碼 404
+                    return NotFound("找不到Id:" + id + "的資料");
+                ToList => 將資料轉化為 SQL
+                    string[] strArr = new string[3] { "1", "2", "3" };
+                    List<string> strList = strArr.ToList();
+                    foreach ( string item in strList) <= 可以搭配 foreach 把資料印出來
+                    {
+                        Console.WriteLine(item);
+                    }
+                Select => 將序列的每個元素規劃成一個新的表單
+                    string[] fruits = { "apple", "banana", "mango", "orange",
+                      "passionfruit", "grape" };
+                    var query =
+                        fruits.Select((fruit, index) =>
+                                        new { index, str = fruit.Substring(0, index) });
+
+                    foreach (var obj in query)
+                    {
+                        Console.WriteLine("{0}", obj);
+                    }
+
+                    /*
+                        This code produces the following output:
+
+                        { index = 0, str =  }
+                        { index = 1, str = b }
+                        { index = 2, str = ma }
+                        { index = 3, str = ora }
+                        { index = 4, str = pass }
+                        { index = 5, str = grape }
+                    */
+                Count => 計算 array 中元素的數量
+                    result.Count() <= 0
+                Where => 條件式
+                    result.Where(a => a.Enable == value.enable)
+                Contains => 檢查 array 中包含的元素
+                    Contains(value.name)
+                IsNullOrWhiteSpace => 檢查字串是否為 null、空白 or 由空白字元組成
+                    string.IsNullOrWhiteSpace(value.name) <= value 只能為字串
+                Parse => 前面可以搭配 int、bool、Guid 等各種類型
+其他套件            
     AutoMapper
         1.安裝 AutoMapper.Extensions.Microsoft.DependencyInjection
         2.到 Startup(or Program) 的 ConfigureServices Class 中添加 services.AddAutoMapper(typeof(Startup)); // 如果是用 Program 就把 Startup => Program
@@ -525,15 +719,72 @@ Web API
 
     R (GET)
         [HttpGet("路徑")]
-        public async Task<ActionResult> 
     C (POST)
+        [HttpPost]
+        ex
+            [HttpPost]
+            public void Post([FromBody] TodoList value)
+            {
+                TodoList insert = new TodoList
+                {
+                    Name = value.Name,
+                    Enable = value.Enable,
+                    Orders = value.Orders,
+                    InsertTime = DateTime.Now,
+                    UpdateTime = DateTime.Now,
+                    InsertEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    UpdateEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001")
+                };
+
+                _NewTodoContext.TodoList.Add(insert);
+                _NewTodoContext.SaveChanges();
+            }
 
     U (PUT、PATCH)
+        PUT
+            [HttpPut("{id}")]
+            public string Put(Guid id, [FromBody] TodoList value)
+            {
+                // 自動匹配
+                /_NewTodoContext.TodoList.Update(value);
+                _NewTodoContext.TodoList.Entry(value).State = EntityState.Modified;
+
+                // -----------------------------------------------------
+                // 特定欄位更新
+                var update = _NewTodoContext.TodoList.find(id);
+                
+                // 系統決定欄位
+                update.InsertTime = DateTime.Now;
+                update.UpdateTime = DateTime.Now;
+                update.InsertEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                update.UpdateEmployeeId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+                // 使用者可輸入欄位
+                update.Name = value.Name;
+                update.Orders = value.Orders;
+                update.Enable = value.Enable;
+            }
+        PATCH
+            
     D (DELETE)
         當 DELETE 的資料有子資料時，必需說明有哪些子資料，才能將父資料刪除
             (from a in _NewTodoContext.TodoList
                 where a.TodoId == id
                 select a).Include(c => c.{子資料表}).SingleOrDefault();
+        ex
+            [HttpDelete("{id}")]
+            public string Delete(Guid id)
+            {
+                var delete = (from a in _NewTodoContext.TodoList
+                            where a.TodoId == id
+                            select a).SingleOrDefault();
+                if(delete != null)
+                {
+                    _NewTodoContext.TodoList.Remove(delete);
+                    _NewTodoContext.SaveChanges();
+                }
+                return "已完成";
+            }
 屬性與語法
     屬性
         [AllowAnonymous] -> 限制已有驗證的使用者才可存取元件
