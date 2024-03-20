@@ -1,0 +1,92 @@
+語法
+    CREATE DATABASE "資料庫名稱" => 創建資料庫
+    USE "資料庫名稱" => 使用資料庫
+    CREATE TABLE "表格名稱" => 創建表格
+    int => 整數
+    char => 限定字數
+    money => 金融單位
+    PRIMARY KEY("表格中項目") => 設定表格中的某個項目為主鍵
+    FOREIGN KEY("表格中項目") REFERENCES "對應表格名稱"("對應表格項目") => 對表格中的某個項目設定為外鍵，並對應到其他表格的某個一樣名稱的項目
+    not null => 值不能為 null
+    insert to "資料表名稱" values ("要放入資料表的值，要用","將每個項目的值分隔開") => 帶入值到資料表裡面
+    // 也可以把 ADD 換成 DROP
+    ALTER TABLE "資料表名稱" ADD CONSTRAINT "約束名稱" => 後續添加到資料表中的行為(FOREIGN KEY)
+條件約束
+    NOT NULL => 不允許該欄位為空
+        CREATE TABLE animals (
+            name varchar(255) NOT NULL, <= name 欄位不能為空值
+        );
+    UNIQUE => 限制某個項目出現一次
+        CREATE TABLE users (
+            email varchar(255),
+            // CONSTRAINT (約束條件的關鍵字)
+            CONSTRAINT email_unique UNIQUE (email) <= CONSTRAINT "自行命名" (對應欄位)
+        );
+    CHECK => 檢查使用者填入欄位的值
+        CREATE TABLE users (
+            permission varchar(50),
+            // "自取檢查名稱" CHECK ("欄位" IN ("任意邏輯運算"))
+            // 輸入值的比較 => 'admin','member'，不符合任一個字串就會錯誤
+            CONSTRAINT check_permission_in_list CHECK (permission IN ('admin', 'member'))
+        );
+    外鍵
+        id 當主鍵
+            可使用自動遞增的方法
+    衝突
+        1.資料表間已有一個約束，而另外設定的約束名稱與該約束名稱相同
+        2.資料表間的欄位資料不相同
+合併運算(join)
+    inner join
+        等值連接，必需指定等值連接的條件，會返回相符合連接的資料
+        ex
+            SELECT 員工資料表.員工編號,員工資料表.姓名,部門資料表.部門
+            from 員工資料表 inner join 部門資料表
+            on 員工資料表.員工編號 = 部門資料表.管理者
+    Left join
+        指定連接的條件，會返回相符合連接的"左"邊的資料
+        ex
+            SELECT 員工資料表.員工編號,員工資料表.姓名,部門資料表.部門
+            from 員工資料表 Left join 部門資料表
+            on 員工資料表.員工編號=部門資料表.管理者
+    Right join
+        指定連接的條件，會返回相符合連接的"右"邊的資料
+        ex
+            SELECT 員工資料表.員工編號,員工資料表.姓名,部門資料表.部門
+            from 員工資料表 Right join 部門資料表
+            on 員工資料表.員工編號=部門資料表.管理者
+    Full join
+        指定連接的條件，會返回相符合連接的"全部的"的資料
+        ex
+            SELECT 員工資料表.員工編號,員工資料表.姓名,部門資料表.部門
+            from 員工資料表 Full join 部門資料表
+            on 員工資料表.員工編號=部門資料表.管理者
+    Cross join(笛卡兒乘積)
+        兩個資料表在結合時，不指定任何條件，即將兩個資料表中所有的可能排列組合出來
+        ex
+            SELECT 員工資料表.員工編號,員工資料表.姓名,部門資料表.部門
+            from 員工資料表 Cross join 部門資料表
+            where 員工資料表.員工編號=部門資料表.管理者
+    Union join(聯集)
+        // 其他方式都是用"*"，所以資料表會是平行顯示，而"+"會是垂直顯示
+        與其他方式不同在於 Union join 會是用"+"將結果合併起來，而由 UNION 查詢中各別 SQL 語句所產生的欄位需要是相同的資料型別及順序
+        ex
+            SELECT 員工資料表.姓名 from 員工資料表 
+            Union
+            select 親屬資料表.姓名 from 親屬資料表
+
+例子
+    // 創建
+    USE exampleSQL <= 使用某個資料庫
+    CREATE TABLE 員工資料( <= 創建表格
+    員工編號 int not null, <= 寫入內容
+    姓名 char(20) not null,
+    性別 char(8) not null,
+    地址 char(80) not null,
+    薪水 money,
+    部門編號 int,
+    primary key(員工編號) <= 將"員工編號設定成 PRIMARY KEY"
+    )
+
+    // 帶入值
+    insert into 部門資料表(部門編號,部門,管理者,開始管理日期) values (1,'客戶支援部',15,1996/1/1)
+
