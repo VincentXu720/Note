@@ -796,6 +796,10 @@ Web API
         public async Task<<object> GetExternalDataSets(int dataSourceId)
     型別
         dynamic => 在執行中判斷型別是否有錯
+Error
+    無效的物件名稱
+        重連 DB 後除其他錯
+    
 補充
     SQL Server 資料放在 (C:\Program Files\Microsoft SQL Server\{電腦名稱}\MSSQL\DATA)下最好
     one-to-many
@@ -994,6 +998,33 @@ Web API
                             }
                         }
                     }
+    Dto 搭配 FromSqlRaw
+        ASP.NET
+            [HttpGet("GetSQLDto")]
+            public IEnumerable<TodoListSelectDto> GetSQLDto(string name)
+            {
+                // 這裡會有欄位的差異會出現錯誤
+                string sql = "select * from todolist where 1 = 1";
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    sql = sql + "and name like N'%" + name + "%'";
+                }
+                var result = _NewTodoContext.TodoListSelectDto.FromSqlRaw(sql);
+                return result;
+            }
+        MSSQL
+            (TodoList 的 code)
+            SELECT TOP (1000) [TodoId]
+                ,a.[Name] <= 下面的 a
+                ,[InsertTime]
+                ,[UpdateTime]
+                ,[Enable]
+                ,[Orders]
+                ,b.Name as[InsertEmployeeId] <= 將 InsertEmployee 丟到 b.Name 裡面
+                ,c.Name as [UpdateEmployeeId] <= 將 UpdateEmployee 丟到 c.Name 裡面
+            FROM [NewTodo].[dbo].[TodoList] a <= 對應到上面的 a.[Name]
+            join Employee b on a.InsertEmployeeId = b.EmployeeId <= 將 a.InsertEmployeeId 與 b.EmployeeId 做比較，輸出符合的結果
+            join Employee c on a.UpdateEmployeeId = c.EmployeeId <= 將 a.UpdateEmployeeId 與 c.EmployeeId 做比較，輸出符合的結果
     重點
         1.Models 資料夾中會放入很多獨立的資料表(不算主鍵和外鍵的話)
 

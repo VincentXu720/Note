@@ -11,6 +11,10 @@
     insert to "資料表名稱" values ("要放入資料表的值，要用","將每個項目的值分隔開") => 帶入值到資料表裡面
     // 也可以把 ADD 換成 DROP
     ALTER TABLE "資料表名稱" ADD CONSTRAINT "約束名稱" => 後續添加到資料表中的行為(FOREIGN KEY)
+    as => 改變欄位名稱
+        b.Name as[InsertEmployeeId]
+    join on => 加入其他表格並做比對
+        join Employee b on a.InsertEmployeeId = b.EmployeeId
 條件約束
     NOT NULL => 不允許該欄位為空
         CREATE TABLE animals (
