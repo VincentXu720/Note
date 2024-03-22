@@ -221,12 +221,40 @@ Web API
                 尋找參數機制
                     資料繫結
                         語法
-                            [FromQuery] => 要求查詢字串參數(?Enable=true 就是查詢字串)
-                            [FromBody] => 要求本文(JSON or XML 取得參數值)
-                            [FromRoute] => 來自目前要求的路由資料 ex:HttpGet("{id}") // id 就會被取的參數值
-                            [FromForm] => 來自目前要求的路由資料
-                            [FromHeader] => 要求標頭
-                            [FromServices]：作為動作參數插入的要求服務
+                            [ApiController] => 1.路由需求 2.HTTP 400 自動回應(判斷式) 3.繫結來源參數推斷 4.錯誤狀態碼的問題詳細資料
+                                https://learn.microsoft.com/zh-tw/aspnet/core/web-api/?view=aspnetcore-8.0
+                            路由
+                                [FromQuery] => 要求查詢字串參數(?Enable=true 就是查詢字串)
+                                [FromBody] => 要求本文(JSON or XML 取得參數值)
+                                [FromRoute] => 來自目前要求的路由資料 ex:HttpGet("{id}") // id 就會被取的參數值
+                                [FromForm] => 來自目前要求的路由資料
+                                [FromHeader] => 要求標頭
+                                [FromServices] => 作為動作參數插入的要求服務
+                            驗證 (最好寫在 DTO 裡面)
+                                其他相關語法
+                                    https://learn.microsoft.com/zh-tw/aspnet/core/mvc/models/validation?view=aspnetcore-8.0
+                                [Required] => 幫助驗證 POST 資料是否有東西
+                                [Range(2,3)] => 可以用在需要輸入數字的地方，可以顯示範圍內的數字
+                                [EmailAddress] => 驗證是否為 Email 格式
+                                [EmailAddress(ErrorMessage ="輸入電子郵件")] => 也可以更改錯誤時的訊息
+                            類型
+                                IActionResult
+                                    會回傳各種 ActionResult 型別的 HTTP 狀態碼，常見
+                                        BadRequestResult(400)
+                                        NotFoundResult(404)
+                                        OkObjectResult(200)
+                            型別
+                                ActionResult
+                                    針對 Controller 的 action 包含 ActionResult<T> 傳回型別，可傳回衍生自 ActionResult 型別或傳回特定型別，透過 IActionResult 提供
+                                    優點
+                                        1.可排除 [ProducesResponeseType] 屬性的 Type 屬性
+                                            [ProducesResponeseType(200,Type=typeof(Product))] 簡化為 [ProducesResponeseType(200)] 會被 ActionResult 中斷
+                                        2.隱含轉型運算子
+                                            支援 T 和 ActionResult 轉換成 ActionResult<T>，T 轉換為 ObjectResult => return new ObjectResult(T)，以簡化為 return T
+                            Startup
+                                AddControllers
+                                AddApplicationServices
+                                IsDevelopment
                         使用情境
                             1.大多數情況，都會有預設值
                                 public IActionResult Get(string id)
@@ -407,7 +435,7 @@ Web API
                         UpdateTime = a.UpdateTime
                     };
                 }
-            IActionResult and ActionResult
+            IActionResult and ActionResult (符合正規內容)
                 多筆資料
                     private static TodoListSelectDto ItemToDto(TodoList a)
                     {
@@ -519,7 +547,7 @@ Web API
                         }
                         return ItemToDto(result);
                     }
-        Post
+        Post (更新全部的資料)
             可以透過 Postman 測驗
             POST 資料
                 1.先用 GET 取得資料
@@ -538,6 +566,82 @@ Web API
                 4.上面框可以輸入要新增資料(設定成 JSON 要用 JSON 格式輸入)
                 5.再用 GET 確認資料是否成功
             新增子資料與父資料
+        Patch (更新部分資料) (有問題)
+            先安裝套件
+                Microsoft.AspNetCore.JsonPatch
+                Microsoft.AspNetCore.Mvc.NewtonsoftJson
+            固定的使用 JsonPatchDocument 接收格式
+                [HttpPatch]
+                public string Patch(Guid id, [FromBody] JsonPatchDocument value)
+                { ... }
+        Delete
+            基本寫法
+                [HttpDelete("{id}")]
+                public string Delete(Guid id)
+                {
+                    var delete = (from a in _NewTodoContext.TodoList
+                                where a.TodoId == id
+                                select a).SingleOrDefault();
+                    if(delete != null)
+                    {
+                        _NewTodoContext.TodoList.Remove(delete);
+                        _NewTodoContext.SaveChanges();
+                    }
+                    return "已完成";
+                }
+            刪除父與子資料(有外鍵)
+                [HttpDelete("nofk/{id}")]
+                public string NofkDelete(Guid id)
+                {
+                    var child = from a in _NewTodoContext.UploadFile
+                                where a.TodoId == id
+                                select a;
+                    // RemoveRange 可以將資料全部刪除
+                    _NewTodoContext.UploadFile.RemoveRange(child);
+                    _NewTodoContext.SaveChanges();
+
+                    var delete = (from a in _NewTodoContext.TodoList
+                                where a.TodoId == id
+                                select a).SingleOrDefault();
+                    if (delete != null)
+                    {
+                        // Remove 只能一筆一筆刪除資料
+                        _NewTodoContext.TodoList.Remove(delete);
+                        _NewTodoContext.SaveChanges();
+                    }
+                    return "已完成";
+                }
+            刪除多筆資料
+                [HttpDelete("list/{ids}")]
+                public string Delete(string ids)
+                {
+                    List<Guid> deleteList = JsonSerializer.Deserialize<List<Guid>>(ids);
+
+                    var delete = (from a in _NewTodoContext.TodoList
+                                where deleteList.Contains(a.TodoId)
+                                select a).Include(c => c.UploadFiles);
+                    _NewTodoContext.TodoList.RemoveRange(delete);
+                    _NewTodoContext.SaveChanges();
+
+                    return "已完成";
+                }
+            刪除後返回符合規範內容
+                [HttpDelete("{id}")]
+                public IActionResult Delete(Guid id)
+                {
+                    var delete = (from a in _NewTodoContext.TodoList
+                                where a.TodoId == id
+                                select a).Include(c => c.UploadFiles).SingleOrDefault();
+                    if(delete == null)
+                    {
+                        // return 404 and 找不到資料
+                        NotFound("找不到資料");
+                    }
+                    _NewTodoContext.TodoList.Remove(delete);
+                    _NewTodoContext.SaveChanges();
+
+                    return NoContent();
+                }
     常用
         屬性
             DateTime => 讀取電腦的時間 
@@ -549,6 +653,8 @@ Web API
                 3.支持泛型
                 4.提供許多有用的方法 => 提供 Add(添加元素)、Remove(刪除元素)、Contains(檢查是否包含某元素)等
                 5.支持 LinQ 語法 => 查詢與過濾
+                6.可以配合方法
+                    https://learn.microsoft.com/zh-tw/dotnet/api/system.collections.generic.list-1?view=net-8.0
             Task<T> => 設立一個任務，搭配 async/ await 完成
 
         語法(LinQ and C# 可以搭配使用)
@@ -612,6 +718,7 @@ Web API
                 IsNullOrWhiteSpace => 檢查字串是否為 null、空白 or 由空白字元組成
                     string.IsNullOrWhiteSpace(value.name) <= value 只能為字串
                 Parse => 前面可以搭配 int、bool、Guid 等各種類型
+                Find => 只能放入資料的主 key(id)
 其他套件            
     AutoMapper
         1.安裝 AutoMapper.Extensions.Microsoft.DependencyInjection
@@ -1025,6 +1132,9 @@ Error
             FROM [NewTodo].[dbo].[TodoList] a <= 對應到上面的 a.[Name]
             join Employee b on a.InsertEmployeeId = b.EmployeeId <= 將 a.InsertEmployeeId 與 b.EmployeeId 做比較，輸出符合的結果
             join Employee c on a.UpdateEmployeeId = c.EmployeeId <= 將 a.UpdateEmployeeId 與 c.EmployeeId 做比較，輸出符合的結果
+    Database First
+        將資料庫把資料的結構設計完成後，再到 ASP.NET Core 裡面，對資料庫連線，使用 Enitity Framework 完成 Model 建立
+
     重點
         1.Models 資料夾中會放入很多獨立的資料表(不算主鍵和外鍵的話)
 
