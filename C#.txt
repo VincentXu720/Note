@@ -59,6 +59,20 @@
     System.Convert.ToDouble() <= 轉為 double
         double num = System.Convert.ToDouble(Console.ReadLine())
 Array
+    相關知識
+        1.相同類型的元素集合
+        2.連續的記憶體空間
+            陣列中的元素在記憶體中是連續存放
+        3.預先知道大小
+            你必須決定要儲存多少元素在陣列，如果需要更多空間，你需要重新建立一個更大或更小的陣列，然後把舊陣列的資料複製過去
+        4.使用索引存取元素
+            每個陣列元素都有一個唯一的索引(index)
+        5.多維陣列
+            可以建立多維陣列，就像是表格或矩陣
+        6.容量限制
+            陣列的大小限制在約40億個元素，但在任何指定的維度中，最大索引值約為0x7FEFFFFF。如果需要更大的陣列，你可以在64位環境中進行特殊設定
+        7.泛型介面
+            單一維陣列實作了泛型介面，這意味著你可以使用泛型方式操作陣列中的元素，這在某些情況下很方便
     宣告
         // int = {"整數型別"} double = {"浮點數型別"} string = {"字串型別"}
         int[] score = {20,50,60,70} <= 裡面會用"{}"包起來
@@ -68,6 +82,129 @@ Array
             {5,6,7,8},
             {9,10,11,12}
         };
+    集合
+        List 
+            是一種動態陣列，可以容納多個元素，並提供了方便的方法來添加、刪除、查詢和操作這些元素，與傳統陣列不同，List 具有動態調整大小的能力，可以不用擔心容量問題
+            而 List 在 C# 是一個泛型類型，意味著可以指定 List 中要存放的資料類型
+            ex
+                1.一般使用
+                    List<int> numbers = new List<int>();
+                    numbers.Add(11);
+                    numbers.Add(42);
+                    numbers.Add(399);
+                    int secondNumber = numbers[1]; // 存取第二個數字 42
+                2.進階使用
+                    List<object> data = new List<object>();
+                    data.Add(42);
+                    data.Add("Hello");
+                    data.Add(3.14);
+                    data.Add(true);
+                    不過這個方法有可能會導致類型錯誤，所以最後裡面的東西，要一致類型
+        HashSet<T>(集合)
+            是一個集合，可容納相同類型的元素，但元素不允許重複，會自動排序元素，但新增與移除會比 List<T> 更花時間
+            ex
+                HashSet<int> uniqueNumbers = new HashSet<int>();
+                uniqueNumbers.Add(1);
+                uniqueNumbers.Add(99);
+                uniqueNumbers.Add(1); <= 因為元素不能有重複的
+                Console.WriteLine(uniqueNumbers.Count); <= 所以這裡計算會是 2
+        Dictionary<Tkey,TValue>(字典)
+            以鍵對值(Key-Value-Pair)的方式存取元素，每個元素都有唯一的鍵，不允許鍵重複
+            ex
+                Dictionary<int, string> cities = new Dictionary<int, string>();
+                cities.Add(11, "城市 A");
+                cities.Add(2222, "城市 B");
+                cities.Add(39, "城市 C");
+                string city = cities[39]; // 根據鍵 39 查找對應的城市名稱
+        排序和查找
+            處理集合時，需要注意排序和查找的效能
+            sort
+                可以對集合進行排序
+                ex
+                    List<int> numbers = new List<int> { 5, 1, 3, 9, 0 };
+                    numbers.Sort(); // 對集合進行排序，會改變原集合的順序
+            OrderBy
+                可以返回已排序的新集合，但原本的集合並不會被更改
+                ex
+                    List<int> numbers = new List<int> { 5, 1, 3, 9, 0 };
+                    var newItems = numbers.OrderBy(n => n); // 返回已排序的新集合，原集合不變
+        字串轉成 Dictionary
+            如需要統計一個字串中不同元素的出現次數，你可以使用 Split 將字串分割成元素，然後使用 Dictionary 來統計它們的次數
+            ex
+                string s = "A,B,C,A,D,C,E";
+                string[] items = s.Split(','); <= 透過","進行分割後，回傳陣列
+
+                var maps = new Dictionary<string, int>(); <= 建立一個新的 Dictionary 集合
+
+                foreach (var item in items) <= 用 foreach 把每個元素取出
+                {
+                    if (maps.ContainsKey(item))
+                    {
+                        maps[item] += 1; <= 如果有 item 就 +1
+                    }
+                    else
+                    {
+                        maps.Add(item, 1); <= 沒有就加入(item,1)
+                    }
+                }
+
+                foreach (var item in maps)
+                {
+                    Console.WriteLine($"元素 = {item.Key}, 出現次數 = {item.Value}");
+                }
+            Split
+                介紹(https://ithelp.ithome.com.tw/m/articles/10321992)
+                1.逗號分割
+                2.空白分割
+                3.自訂分隔符
+                    .Split(';')
+                4.多個分隔符
+                    char[] separators = new char[] { ',', ';', ' ' };
+                    .Split(separators,StringSplitOptions.RemoveEmptyEntries); <= StringSplitOptions.RemoveEmptyEntries 移除空白項目
+    自定義類別
+        有不同型別的數據，但這些數據都具有相關性，可以考慮創建一個自定義的類別，該類別包含這些數據的屬性。然後，你可以創建該類別的實例並存儲在陣列或集合中
+        ex
+            class Person
+            {
+                public string Name { get; set; }
+                public int Age { get; set; }
+            }
+
+            Person[] people = new Person[]
+            {
+                new Person { Name = "Alice", Age = 30 },
+                new Person { Name = "Bob", Age = 25 },
+                new Person { Name = "Charlie", Age = 35 }
+            };
+    數值格式化 StringBuilder 類型轉換
+        數值格式化
+            1.百分格式化
+                double percent = 0.5;
+                Console.WriteLine($"百分比格式化：{percent:P}");  // 百分比格式化：50.00%
+            2.千分位格式化
+                int num = 1000000;
+                Console.WriteLine($"千分位格式化：{num:N}");  // 千分位格式化：1,000,000.00
+            3.自訂數值格式化，保留小數點後2位
+                double num1 = 10.1;
+                Console.WriteLine($"自訂數值格式化（2位小數）：{num1:0.00}");  // 自訂數值格式化（2位小數）：10.10
+        StringBuilder
+            在 .NET 中的一個類，用於動態地建立、修改和處理字串，與 string 不同，StringBuilder 物件是可變的，也就是說 StringBuilder 是可以在不創新字串下，對字串使用連接與修改
+            在報表生成、文字處理、日誌記錄等，是非常適合使用
+            string不可變跟StringBuilder可變是差異
+                1.不可變性
+                2.StringBuilder 的可變性
+            如何使用 StringBuilder
+                1.創建 StringBuilder 實例
+                    var sb = new StringBuilder();
+                2.使用 Append 方法
+                    for (int i = 0; i < 100000; i++)
+                    {
+                        sb.Append("文字"); // 將文字附加到 StringBuilder
+                    }
+                3.使用 ToString 方法
+                    string result = sb.ToString(); // 將 StringBuilder 內容轉換為 string
+        明確類型轉換
+            介紹(https://ithelp.ithome.com.tw/m/articles/10323034)
 判斷句
     if...else
     while
