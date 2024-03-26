@@ -894,8 +894,12 @@ Web API
             }
 屬性與語法
     屬性
-        [AllowAnonymous] -> 限制已有驗證的使用者才可存取元件
-        
+        [AllowAnonymous] 限制已有驗證的使用者才可存取元件
+        IWebHostEnvironment 提供兩界面
+            1.WebRootPath
+                指向 www 文件夾路徑，可以使用這個屬性來獲取或設定包含 Web 服務應用程式文件的目錄的絕對路徑
+            2.ContentRootPath
+                根文件夾的路徑，可以使用這個屬性來獲取或設定包含所有應用程式文件的目錄的絕對路徑
     語法
         implicit => 不需明確指定轉換類型
         explict => 必須明確轉換類型
@@ -903,6 +907,14 @@ Web API
         public async Task<<object> GetExternalDataSets(int dataSourceId)
     型別
         dynamic => 在執行中判斷型別是否有錯
+    其他
+        FileStream
+            使用指定路徑、建立模式和讀取/寫入權限，初始化 FileStream 類別的新執行個體
+            寫法
+                FileStream (string path, System.IO.FileMode mode, System.IO.FileAccess access)
+                    1.path 檔案的相對或絕對路徑
+                    2.mode 決定如何開啟或建立檔案
+                    3.access 決定存取檔案的方式
 Error
     無效的物件名稱
         重連 DB 後除其他錯

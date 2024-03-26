@@ -1,0 +1,127 @@
+System.Net.Http <= 命名空間
+    類別
+        HttpClient
+            提供類別傳送 Http 要求，並從 URL 所識別的資源接收 Http 回應
+System.Threading.Tasks
+    提供型別，主要型別為 Task(表示可等待和取消的非同步作業)、Task<TResult>(可傳回的工作)
+    類別
+        Task<TResult>
+            表示可傳回值的非同步操作
+IPAddress
+    (https://learn.microsoft.com/zh-tw/dotnet/api/system.net.ipaddress?view=net-8.0)
+    提供網際網路通訊協定 (IP) 位址 (包含 IP 網路上的電腦位址)
+    方法
+        MapToIPv4
+            將 IPAddress 物件轉換成 IPv4 address
+Logging
+    ASP.NET內建，在應用程式中紀錄使用行為、例外事件的訊息
+    ex
+        public class LoggingController{
+            // 注入 DI
+            private readonly ILogger<LoggingController> _logger;
+            public LoggingController(ILogger<LoggingController> logger){
+                _logger = logger;
+            }
+        }
+        public ActionResult<string> Get(){
+            // LogWarning 是 Logger 方法
+            _logger.LogWarning("LogginSample in")
+            return "Loggin Page"
+        }
+    方法
+        LogWarning
+            格式化並寫入警告紀錄訊息，訊息可以放 String、Object、EventId 等
+Dapper
+    將資料表對應到類別並轉換成物件，便於用強型別做開發，還有可字寫 SQL 語法調整係為操作
+    QueryMultipleAsync
+        可以一次查詢多個結果，減少請求資料庫的次數，請求到的資料會被封裝到 GridRead 物件中
+        ex
+            string = @"SELECT name FROM dbo.name"
+            .QueryMultipleAsync("sql語法", parameters);
+        方法
+            Read
+                透過 Read 可以將封裝到 GridRead 裡面的物件取出，Read 也可以用 <T> 帶入
+IApplicationDbContext
+    1.DbContext 存留期
+        DbContext 會與資料庫進行互動，在執行個體與個體被處置時結束
+        在一個"單一"的工作單位使用
+            1.建立 DbContext
+            2.追蹤實體執行個體變更
+            3.呼叫 SaveChanges or SaveChangesAsync 寫入資料庫
+    2.初始化 DbContext
+        1.使用 new 建立 DbContext 執行個體
+        2.使用 DI 注入到 ASP.NET Core 裡面
+IDictionary
+    表示將索引鍵/值組的泛型集合
+    IDictionary<TKey,TValue>
+    ex
+        IDictionary<string,object> = { key:obj }
+First
+    回傳第一個值，如果沒有值，會回傳異常
+FirstOrDefault
+    回傳第一個值，如果沒有救回傳預設值
+    預設值
+        1.引用類型
+            default => null
+        2.值類型
+            int => 0
+            double => 0.0
+            bool => false
+internal
+    存取限於目前組件
+GetSummaryRequest
+    用在 Http request 上
+DynamicParameter
+    設置參數
+        可以直接設定參數
+        direction
+            ParameterDirection.Input
+                表示該參數是輸入參數，從應用程式傳輸到資料庫的值
+            ParameterDirection.Ouput
+                表示該參數是輸出參數，從資料庫傳輸到應用程式的值
+            ParameterDirection.InputOuput
+                表示該參數可以是輸入也可以是輸出
+        dbType
+            指定參數的資料類型，可以指定為 DbType 中一個資料類型
+            ex
+                DbType.Int32
+Pagination
+
+DateTime
+    以一天的時間和日期表示
+    方法
+        ToLocalTime
+            將 DateTime 物件轉換為本地時間
+List<T>
+    屬性
+        Count
+            可以計算 List<T> 裡面的項目數量
+常見
+    ApiControllerBase 繼承 ControllerBase 
+
+其他
+    IsConsumed
+        reader 會繼承 IDataReader，而 NextResult() 在裡面，所以會透過 reader.NextResult() 去觸發
+        讓 IsConsumed 變成 false，所以大部分都為 true，如果 reader.NextResult = false 時，會釋放
+        記憶體
+        ex
+            private void NextResult(){
+                if(reader.NextResult()){ <= 判斷是否還有資料
+                    readCount ++;
+                    gridIndex ++;
+                    IsConsumed = false;
+                }else{ <= 當沒有資料了釋放記憶體
+                    reader.Dispose();
+                    reader = null;
+                    callbacks?.OnCompleted();
+                    Dispose();
+                }
+            }
+    as
+        可以強制轉型
+    ??
+        Null 運算子，他會判斷參數是否為 null
+        ex
+            string name = null
+            string Hello = "Hello"
+            string sayHi = name ?? Hello // Hello，因為 name 是空值
