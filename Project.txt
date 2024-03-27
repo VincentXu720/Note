@@ -23,7 +23,7 @@ Logging
                 _logger = logger;
             }
         }
-        public ActionResult<string> Get(){
+        public ActionResult<string> Get(){ <= 表示動作的方法
             // LogWarning 是 Logger 方法
             _logger.LogWarning("LogginSample in")
             return "Loggin Page"
@@ -96,6 +96,7 @@ List<T>
     屬性
         Count
             可以計算 List<T> 裡面的項目數量
+FormatResultModel
 常見
     ApiControllerBase 繼承 ControllerBase 
 
@@ -125,3 +126,113 @@ List<T>
             string name = null
             string Hello = "Hello"
             string sayHi = name ?? Hello // Hello，因為 name 是空值
+    $""
+        用於在字符串中嵌入變數或表達式的值
+        ex
+            var a = new { name = "John"}
+            string result = $"{a.name}" // John
+    JWT 驗證
+        裡面有包含三部分
+        一、Header
+            是一個 JSON 物件，裡面會有兩個屬性
+                1.alg 表示使用的加密算法
+                2.typ 表示類型，usually setting "JWT"
+            ex
+                Header = {
+                    "alg":"HS256",
+                    "typ":"JWT"
+                }
+        二、Payload
+            是一個 JSON 物件，可包含"自定義的屬性"，像客戶基本資料就是放在 Payload 的部分
+            還有一些內建屬性可使用(也可以自定屬性)
+                1.iss JWT 的發行者
+                2.sub JWT 的主題，表示 JWT 代表的實體(通常為使用者)
+                3.aud JWT 接收者，表示 JWT 可被誰使用
+                4.exp JWT 過期的時間，過期的 JWT 不能再使用
+                5.nbf JWT 生效時間，表示何時 JWT 生效
+                6.iat JWT 發行時間
+                7.jti JWT 唯一標識符，防止 JWT 被重複使用
+            ex
+                Payload = {
+                    "sub":"123456789",
+                    "name":"John Doe",
+                    "iat":1516239022
+                }
+        三、Signature
+            是一個對 Header 和 Payload 進行數字簽名的結果
+            ex
+                HMACSHA256(
+                    base64UrlEncode(header) + "." + <= header 和 payload 中間會使用 "." 來連接
+                    base64UrlEncode(payload),
+                    'your-256-bit-secret'    <= 這是存放在伺服器的自定義私鑰
+                )
+                這三個部分接在一起後的字串進行加密演算法進行加密簽名(簽名的計算方式會根據不同的加密算法而不同)
+        簡單授權
+            介紹(https://learn.microsoft.com/zh-tw/aspnet/core/security/authorization/simple?view=aspnetcore-8.0)
+            [Authorize] 只有已驗證使用者能存取該元件(包含控制器、動作、Razor Page)
+                ex
+                    [Authorize] <= 只有已驗證使用者可以存取
+                    public class AccountController : Controller
+                    {
+                        public ActionResult Login()
+                        {
+                        }
+
+                        public ActionResult Logout()
+                        {
+                        }
+                    }
+            [AuthorizeAttribute] 只有已驗證使用者能存取該元件(動作)
+                ex
+                    public class AccountController : Controller
+                    {
+                        public ActionResult Login()
+                        {
+                        }
+
+                        [Authorize] <= 只有已驗證才能存取 Logout
+                        public ActionResult Logout()
+                        {
+                        }
+                    }
+            [AllowAnonymous] 允許未驗證的使用者存取個別動作
+                ex
+                    [Authorize] <= 如要存取整個 Controller 就需要驗證
+                    public class AccountController : Controller
+                    {
+                        [AllowAnonymous] <= 這裡不需驗證就可以存取
+                        public ActionResult Login()
+                        {
+                        }
+
+                        public ActionResult Logout()
+                        {
+                        }
+                    }
+    React
+        動態載入元件
+            lazy
+                Babel 會把 lazy() 引入的元件，在打包時拆成一個獨立的 JS 檔案，並且只有在第一次渲染時，才會引入該元件渲染
+                ex
+                    const "元件" = React.lazy(()=> import("檔案相對路徑"))
+            Suspense
+                React 提供的特殊元件，當"目標元件"還沒載入完成時，React 會一直顯示 fallback 這個綁定的讀取元件，直到目標元件讀取完成
+            ex
+                import React,{ lazy, Suspense } from 'react'
+                const InputForm = lazy(()=>import('../component/InputForm'))
+                // 這裡會先使用讀取元件(進度條 or 轉圈圈)
+                const FormPage = () =>{
+                    return <Suspense fallback={<div>Loading...</div>}>
+                                <InputForm />
+                            </Suspense>;
+                }
+                export default FormPage
+        useSelect
+            Redux 的 hook，他會從 store 取出資料給元件使用
+共通點
+    RPTWeb
+        1.POST 會帶入 request 參數，GET 則不需要
+        2.無論是 POST 或 GET 執行完後都會回傳成功或失敗
+        3.元件動作都會加入 [AllowAnonymous] 表示不需驗證也能存取
+
+Dashboard
