@@ -1578,6 +1578,28 @@ React 其他套件
                             })
             createAsyncThunk
                 處理非同步，接受action type string和一個返回的promise函數
+                裡面會有三部分
+                    1.type
+                        讓 Redux 可以辨識你使用的 Action 是什麼，通常都會以 “slice/action” 的寫法，且使用 Thunk 時，Redux 會自動
+                        生成額外的 pending/fulfilled/rejected 三個 Action
+                            1.pending 創建一個用於派發 pending 狀態的 Action creator
+                            2.fulfiller 創建一個用於派發 fulfilled 狀態的 Action creator
+                            3.rejected 創建一個用於派發 rejected 狀態的 Action creator
+                    2.payloadCreator
+                        用於放置我們的異步操作，通常會使用 Async 函式來處理。payloadCreator 會傳入兩個參數
+                            1.arg 在使用 Action 時，接收傳入資料作為參數的地方
+                            2.ThunkAPI Redux 提供一整組的 API，例如獲取 getState、dispatch、extra 傳入其他參數等 API
+                    3.options (可無)
+                        會傳入一個物件，常見的有下列一些屬性
+                            1.condition 用於中斷建立 payload creator 的 condition 屬性
+                            2.dispatchConditionRejection 預設為 true，強制返回一個 rejected 的 Action 並派發
+                流程
+                    1.等待 => 派發（dispatch）並執行 slice/action/pending
+                    2.解析 => 呼叫 payloadCreator 並等待 Promise resolve
+                    3.派發
+                        1.成功 => 派發 fulfilled 並傳遞值給 action.payload
+                        2.失敗 => 返回 ThunkAPI.rejectWithValue(value) 的錯誤值，並傳遞至 action.payload，可在 action.error.message 獲得 'Rejected' 字串；若未處理，則派發一個衍生錯誤至 action.error
+                    4.返回 => 返回一個 fulfilled 狀態的 Promise，可能包含 fulfilled / reject 狀態的資料
         結論
             流程
                 1.創建Reducer
