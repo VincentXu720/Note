@@ -822,8 +822,6 @@ Web API
     9.建立完整的資料庫檔案 Add-Migration InitialCreate
     10.建立資料庫 dotnet run seeddata
 資料庫 CRUD
-    注入 DI
-
     R (GET)
         [HttpGet("路徑")]
     C (POST)
@@ -1149,4 +1147,183 @@ Error
 
     重點
         1.Models 資料夾中會放入很多獨立的資料表(不算主鍵和外鍵的話)
+
+結構
+    .net 5.0
+        Program
+            程式的進入點，可建立 WebHost 和 WebApplication 的程式碼，也可以設定 Application 服務提供者、配置 Http request 管道
+            以及定義應用程式主要邏輯
+        Startup
+            設定應用程式的服務和中介軟體
+
+補充
+    服務註冊
+        應用程式啟動時，將服務(資料庫連線、身分驗證、日誌紀錄等)添加到服務容器中
+            常用法
+                public void Configuration(IServiceCollection services) {
+                    services.AddDbContext<MyDbContext>() // 註冊服務
+                }
+    依賴注入(DI)
+        將服務注入到應用程式的其他元件中，ex: Controller、MiddleWare、Service 等
+            常用法
+                public class MyController {
+                    private readonly MyDbContext _dbContext // 宣告服務
+                    public MyController(MyDbContext dbContext) {
+                        _dbContext = dbContext // 注入服務
+                    }
+                }        
+
+其他 Class
+    IApplicationBuilder
+        配置應用程序的請求管道
+            1.中間件配置
+                允許添加、排序、配置中間件 // 中間件 => 處理 Http 請求和響應的軟件組件
+            2.請求管道構建
+                可以定義請求如何在 application 流動和被處理
+            3.服務配置
+                某些服務細節可以在這裡設定
+            4.路由設置
+                配置路由規則
+            5.錯誤處理
+                設置全局錯誤處理中間件
+            6.環境特定配置
+                根據不同運行環境配置中間件或行為
+        中間件
+            UseDeveloperExceptionPage (只可在開發環境使用)
+                用於處理開發環境中的錯誤和調試 (https://ithelp.ithome.com.tw/m/articles/10240724)
+                    1.詳細錯誤訊息
+                        當應用程序拋出未處理的異常時，它會顯示詳細的錯誤頁面，包括堆棧跟蹤、查詢字符串、cookies 等信息
+                    2.原代碼顯示
+                        錯誤頁面會顯示發生異常的源代碼片段，幫助開發者快速定位問題
+                    3.運行時信息
+                        提供有關運行時環境的詳細信息，如服務器變量、HTTP 頭等
+                    4.僅用於開發
+                        這個中間件設計用於開發環境，不應在生產環境中使用，因為它可能暴露敏感信息
+                    5.快速診斷
+                        有助於開發者快速診斷和修復問題，無需額外的日誌記錄或調試工具
+                可傳入 UseDeveloperExceptionOptions 物件
+                    DeveloperExceptionPageOptions developerExceptionPageOptions = new DeveloperExceptionPageOptions {
+                        SourceCodeLineCount = 4 //顯示的行數為錯誤那行的前後4行
+                    }
+                    app.UseDeveloperExceptionPage(developerExceptionPageOptions)
+            UseExceptionHandler (正式環境的錯誤頁面)
+                客製化在正式環境中的錯誤頁面
+                    導向
+                        app.UseExceptionHandler("/Home/Error"); // 導向 /Home/Error 錯誤頁面
+                    設定錯誤訊息
+                        app.UseExceptionHandler(errorApp =>
+                        {
+                            errorApp.Run(async context =>
+                            {
+                                context.Response.StatusCode = 500;
+                                context.Response.ContentType = "application/json";
+
+                                var json = @"{ ""Message"": ""This is Error test."" }";
+                                await context.Response.WriteAsync(json);
+
+                            });
+                        });
+            UseRouting
+                在 app 請求處理中添加路由中間件
+                    1.啟用路由
+                        允許將傳入的 HTTP 請求映射到相應的端點 (ex: controller or Razor page)
+                    2.端點選擇
+                        負責根據請求的 URL 和其他因素(Http method)選擇適當端點
+                    3.中間件管道分割
+                        將 Middle ware 分為兩部分
+                            1.(身分驗證等)類的中間件在路由前運行
+                            2.(授權等)類的中間件在路由後運行
+                    4.性能優化
+                        提前確定端點，優化後續中間件執行
+                    5.與 UseEndpoints 配合
+                        常與 UseEndpoints 中間件搭配使用，UseEndpoints 可以定義具體的路由規則
+                備註
+                    需在(身分驗證、授權等)之前調用
+                    UseRouting 只會在中間件管道中調用一次
+            UseEndpoints
+                定義具體的路由規則
+                    1.定義路由規則
+                        允許你定義具體的路由規則，將 URL 模式映射到特定的處理程序 (Controller、Rezor page 等)
+                    2.端點配置
+                        提供一個集中的地方來配置所有的端點
+                    3.支持多種端點類型
+                        配置不同類型的端點, ex:MVC Controller、 Razor Page、 SignalR 中樞等
+                    4.靈活路由模式
+                        支持基於屬性的路由和傳統的基於模式的路由
+                    5.中間件集成
+                        允許在端點級別應用特定的中間件
+                    6.性能優化
+                        使用端點路由可以提高路由的性能，更有效匹配和生成 URL
+                備註
+                    通常會在 Configuration 的末尾
+            UseHttpsRedirection
+                將 Http 的請求轉換成以 Https 請求，確保通信是加密的
+            Microsoft.AspNetCore.SpaServices.Extensions
+                UseSpaStaticFiles
+                    配置應用程式以提供 SPA 應用程式的靜態文件
+                    ex:
+                        app.UseSpaStaticFiles()
+                UseSpa
+                    將未匹配到請求路由重新導向到前端程序執行，如不是 API 的請求，都會從這裡轉交給前端程式處理('/home')，這裡通常都會導向 index.html
+                    ex:
+                        app.UseSpa(spa => {
+                            spa.Options.SourcePath = "ClientApp";
+                            
+                            // 確保開發環境下啟動
+                            if (env.IsDevelopment())
+                            {
+                                // 自動啟動 React 服務器
+                                spa.UseReactDevelopmentServer(npmScript: "start");
+                            }
+                        })
+            UseHsts
+                告訴 browser 只能與通過 Https 協議的服務器通信，通常會在生產環境中啟用
+            
+    
+    IWebHostEnvironment (Microsoft.AspNetCore.Hosting)
+        在 run time 期間判斷目前的執行環境，主要提供目前正在執行的Web hosting Environment資訊
+            環境 (專案 -> 屬性 -> 偵錯 -> 開啟debug -> 環境變數 -> ASPNETCORE_ENVIRONMENT 值)
+                1.IsDevelopment 開發環境
+                2.IsStaging 暫時測試環境
+                3.IsProduction 正式環境
+                4.IsEnvironment 確認指定值是否為執行環境名
+    
+    IServiceCollection
+        啟動時用於註冊和配置服務
+            1.服務註冊
+                允許你註冊各種服務，包含內置服務和自定義服務
+            2.依賴注入容器配置
+                作為配置依賴注入容器的主要方式，定義 application 可用的服務
+            3.生命周期管理
+                允許你指定服務的生命周期(ex:Transient、Scoped、Singleton)
+            4.服務替換和擴展
+                提供了替換或擴展現有服務實現的能力
+            5.配置選項
+                通常用於配置各種框架和 Aplication Service
+        搭配方法
+            services.AddControllers()
+                將服務註冊
+            services.AddControllers().AddJsonOptions // 要先註冊服務，再使用轉化為 JSON 的方法
+                將資料透過 JSON 序列化轉為 JSON
+
+    IISServerOptions
+        提供 IIS 進程內配置
+            屬性
+                1.AllowSynchronousIO
+                    控制是否允許同步 IO 操作
+                2.AuthenticationDisplayName
+                    設置在登入頁面上顯示的名稱
+                3.AutomaticAuthentication
+                    為 true，服務器會自動設置 HttpContext.User，否則只在顯示請求時提供身分驗證
+                4.MaxRequestBodyBufferSize
+                    設置傳入請求的最大位元組上限
+                5.MaxRequestBodySize
+                    設置請求最大允許大小
+    
+    IHostService
+        
+    
+    KestrelServerOptions
+        常用於 ASP.Net Core 應用程式的伺服器，但在生產環境中還會搭配反向代理伺服器(ex:IIS、Nginx、Apache)一起使用
+    
 
