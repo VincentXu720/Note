@@ -1154,7 +1154,10 @@ Error
             程式的進入點，可建立 WebHost 和 WebApplication 的程式碼，也可以設定 Application 服務提供者、配置 Http request 管道
             以及定義應用程式主要邏輯
         Startup
-            設定應用程式的服務和中介軟體
+            設定(註冊)應用程式的服務和中間件軟體
+    .net 8.0
+        Program
+            程式進入點，設定(註冊)應用程式的服務和中間件軟體
 
 補充
     服務註冊
@@ -1320,12 +1323,43 @@ Error
                 5.MaxRequestBodySize
                     設置請求最大允許大小
     
-    IHostService
-        
+    IHostedService
+        介紹
+            Core 內建的背景處理介面，可以簡單透過 BackgroundService 基底類別
+        作用
+            1.輪詢 DB 以找出變更的背景工作
+            2.定期更新某個快取的排定工作
+            3.允許在背景執行緒上執行工作的 QueueBackgroundWorkItem 實作
+            4.在共用 ILogger 這類通用服務時，於 Web 應用程式背景處理佇列訊息
+            5.使用 Task.Run() 啟動背景程式
     
     KestrelServerOptions
         常用於 ASP.Net Core 應用程式的伺服器，但在生產環境中還會搭配反向代理伺服器(ex:IIS、Nginx、Apache)一起使用
     
+    NetworkInterface
+        介紹
+            提供網路介面的組態和統計資訊
+        方法
+            GetAllNetworkInterfaces()
+                傳回物件，其描述本機電腦上的網路介面(包含乙太、區連等資訊)
+                內容
+                    OperationalStatus => 確認網路介面操作狀態
+                        1 Up:開啟
+                        2 Down:關閉
+                        3 Testing:正在執行測試
+                        4 Unknown:狀態未知
+                        5 Dormant:正在等待外部事件
+                        6 NotPresent:缺少元件而無法傳輸資料封包，缺少的元件通常是硬體元件
+                        7 LowerLayerDown:無法傳輸資料封包，因為在一或多個其他介面上執行，而這些「低層」介面中至少有一個已經關閉
+                    NetworkInterfaceType => 指定網路類型 (https://learn.microsoft.com/zh-tw/dotnet/api/system.net.networkinformation.networkinterfacetype?view=net-8.0)
+                        Ethernet:乙太網路
+                方法
+                    GetPhysicalAddress()
+                        傳回這個介面卡的媒體存取控制 (MAC) 或實體位址
+        MAC Address
+            媒體存取控制位址(區網位址)，用來確認網路裝置的位址
+
+
     CORS
         設定原則名
             const string mainName = '_mainName' // 可隨意取
