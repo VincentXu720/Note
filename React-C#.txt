@@ -1,0 +1,22 @@
+Minmal API
+    特點
+        專案的 Program.cs 中只會出現 四行
+            var builder = WebApplication.CreateBuilder(args);
+            var app = builder.Build();
+
+            app.MapGet("/", () => "Hello World!");
+
+            app.Run();
+C#
+    dotnet new webapi -o 檔名 => 創建後端 API 資料夾
+    dotnet watch run => 跑 API 網頁
+
+    須裝套件
+        C# Dev Kit
+        C#
+        C# Extensions
+        .NET Extension Pack
+        .NET Install Tool
+        NuGet Gallery
+        Prettier => 整理程式碼
+        

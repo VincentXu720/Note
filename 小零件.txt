@@ -1,0 +1,14 @@
+// 日期格式化
+
+const getToday = () => {
+    const nowDate = new Date()
+
+    const year = nowDate.getFullYear()
+    const month = (nowDate.getMonth() + 1)
+    const date = nowDate.getDate()
+
+    const FormatMonth = month < 10 ? `0${month}` : `${month}`
+    const Formatdate = date < 10 ? `0${date}` : `${date}`
+
+    return `${ year }/${ FormatMonth }/${ Formatdate }`
+}

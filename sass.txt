@@ -38,8 +38,11 @@
             extensionName
                 代表副檔名名稱，通常設定為.css 或 .min.css名稱
         當編譯時開啟Live Sass VScode插件
-    
-
+    指定編譯
+        sass "編譯對象路徑" "編譯後路徑"
+        sass --watch "編譯對象路徑" "編譯後路徑"
+        ex
+            sass ./scss/all.scss ./css/all.css
 SCSS資料夾中會當工作區
 創建出來的css資料夾會當測試區
 

@@ -1,4 +1,4 @@
-System.Net.Http <= 命名空間
+ System.Net.Http <= 命名空間
     類別
         HttpClient
             提供類別傳送 Http 要求，並從 URL 所識別的資源接收 Http 回應
@@ -229,10 +229,1524 @@ FormatResultModel
                 export default FormPage
         useSelect
             Redux 的 hook，他會從 store 取出資料給元件使用
+        useParams
+            在 Router 中使用動態參數時，總會需要取得 id 值，而使用 hook 就可以取得這個 id 值
+        useForm (https://ithelp.ithome.com.tw/articles/10305056)
+            處理表單的套件，他會將註冊後的表單轉換成一個 object，key 會是 name，value 是輸入值
+            安裝
+                npm install react-hook-form
+            register
+                由於 useForm 只能偵測有註冊的欄位做處理，但欄位要透過 register 才能"註冊"
+                寫法
+                    一、
+                        const { onChange, onBlur, name, ref } = register('test');
+                        <input 
+                            onChange={onChange} // assign onChange event 
+                            onBlur={onBlur} // assign onBlur event
+                            name={name} // assign name prop
+                            ref={ref} // assign ref prop
+                        />
+                    二、
+                        <input {...register("test")}/>
+            handleSubmit
+                提交時會觸發，也可以使用非同步
+                寫法
+                    一、一般情況
+                        const onSubmit = (e) => {
+                            // handle submit
+                        }
+                        handleSubmit(onSubmit)(e);
+                    二、非同步
+                        handleSubmit(async (data)=>{
+                            // handle data & fetch data
+                        })
+            formState
+                用在回傳表單欄位狀態，搭配 errors 的 object 可取得未通過驗證的錯誤訊息
+                寫法
+                    const Form = () =>{
+                        const {register, formState: {errors}} = useForm();
+                        return (
+                            <form>
+                                <input {...register("test", {
+                                    required: "必填"
+                                })}/>
+                                {/*有 error message 的話會出現在這裡*/}
+                                <p>{errors.message?.test}</p>
+                            </form>
+                        )
+                    }
+
+    React router
+        <Link>
+            讓使用者可以通過點擊導航到另一個頁面的元素，他會呈現一個<a>元素
+        <Redirect>
+            有兩個屬性
+                1.from
+                    從哪個路徑
+                2.to
+                    到哪個路徑，可以傳入物件
+                    ex:
+                        <Redirect from = {`{this.props,match.path}/store`}
+                                    to = {{pathname:`${this.props.match.url}/his`
+                                          ,search:"?hey=UCCU
+                                          ,search:{name:'Referrer'}}} />
+                        pathname : 重新定向的網址
+                        search : 加在重新定向 URL 後當作 QueryString (查詢字串)
+                        state : 在class中使用this.props.location.state取得state的物件
+            這兩個屬性可以讓 URL 進到(form)某個路徑時，會跳到(to)下一個路徑
+    React Redux
+        createSlice
+            addCase
+                相當於 switch 的 case 功能
+        createAsyncThunk
+            pending => 待處理
+            fulfilled => 當派發成功後會，將 fulfilled 值傳遞給 action.payload(固定的)
+            rejected => 當派發失敗後會，將 fulfilled 值傳遞給 action.payload(固定的)
+    React Paginate
+        React 頁數套件
 共通點
     RPTWeb
         1.POST 會帶入 request 參數，GET 則不需要
         2.無論是 POST 或 GET 執行完後都會回傳成功或失敗
         3.元件動作都會加入 [AllowAnonymous] 表示不需驗證也能存取
-
+localStorage
+    getItem 讀取資料
+    setItem 存入資料
+    removeItem 刪除資料
 Dashboard
+
+react-feather => icon
+react-data-table-component => 表格
+
+路徑
+    ./ 會是在同目錄裡面的其他檔案或資料夾的路徑
+    @ 會是不同目錄的其他檔案或資料夾的路徑
+CASL
+    檢查有無權限
+    檢查權限
+        can()
+            檢查是否"有"權限，允許對指定主題執行操作
+        cannot()
+            檢查是否"沒有"權限
+        <Can I="權限名稱" a="權限路徑">
+    結論
+        透過 AbilityBuilder 去設定權限(一般情況下)
+        再透過 <AbilityContext.Provider value={ability}> 將要傳入組件包住就可以分配給組件
+        再透過 AbilityContext 獲取權限給組件
+        再透過 <Can /> 把某個組件包住，表示要有權限才可以看到該組件
+        .can() 可以用來額外設定其他組件的權限
+    
+CORS
+    跨來源資源共用(Cross-Origin Resource Sharing)
+        讓網頁可存取不同源的伺服器資源
+            源
+                http://foo.com/a => 同源
+                http://foo.com/b/c => 同源
+                https://foo.com/a => 不同源(不同協定)
+                https://foo.com:3000/a => 不同源(不同埠號)
+                https://bar.com/a => 不同源(不同網域)
+            同源條件
+                1.協定相同
+                2.埠號相同
+                3.網域相同
+            簡單請求
+                HTTP 請求 => GET、HEAD、POST
+                標頭 => user-agent 設定、Accept、Accept-Language、Content-Language、Content-Type
+                        Last-Event-ID、DPR、Save-Data、Viewport-Width、Width
+                Content-Type 只允許 => application/x-www-form-urlencoded、multipart/form-data、text/plain
+                發出請求的物件沒有註冊監聽器
+                請求中沒有 ReadableStream 的物件被用於上傳
+SQL 語法
+    資料型別轉換
+        CAST
+            將資料型別轉為另一種型別，只能做基礎轉換
+            語法
+                CAST(expression AS data_type)
+        CONVERT
+            功能與 CAST 相同，但可以做更複雜的操作，如將日期格式轉換為不同格式 or 將字串轉為不同的編碼方式
+            語法
+                CONVERT(data_type, expression, style) // style 用於指定特定日期 or 時間格式，或指定不同編碼方式
+        TRY_CONVERT
+            轉換函數，當轉換成功會回傳轉換後的資料型態值，否則回傳 null，主要在於他轉換失敗不會出現錯誤訊息，而是回傳 null
+            語法
+                TRY_CONVERT(data_type,expression, style)
+        資料型別
+            https://learn.microsoft.com/zh-tw/sql/t-sql/data-types/data-types-transact-sql?view=sql-server-ver16
+    CASE
+        類似 if...else 和 then 語法
+        語法
+            CASE
+                WHEN condition THEN result
+                [WHEN ...]
+                [ELSE result]
+            END;
+
+            or
+
+            CASE expression
+                WHEN value THEN result
+                [WHEN···]
+                [ELSE result]  <= 不加 ELSE 無相符條件會 return null
+            END;
+        ex
+            select Name, case Answer
+                when 1 then '喜歡'
+                when 2 then '不喜歡'
+                when 3 then '還OK'
+            END
+            FROM questionnaire;
+
+            or
+
+            select Name, case
+                when Answer=1 then '喜歡'
+                when Answer=2 then '不喜歡'
+                when Answer=3 then '還OK'
+            END
+            AS Answer
+            FROM questionnaire;
+    CASE WHEN ... THEN
+        一種判斷式
+        語法
+            SELECT 
+            --當INVENTORY_NAME是null時 =INVENTORY_NO 
+            --CASE WHEN 布林值 THEN
+            CASE WHEN INVENTORY_NAME IS NULL THEN INVENTORY_NO  
+            WHEN INVENTORY_NAME=''  THEN INVENTORY_NO
+            ELSE INVENTORY_NAME END as 'INVENTORY_NAME'
+
+            FROM TableName
+    TOP
+        限制輸出的資料數量，類似於 Limit
+        語法
+            一、
+                SELECT TOP number|percent table_column1, table_column2...
+                FROM table_name;
+            二、
+                SELECT TOP 2 * FROM customers;
+            三、
+                SELECT TOP 50 PERCENT * FROM customers;
+            
+    變數宣告方式
+        DECLARE
+            搭配 "@" 宣告變數，並設定型別
+        SET
+            設定變數的值
+    <>
+        不等於運算符，表示不相等
+    like
+        模式匹配運算符，用於搜尋某字符串是否包含指定的模式
+    通配符
+        %
+            代替 0 個或多個字符
+        _
+            代替 1 個字符
+        [charlist]
+            字符列中的任何單一字符
+        [^charlist] or [!charlist]
+            不在字符列中的任何單一字符
+
+重要
+    改頁面
+
+    抓資料
+        VScode
+            新增 axios api 的程式
+        VStudio
+            在 Web、Srv、HqSrv 各新增一支 API
+            方式
+                React -> Web -> Src -> HqSrv(return) -> React
+    ASP.NET SQL 語法的部分要確定有在資料庫中的資料行，不然會產生 response 404 error 問題 
+    ASP.NET 更改完 API 後，要重建方案
+    window.history.back() 可以跳回上一個路由
+AG-Grid
+    基本寫法
+        List header
+            // 這裡會出現在表單的 header 上
+            const [columnDefs, setColumnDefs] = useState([
+                // 這邊會放當 header title 的名稱
+                // field 會是 header title，headerName 可以替換 header title，flex 控制欄位的寬度(不需要再使用 width)
+                { field: "make", flex: 2, headerName:"Company" },
+                { field: "model", flex: 1 },
+                { field: "price", flex: 1 },
+                { field: "electric", flex: 1 }
+                // 這裡會對應到 header title 去顯示資料的組合
+                { valueGetter: p => p.data.make + ' ' + p.data.price, headerName:"Company" },
+                // 可以直接使用 width 或 max-width 等去設定欄位的寬度
+                // colSpan 允許欄位跨行多列
+                { headerName: "A", field: "author", width: 300, colSpan: colSpan }
+                // valueFormatter 可以去找欄位的值，再透過 toLocaleString 去轉換成字串
+                { field: "price", flex: 1, valueFormatter: (p) => "£" + p.value.toLocaleString() },
+            ]); 
+        List data
+            const [rowData, setRowData] = useState([
+                // 會對應 header title 去顯示資料
+                { make:"Tesla", model:"Model Y", price:64950, electric:true },
+                { make:"Tesla", model:"F-Series", price:33850, electric:false },
+                { make:"Tesla", model:"Corolla", price:29600, electric:false },
+            ]);
+        使用組件
+            const MyCellComponent = (p) => {
+                return (
+                    <>
+                    <button onClick={() => window.alert("Action!")}> + </button>
+                    {p.value}
+                    </>
+                );
+            };
+            const [columnDefs, setColumnDefs] = useState([
+                {
+                    field: "MyCell",
+                    cellRenderer: MyCellComponent,
+                }
+            ]); 
+        flex 控制寬度
+            const defaultColDef = useMemo(() => {
+                return {
+                    width: 150,
+                    cellStyle: { fontWeight: "bold" },
+                };
+            }, []);
+            const [columnDefs, setColumnDefs] = useState([
+                { field: "make"},
+                { field: "model"},
+                { field: "price" },
+                { field: "electric" }
+            ]);
+            <AgGridReact
+                defaultColDef={defaultColDef}
+            />
+        filter
+            const defaultColDef = useMemo(() => {
+                return {
+                    flex:1,
+                    filter:true => 在欄位旁會有三條線，可以過濾
+                    floatingFilter:true => 會在 header 下產生一個過濾框
+                    editable:true => 讓欄位可以編輯
+                };
+            });
+            <AgGridReact
+                defaultColDef={defaultColDef}
+            />
+        Edit
+            const defaultColDef = useMemo(() => {
+                return {
+                    editable:true => 讓欄位可以編輯
+                };
+            });
+            const [columnDefs, setColumnDefs] = useState([
+                // cellEditorParams: {value: ["Tesla", "Ford", "Toyota"]} 在下拉式選項中放入其他項目
+                { field: "make", cellEditor:"agSelectCellEditor", cellEditorParams: {value:["Tesla","Ford","Toyota"]}},
+            ]);
+            <AgGridReact
+                defaultColDef={defaultColDef}
+            />
+        checkbox
+            單選
+                // checkboxSelection 選取框(只能單選)
+                { field: "model", checkboxSelection: true }
+            多選
+                <AgGridReact
+                    rowData={rowData}
+                    columnDefs={columnDefs}
+                    onGridReady={onGridReady}
+                    rowSelection={"multiple"} => 設定 checkbox 為多選
+                    pagination={true}  => 設定分頁
+                    paginationPageSize={10}  => 設定一頁最大資料筆數
+                    paginationPageSizeSelector={[10, 20]} => 用下拉式選單設定一頁最大資料筆數
+                />
+        主題(Theme)
+            需先引入(可以透過更改 quartz 去改變顏色)
+                import "@ag-grid-community/styles/ag-theme-quartz.css"
+                <div style={gridStyle} className={"ag-theme-quartz-dark"}>
+                    <AgGridReact/>
+                </div>
+
+                import "@ag-grid-community/styles/ag-theme-material.css"
+                <div style={gridStyle} className={"ag-theme-material"}>
+                    <AgGridReact/>
+                </div>
+        style
+            搭配 css
+                React
+                    const [columnDefs, setColumnDefs] = useState([
+                        // cellClassRules 裡面可以寫判斷
+                        { field: "price", valueFormatter: (p) => "£" + p.value.toLocaleString(), cellClassRules:{ 'green-cell': p => p.value > 30000 }},
+                    ]);
+                css
+                    .green-cell{
+                        background-color:green;
+                    }
+            useMemo 搭配 css
+                React
+                    const rowClassRules = useMemo(() => {
+                        'red-row': p => p.data.make == 'Toyota'
+                    });
+                    <AgGridReact
+                        rowClassRules={rowClassRules}
+                    />
+                css
+                    .red-row{
+                        background-color:red;
+                    }
+            valueFormatter
+                返回新值替代 Table 中輸出的值，如果直接在這修改值會出現錯誤 Cannot assign to read only property 'sex' of object
+    <AgGridReact /> 裡面可以放的屬性
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        // checkbox
+        autoGroupColumnDef={autoGroupColumnDef}
+        groupDisplayType={"singleColumn"}
+        // grid 已初始化，並可準備好進行大多數 api 調用，但可能未完成渲染
+        onGridReady={onGridReady}
+            去串 API 資料
+                const onGridReady = useCallback((params) => {
+                    fetch("https://www.ag-grid.com/example-assets/olympic-winners.json")
+                    .then((resp) => resp.json())
+                    .then((data) => setRowData(data));
+                }, []);
+        // 使用者點選 List 的內容，可選取內容
+        suppressRowClickSelection=true
+        // 使用者可多選列
+        rowSelection={"multiple"}
+        // 表格大小有變時，自適應
+        onGridSizeChanged
+            ex
+                const onGridReady = useCallback((params) => {
+                    params.api?.sizeColumnsToFit()
+                }, [])
+                <AgGridReact  style={{ overflowX: 'hidden', position: 'relative' }} 
+                    rowData={store.data}
+                    columnDefs={columnDefs}
+                    rowSelection="multiple"
+                    suppressRowClickSelection={true}
+                    pagination={true}
+                    suppressPaginationPanel={true}
+                    enableServerSideSorting={true}
+                    onGridReady={onGridReady} // 表格初始化時，自適應
+                    onGridSizeChanged={onGridReady} // 表格大小改變，自適應
+                    onSelectionChanged={handleRowSelected}
+                    onSortChanged={handleSort}
+                />
+Store Procedure
+    理論
+        每個 SQL 都會有不同的寫法
+        對於 Server 負擔大
+            由於是將所有邏輯都寫在 SQL 中，所以外部連結進來只會有資料回傳
+        Store Procedure 的效能會受限於資料庫系統
+    語法
+        temptable
+            前面符號會分成三種
+                1.#
+                    一個 "#" 資料會存在硬碟中，資料庫連線中斷會刪除 or 自己下 drop 刪除，是區域的
+                2.##
+                    一個 "##" 資料會存在硬碟中，資料庫連線中斷會刪除 or 自己下 drop 刪除，是全域的
+                3.@
+                    一個 "@" 資料會存在記憶體中，指令執行結束就會自動刪除，不需手動 drop
+        主要語法
+            CREATE {PROC | PROCEDURE} [schema_name.]procedure_name [; number]
+            [ {@paramter [schema_name.]data_type }
+            [ VARYING ] [=default] [OUT | OUTPUT] [READONLY]
+            ] [,...n]
+
+            WITH {[NCRYPTION], [RECOMPILE], [EXECUTE_AS_Clause]...}
+            [FOR REPLICATION]
+
+            AS
+            [BEGIN]
+            SQL statements
+            [RETURN scalar_expression]
+            [END]
+
+            {PROC | PROCEDURE} => 可以互換，PROC 只是簡稱
+            [schema_name.]procedure_name => 程式名稱
+            {@paramter [schema_name.]data_type } => 參數名稱與資料型態
+            [=default] => 表示如果特地去設定參數，就會是 default
+            [OUT | OUTPUT] => 表示 paramter 他會是一個輸入/輸出的值
+            [READONLY] => 表示 paramter 是一個唯讀的值
+            WITH
+                [NCRYPTION] => 進行加密
+                [RECOMPILE] => 進行編譯
+                [EXECUTE_AS_Clause] => 設定執行的身分
+                    EXEC AS CALLER => 預設，指目前的user
+                    EXEC AS SELF => SP的建立者
+                    EXEC AS OWNER => SP目前的owner；如果沒指定，則是該schema目前的owner
+                    EXEC AS user_name
+                    查詢 SP 目前的 execution context:select execute_as_principal_id from sys.sql_modules或sys.assembly_modules
+            AS => 會在這裏面寫入程式
+            [BEGIN] ~ [END] => 裡面會寫入程式邏輯
+    使用方式
+        透過外部的呼叫去進行查詢
+            node
+                const mysql = require('mysql');
+                // 建立資料庫連線
+                const connection = mysql.createConnection({
+                    host: 'localhost',
+                    user: 'user',
+                    password: 'password',
+                    database: 'database_name'
+                });
+                // 連接資料庫
+                connection.connect((err)=>{
+                    if(err) throw err;
+                    console.log('Connected to the database.');
+
+                    // 調用儲存(這裡會使用 Store Procedure)
+                    connection.query('CALL your_stored_procedure()',(err,results)=>{
+                        if(err) throw err;
+                        console.log('Store procedure called successfully.');
+                        console.log('Result',results);
+                    });
+                    connection.end(); // 關閉連線
+                })
+    Store Procedure、資料表值函式、純量值函式差別
+        Store Procedure => 不一定要回傳結果
+            CREATE PROCEDURE "預存程序名稱"
+            // 這裡定義傳入的變數
+            @SearchString nvarchar(MAX)
+            AS
+            BEGIN
+                SET NOCOUNT ON;
+                SELECT * FROM table // FROM 後面不能接變數名稱
+            END
+        資料表值函式、純量值函式 => 一定要回傳結果
+            基本寫法
+                CREATE FUNCTION "函式名稱"
+                (
+                    // 定義變數名稱與型態
+                    @"變數名稱" "變數型態"
+                )
+                RETURNS NVARCHAR(MAX) // 表示 Function 會回傳的型態
+                AS
+                BEGIN
+                    ...
+                END
+            ex:
+                CREATE FUNCTION [dbo].[GetTreeNodeUnitName]
+                (
+                    // 定義參數、型態、預設值
+                    @NowPage int =1,
+                    @UserName NVARCHAR(20)
+                )
+                RETURNS NVARCHAR(MAX) 
+                AS
+                BEGIN
+                    declare @UnitName NVARCHAR(MAX)
+                    select @UnitName = a.UserName from table a where a.User = @UserName and a.Page > @NowPage
+                    return @UnitName
+                END
+
+                // 呼叫函數
+                dbo.[GetTreeNodeUnitName](1,'name')
+        宣告變數
+            DECLARE @變數名稱 變數型態(參數)
+                ex:
+                    DECLARE @UserName VARCHAR(30);
+                常見
+                    1.DECLARE @SqlVariable NCHAR(4); // 固定長度4
+                    2.DECLARE @SqlVariable NVARCHAR(50); // 變動長度50
+                    3.DECLARE @SqlVariable NVARCHAR(MAX); // 長度設 max 可存到 2GB (同 text/ntext 的長度)
+                    4.DECLARE @SqlVariable INT; // 整數
+                    5.DECLARE @SqlVariable decimal(5,2); // 總長度5位數，小數點以後佔2位，如123.45
+                    6.DECLARE @SqlVariable datetime; // 日期時間
+                    7.DECLARE @SqlVariable UNIQUEIDENTIFIER;
+                    8.UNIQUEIDENTIFIER (全域性唯一識別符號) // C# 的 GUID，格式會是這樣 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx ，其中每一個 x 是範圍 0-9 或 a-f 的十六進位數字。 例如，6F9619FF-8B86-D011-B42D-00C04FC964FF。
+                    9.DECLARE Cursor storeData is  // Cursor 是一個指標，會指向一個查詢結果 (會儲存 SQL 的查詢結果，之後就只需要透過此變數就可當作結果來操作)
+                        select * from dual;
+        判斷式
+            if...else
+                CREATE PROCEDURE dbo.QueryProduct
+                (
+                    @ProductID smallint
+                )
+                AS
+                    // 設定三組sql變數
+                    DECLARE @statement nvarchar(256)
+                    DECLARE @orderby nvarchar(40)
+                    DECLARE @where nvarchar(256)
+                    
+                    // 給予變數初始值
+                    SET @statement = 'SELECT [ProductID] FROM Table'
+                    SET @orderby = ' ORDER BY [ProductID] '
+                IF (@ProductID IS NULL)
+                BEGIN
+                    SET @where = ' WHERE 1 = 1 '
+                END
+                ELSE
+                BEGIN
+                    // CAST 轉變資料型態
+                    SET @where = ' WHERE [ProductID] = ' + CAST(@ProductID AS varchar) 
+                END
+
+                // 組合字串
+                SET @statement = @statement + @where + @orderby
+                    PRINT 'STATEMENT: ' + @statement
+                    EXEC sp_executesql @statement
+                RETURN
+            if...else(巢狀)
+                DECLARE @Number INT;  
+                SET @Number = 50;  
+                IF @Number > 100  // 當 if 要執行的程式超過一行，就需要透過 BEGIN 和 END 包住
+                    PRINT 'The number is large.';  
+                ELSE   
+                    BEGIN  
+                        IF @Number < 10  
+                        PRINT 'The number is small.';  
+                    ELSE  
+                        PRINT 'The number is medium.';  
+                    END ;  
+                GO
+            loop
+                Fetch 搭配 while
+                    CREATE PROCEDURE sp_Test() 
+                    as
+
+                    DECLARE @colA nvarchar(10) 
+                    DECLARE @colB nvarchar(10) 
+                    DECLARE @MyCursor CURSOR // MyCursor 定義為指標(可以不用加"@")
+
+                    SET @MyCursor = CURSOR FAST_FORWARD
+
+                    // 假設TableA中有100筆，則下列的語法就會直接傳回100筆
+                    FOR 
+                        Select colA,colB 
+                    From tableA
+
+                    // 開啟指標
+                    OPEN @MyCursor
+
+                    // 取得第一筆的值放到 @colA 及 @colB
+                    FETCH NEXT FROM @MyCursor 
+                    INTO @ColA,@ColB
+
+                    // 開始繞迴圈
+                    WHILE @@FETCH_STATUS = 0
+
+                    BEGIN
+
+                    // 顯示 @colA 及 @colB 的值在畫面上
+                    PRINT @ColA 
+                    PRINT @ColB
+
+                    // 可在這之中處理其他sql部份，例如你可以寫依據 @colA 及 @colB 這兩個 key 在 tabl2 查詢後的資料寫到 table3
+                    insert into table3
+                    select * 
+                    from table2
+                    where table2.c1=@colA and table2.c2=@colB
+
+                    // 取得下一筆記錄的 colA 及 colB
+                    FETCH NEXT FROM @MyCursor 
+                    INTO @ColA,@ColB
+
+                    END
+
+                    CLOSE @MyCursor 
+                    DEALLOCATE @MyCursor 
+                    GO
+
+                    FETCH_STATUS => 會針對連接目前開啟的任何資料指標，發出最後一個資料指標 Fetch 的狀態
+                        0 : 代表 FETCH 成功
+                        -1 : 代表 FETCH 失敗 or 資料列已超出結果 (maybe 做完了)
+                        -2 : 代表 FETCH 遺漏(遺失)提取的資料列
+    ";" 與 GO 區別
+        GO => 會把 GO 之前的命令送到 server，然後重新開始
+            ex:
+                declare @test int
+                set @test = 42
+                GO
+
+                select @Test // 會出現 error @Test is undefined
+    呼叫方式
+        exec 預存程序名稱 @變數名稱1 ='變數內容1',@變數名稱2 ='變數內容2'
+            ex:
+                exec dbo.SearchHtml 
+                @SearchString ='%hellomotor%你好機車%',@Category = 2
+        帶入參數
+            ex:
+                CREATE  procedure
+                // 執行會用到的參數，宣告時需要加 IN(預設)
+                // 執行完畢後要回傳的參數，宣告時需要加 OUT
+                MY_TEST_SP(@STORE_CODE IN VARCHAR,@TOTAL_AMOUNT OUT NUMBER) AS……
+                
+                透過下方執行
+
+                DECLARE
+                    @CODE VARCHAR(5) = '252'; // 這裡會被當作參數使用
+                    @MONEY NUMBER;
+                BEGIN
+                    @MY_TEST_SP(CODE, MONEY); // 這裡會帶入參數(類似於 Function)
+                    @DBMS_OUTPUT.PUT_LINE(MONEY);
+                END;
+
+                or
+
+                DECLARE @lname varchar(30);
+                EXEC MY_TEST_SP '1',@lname output; 
+                PRINT @lname;
+        回傳方式
+            1.使用 SELECT 以表格方式傳回
+            2.設定 Output Parameter 以參數方式傳回
+            3.使用 RETURN 傳回 1 個整數型別資料
+    SET 陳述式
+        ANSI_NULLS (https://learn.microsoft.com/zh-tw/sql/t-sql/statements/set-ansi-nulls-transact-sql?view=sql-server-ver16)
+            當設定 ANSI_NULLS 設定為 ON 時，即使 column_name 中有 NULL 值，使用 WHERE column_name = NULL 的 SELECT 語句會傳回零個數據列，使用 WHERE column_name <> NULL 的 SELECT 語句會傳回零個數據列
+            當設定 ANSI_NULLS 設定為 OFF 時，"=" 和 "<>" 不會遵循 ISO 標準，使用 WHERE column_name = NULL 的 SELECT 語句會傳回 column_name 中具有 NULL 的數據列，使用 WHERE column_name <> NULL 的 SELECT 語句會回傳數據列中具有非 NULL 值的數據列
+        QUOTED_IDENTIFIER (https://learn.microsoft.com/zh-tw/sql/t-sql/statements/set-quoted-identifier-transact-sql?view=sql-server-ver16)
+            當設定 QUOTED_IDENTIFIER 為 ON 時，只能使用單引號('')表示字串
+            當設定 QUOTED_IDENTIFIER 為 OFF 時，可使用單引號('') or 雙引號("")表示字串
+        NOCOUNT (https://learn.microsoft.com/zh-tw/sql/t-sql/statements/set-nocount-transact-sql?view=sql-server-ver16)
+            防止預存程式中每個陳述式，將 DONEINPROC 訊息傳給用戶端 // DONEINPROC 訊息 => SSMS 執行 T-SQL時，返回的訊息之一，表示 T-SQL 操作已在存儲過程中完成
+            當設定 NOCOUNT 為 ON 時，不會傳回計數
+            當設定 NOCOUNT 為 OFF 時，會傳回計數
+    EXISTS
+        檢查是否有包含任何資料，會回傳 true
+        寫法
+            WHERE EXISTS (SELECT NULL WHERE ID = @data.ID)
+            IF EXISTS (SELECT FROM TABLE WHERE ID = @data.ID)
+        NOT EXISTS
+            與 EXISTS 相反，會尋找不存在資料
+    BEGIN TRANSACTION
+        會用在一些"無法使用"觸發程序，又必須處理的事情上，ex:進貨單主檔、進貨單明細、產品庫存等，就可以使用 Transaction 做判斷處理
+        語法
+            BEGIN TRANSACTION => 開啟交易，打開交易功能
+            COMMIT TRANSACTION => 確認交易，在這裡會先進行確認才會寫入資料表
+            ROLLBACK TRANSACTION => 回復交易，會回覆在交易內所有 T-SQL 所更動的內容
+        ex:
+            BEGIN TRANSACTION // 開啟
+            DECLARE @M int,@D int ,@S int ,@R int  // 定義變數
+            
+            INSERT INTO purchase_m (purchase_id) VALUES('PUR1') // 新增進貨單
+            SELECT @M = @@ERROR // 擷取上一次(進貨單)執行 T-SQL 的錯誤 CODE
+            
+            INSERT INTO purchase_m (purchase_id,seq,prod_id,QTY) VALUES('PUR1','1','PROD1',100)
+            SELECT @D = @@ERROR // 擷取上一次(進貨明細)執行 T-SQL 的錯誤 CODE
+
+            // 庫存異動
+            UPDATE stock
+            SET QTY = QTY + 100
+            WHERE prod_id = 'PROD1'
+
+            // 擷取上一次(產品庫存)執行 T-SQL 的錯誤 CODE
+            SELECT @S = @@ERROR // 成功會回傳 0
+            // 擷取上一次(產品庫存)執行T-SQL的異動筆數
+            SELECT @R = @@ROWCOUNT 
+            
+            // 進行判斷，看是否三次執行 T-SQL 錯誤都為 0
+            // @R 是判斷庫存量是否有被異動成功
+            IF @M = 0 AND @D = 0 AND @S = 0 AND @R = 1
+
+            // 判斷合格後，確認交易完成，資料也會在這時候確認新增和修改
+            COMMIT TRANSACTION
+            ELSE
+            ROLLBACK TRANSACTION // 如果有問題就取消交易讓資料不被影響
+    MAX
+        用來取得特定欄位的最大值
+        語法
+            SELECT MAX(column_name) FROM table_name
+        ex:
+            SELECT MAX(Price) FROM orders
+    DISTINCT
+        語法
+            SELECT DISTINCT table_column1, table_column2...
+            FROM table_name;
+    OFFSET
+        限制傳回的資料列，可過濾特定範圍的資料列
+        語法
+            ORDER BY {order_by_list}
+            OFFSET {offset_value} ROW(S)
+            FETCH FIRST|NEXT {fetch_value} ROW(S) ONLY
+
+            OFFSET 不可省略 FETCH 選擇性子句 FIRST and NEXT 只能選其中一個
+    排序
+        ORDER BY CASE WHEN "條件" THEN "條件資料" END "排序方向" (條件資料是資料庫某個列)
+        ORDER BY CASE WHEN "條件" THEN 1 ELSE 0 END "排序方向" (符合條件會帶1，反之帶0)
+    
+axios
+    運作
+        axios(要進行請求) -> 攔截器(其他額外的邏輯) -> 轉換資料 -> 進行非同步處理 -> 轉換資料 -> 攔截器(這裡可以添加回應資料或返回錯誤訊息) -> 取得資料
+    攔截器(interceptors)
+        他會是一個在非同步處理前的一個邏輯，可以用於驗證、確認、添加數據到響應等
+        使用方式
+            axios.interceptors.response.use
+                ex:
+                    instance.interceptors.response.use(
+                        function (response) {
+                            return response
+                        }
+                        function (err) {
+                            if(err.response) {
+                                switch(err.response.status) {
+                                    case 404:
+                                        console.log("頁面不存在")
+                                        break;
+                                    case 500:
+                                        console.log("程式發生問題)
+                                        break;
+                                    default:
+                                        console.log(err.message)
+                                }
+                            }
+                            if(!window.navigator.onLine) {
+                                alert("網路出了點問題，請重新連線後重整網頁")
+                                return
+                            }
+                            return Promise.reject(err)
+                        }
+                    )
+權限
+    jwtService -> useJwt(src/core/auth/jwt) -> jwt (useJwt(src/auth/jwt))
+                                            -> onSubmit (Login)
+    資料是透過驗證的時候加入的
+    <Can i="從資料庫讀取" a="目標頁面" />
+
+
+筆記
+    AdvanceSearchRequest
+    到 column.js 中更改 AGGrid 上面有的欄位
+    SortColumn 表單上的標題列
+    選項按鈕
+        有些按鈕會用 CRUDTemplateDefault 去串 API
+        Select button 觸發會在 Table 的 CRUDTemplateDefault 中，去建 API，修改一些輸入就好
+    串接資料庫
+        更新、刪除、新增，除了有 store procedure 可以不用另外寫，其餘的都要另外在 C# 中，再寫一個
+        當兩個資料表有相同的欄位，需要在 SELECT 的地方特別聲明要找哪一個資料表的欄位
+            ex
+                今天要找 Student 資料表內容，但需要跟 Person 合併 抓取 Name，然而 Person 和 Student 都有 OpenDate 欄位
+                    SELECT ID, t0.[OpenDate], PersonName
+                    FROM Student t0
+                    LEFT JOIN Person t1 ON t0.ID = t1.personID
+                t0.[OpenDate] 就是特別告訴 C# 要找哪一個資料表的資料
+        在搜尋時，我需要將從別的資料表合併的資料，設定為主資料表的欄位
+            ex
+                今天要找 Student 資料表內容，但需要跟 Person 合併 抓取 Name，而要搜尋(搜尋框) Name 的資料時，需要將 Name 用 AS 設定為 StudentID
+                SELECT ID, t0.[OpenDate], PersonName AS StudentName <= 這裡要設定成主資料表要替換的資料欄位名稱
+                FROM Student t0
+                LEFT JOIN Person t1 ON t0.ID = t1.personID
+                WHERE (LOWER(PersonName)LIKE '%'+LOWER(@Q)+'%') <= 這裡要設定另一個資料表的欄位
+    同一頁面兩個路徑
+        到 Table 去建立一個 useCallback function，到 store 去，為修改頁面建立一個 reducers，再將 Hearder 地方的按鈕帶入 null 做判斷
+        而 修改頁面則是從 Column 帶入 data 去做判斷 
+    刪除按鈕
+        單一、多選 API 分開寫
+    搜尋
+        ColumnFilter 裡面一定要用 value 不要用 key 那個方式
+    export
+        columnExport、handleExcel(sheetData) 這兩個地方要改
+
+    Member
+        加入店櫃 Client controller Client  API
+        卡別 memberCard /api/MemberCard/GetMemberCardHelp API
+
+        ActionPanel 操作介面
+        BodyPanel 主畫面
+        Column 表格+下拉選單
+        areaCode => 郵遞區號(聯絡地址)
+
+        defaultValues 會放到 control 透過 useForm() 傳到 <Controller> 裡面
+        再透過 <Controller> 裡的 name 去判斷，目前要用的值 
+
+        firstStore(兩個方法)
+            1.firstStore 會透過 uilts.js 的 getMachineSet 去傳出店櫃值
+            2.去寫一隻專門打店櫃 API
+    語言
+        透過 assets/data/locales/zh-Hant-Tw 去建構其他語言(i18n)
+    修改
+        要使用 useForm 的 reset 去抓要放到欄位內的資料，配合 useEffect (記住在 useEffect 要加變更條件，要不然會一直重新渲染)
+        useEffect(() => {
+
+        },["條件"])
+    新增資料權限(yup)
+        在 schema 中設定了那些是要輸入的，那些欄位就必須輸入值
+            ex
+                const schema = yup.object({
+                    Name: yup.string().required(), <= 設定輸入值的型別，以防有別的資料進入
+                    ID: yup.number().required(),
+                    mobil: yup.string().required(),
+                    muldata: yup.object().required()
+                })
+
+                const {
+                    handleSubmit,  <= 表單送出(點擊)觸發，onClick={handleSubmit(onSubmit)} 將觸發要執行的程式，放到 onSubmit 裡面
+                    register,
+                    formState: { errors }
+                } = useForm({
+                    resolver: yupResolver(schema), <= 使用 yupResolver 在每次都會判斷有無資料
+                })
+    小數點(保留三位 不四捨五入)
+        round(@輸入參數,3) <= 3 小數點後幾位
+    color and className
+        color 要宣告要的顏色 className 放 bootstrap5 的語法去寫顏色樣式
+    replaceAll and replace
+        replaceAll
+            一次能替換多個字串
+            ex
+                String.prototype.replaceAll("被替換字串", "替換字串")
+                String.prototype.replaceAll(/\+/g, ' ')
+        replace
+            一次只能替換一個字串，除非使用 RegExp，就能替換多字串
+            ex
+                單個
+                    String.prototype.replace("被替換字串", "替換字串")
+                多個
+                    String.prototype.replace(/\+/g, ' ')
+
+
+React 受控組件 and 非受控組件
+    專案解法
+        用 selectedMember 去判斷有無資料，並顯示相應的元件
+    受控組件
+        會使用 value 帶入參數
+        ex:
+            const [text, setText] = useState('hello')
+            function handleChange(e){
+                setText(e.target.value)
+            }
+
+            return (
+                <>
+                    <input value={text} onChange={handleChange} />
+                    <button onClick={() => console.log(text)}>打印</button>
+                </>
+            )
+    非受控組件
+        會使用 defaultValue 帶入參數，如果出現 非受控組件錯誤提示，可以用 defaultValue 帶入參數
+        ex
+            <Input size='sm' id='id' defaultValue={"參數"} autoComplete="off" />
+出現套件錯誤
+    直接裝套件到 StoreWeb 中就好
+
+首頁
+    按鈕加陰影
+        以陣列包物件方式去製造需要的內容
+            const [buttonStyle, setButtonStyle] = [
+                { id: 0, name: 'Button1', isHovered: false },
+                { id: 1, name: 'Button2', isHovered: false },
+                { id: 2, name: 'Button3', isHovered: false }
+            ]
+        再遍歷內容後製造出來按鈕
+            const handleMouseEnter = (id) => {
+                const buttonStyle = button.map((button) => {
+                    if (button.id === id) {
+                        return {
+                            ...button, // 將選中 id 的資料拆開
+                            isHovered:true // 將選中 id 的 isHovered 改為 true
+                        }
+                    }
+                    return { // 如果移開了，就把 isHovered 改為 false
+                        ...button, // 將選中 id 的資料拆開
+                        isHovered:flase // 將選中 id 的 isHovered 改為 true
+                    }
+                })
+                setButtonStyle(buttonStyle)
+            }
+
+            const handleMouseLeave = (id) => {
+                const buttonStyle = button.map((button) => {
+                    if (button.id === id) {
+                        return {
+                            ...button, // 將選中 id 的資料拆開
+                            isHovered:false // 將選中 id 的 isHovered 改為 false
+                        }
+                    }
+                    return button // 回傳原始狀態
+                })
+                setButtonStyle(buttonStyle)
+            }
+            
+            button.map((button) => {
+                <Button
+                    style={{ 
+                        boxShadow: button.isHovered ? 'x y blur color' : 'none',
+                            transition: 'box-shadow 0.3s ease-in-out'
+                    }}
+                    onMouseEnter={() => handleMouseEnter(button.id)}
+                    onMouseLeave={() => handleMouseLeave(button.id)}
+                >
+                    { button.name }
+                </Button> 
+            })
+    字數過多省略(...)
+        JS 版
+            str = "Hello JavaScript"
+            str1 = str.substring(0, 6) // substring(start, end) 分割字串
+            str2 = str1.concat("...") // .concat("要加的字串")
+            console.log(str2) // Hello J...
+
+            str1 = str.substring(0, 6).concat('...')
+            console.log(str1) // Hello J...
+        css 版
+            overflow: 'hidden'
+            textOverflow:'ellipsis' // 裁切或顯示 "..."
+            whiteSpace: 'nowrap' // 字不換行
+            (這三個都要設定才會生效)
+會員
+    AG grid css
+        ag-grid-no-native-widgets.css 修改 AG grid Table 讓彈跳式選單出現
+            .ag-cell-value,
+            .ag-group-value{}
+
+    照片新增功能
+        base64
+            if (e.target.files) {
+                const files = e.target.files
+                if (files && files[0]) {
+                    const imageFile = files[0]
+                    const reader = new FileReader()
+                    reader.onload = x => { // 讀取照片資訊
+                        setPhotoShot(x.target.result) // 照片預覽
+                        onChange(x.target.result) // 給 Controller 傳輸資料
+                    }
+                    reader.readAsDataURL(imageFile) // 將照片以 base64 編碼
+                } else {
+                    setPhotoShot(defaultPhotoShot) // 使用預設照片
+                    onChange(null)
+                }
+            } else {
+                setPhotoShot(defaultPhotoShot) // 使用預設照片
+                onChange(null)
+            }
+        轉為路徑存入 DB
+            前端
+                const request = new FormData() // 需先轉換成 FormData，因為後端會使用 IFormFile 只能讀取 FormData 格式
+                for (const key in memberData) {
+                    if (memberData[key] !== null && memberData[key] !== '' && memberData[key] !== undefined) {
+                        request.append(key, memberData[key]) // 將內部的資料透過遞迴加入 FormData 的內容中
+                    } else {
+                        request.append(key, '') // 如果裡面有資料值為 null 就放空值
+                    }
+                }
+            後端
+                API 的 class 上要加上 [FromForm] 在 Request 前面 (每層都要)
+                將每層 API (除了最後處理層) 都要將連接進入的 result 使用  _srvClient.HttpPostAsyncFormData 格式傳入
+                將傳入圖片的參數使用 Direction.CreateDirectory("路徑名") (這裡就可以存到DB)
+                    [NonAction]
+                    public async Task<string> CreateImageName(IFormFile imageFile)
+                    {
+                        Directory.CreateDirectory("Images/資料夾");
+                        Guid g = Guid.NewGuid();
+                        string GuidString = Convert.ToBase64String(g.ToByteArray()); // 轉換成 Base64 字串型態
+                        GuidString = GuidString.Replace("=", ""); // 替代 "=" 為 ""
+                        GuidString = GuidString.Replace("+", "");
+                        GuidString = GuidString.Replace("/", "");
+
+                        string imageName = $"_{GuidString}" + Path.GetExtension(imageFile.FileName); // 讀取圖片的名稱
+
+                        return "資料夾/" + imageName;
+                    }
+                轉換成完整路徑
+                    [HttpPost("V1/GetMemberDetailByID")]
+                    public async Task<ActionResult> GetMemberDetailByID(GetMemberDetailByIDRequest request)
+                    {
+                        // Initial variables
+                        string imgSrc = "";
+                        if (_hostEnvironment.IsDevelopment())
+                        {
+                            // 將 imgSrc 內容格式化成完整路徑，會由 PicturePath 帶入參數
+                            imgSrc = string.Format(", CASE WHEN [PicturePath] != '' THEN '{0}://{1}{2}/Images/' + [PicturePath] ELSE '' END AS ImageSrc ", Request.Scheme, Request.Host, Request.PathBase);
+                        }
+                        else
+                        {
+                            imgSrc = string.Format(", CASE WHEN [PicturePath] != '' THEN '/Images/' + [PicturePath] ELSE '' END AS ImageSrc ");
+                        }
+                        string selectStr =
+                            @$"
+                                SELECT TOP 1 MemberID, Sex, MemberName, Brith, MemEmpID, ContactAddr1, ContactAddr4, EffectDate, Remark
+                                ,t0.[OpenDate], t0.[Email], t0.[Tax], TelPhone01, PrintFlag, Major, Mobil, HongLi, FirstStore 
+                                , CardClass, PicturePath, ZipID01" + imgSrc;
+
+                        string fromStr = "FROM [dbo].[Member] t0 ";
+                        string whereStr = "WHERE t0.MemberID = @MemberID ";
+                        string orderByStr = "";
+                        selectStr = selectStr + fromStr + whereStr + orderByStr;
+                        try
+                        {
+                            // Biz
+                            var result = await _POVWebDbContextDapper.Connection.QueryAsync(selectStr, request);
+                            // Result
+                            return Ok(FormatResultModel<dynamic>.Success(new { result }));
+                        }
+                        catch (Exception ex)
+                        {
+                            return Ok(FormatResultModel<dynamic>.Failure(new { MSG = ex.Message }));
+                        }
+                    }
+
+    
+    字串轉整數型態
+        parseFloat(value) // 轉浮點數
+        parseInt(value) // 轉整數
+        Number() 直接轉換
+公告
+    Editor 元件 (react-draft-wysiwyg)
+        const saveEditorContent = (data) => {
+            const contentState = data.getCurrentContent()
+            // 先將資料轉為原始結構(JS)，再轉成 JSON 格式
+            const rawContent = JSON.stringify(convertToRaw(contentState))
+            return rawContent
+        }
+
+        useEffect(() => {
+            if (selectedAnnouncement !== null) {
+                // 先解析 JSON 資料，再恢復裡面內容，即可在 Editor 使用
+                const contentState = convertFromRaw(JSON.parse(Announcement.Content))
+                // 創一個 Editor State
+                setSaveContent(EditorState.createWithContent(contentState))
+            }
+        }, [selectedAnnouncement])
+
+    AG grid 表格縮小
+        rowHeight={"大小"}
+班別設定
+    AG grid
+        讓內容與 header 自適應網頁寬度
+            flex:1
+        讓使用者可直接修改內容
+            editable: true
+        修改內容後串 API (在所有功能都在相同頁面的情況下)
+            valueSetter = async (params) => {
+                const {data, colDef, newValue} = params // 將裡面所需資料抓出來，newValue 會是修改的值
+                const fieldName = colDef.field // colDef.field 這裡會去抓出改的是哪個區域(header)的內容
+                const updateData = {
+                    ...data,
+                    [fieldName] : newValue // 將 newValue 帶入修改的 header 的內容中
+                }
+                dispatch(updEmpDutyData({...updateData}))
+                   .then(() => {  // 確保在修改完資料庫後才去從重新抓取資料，要不然會出現抓到舊資料問題
+                       return dispatch(getEmpDutyList())
+                   })
+            }
+採購未交
+    透過 Sidebar 裡面的 controller 去控制帶入的值(orderByMode)
+    Ag-grid
+        setGridOption
+            固定元件
+                api.setGridOption('pinnedBottomRowData', [aggRow]) // 將元件固定在下方(反之pinnedTopRowData)
+                api.setPinnedBottomRowData([aggRow]) // 將元件固定在下方(反之setPinnedTopRowData)
+    注意事項
+        季節與類1的第一份資料沒有 target 所以他無法進入未交明細中(但如果有就可以進入)
+        由於類別有些資料的數量為 0 或 空的，所以不會出現資料
+        尺寸以第一筆總計選到的帶入，如果沒有選到就鎖住
+訂貨未交
+    sql
+        CREATE TABLE #Person // 表示局部臨時表
+        CREATE TABLE ##Person // 表示全局临时表
+API
+    API 錯誤訊息
+        if (request.Tax % 1 != 0)
+        {
+            return Ok(FormatResultModel<dynamic>.Failure(new { MSG = "消費折數必須為整數" })); // MSG 裡面可以自訂錯誤訊息
+        }
+    NULL 的判斷
+        ISNULL and NULLIF
+            NULLIF(Name,'') // 當 Name = ''，會回傳 NULL，反之回傳 Name 值
+            ISNULL(Name,'') // 當 Name = NULL，會將 Name 欄位的值改為 ''
+    判斷是否有資料
+        NOT EXISTS and EXISTS
+            // 這裡如果有符合條件(有資料)會因為 NOT 的關係變成 FALSE，並回傳沒有資料的部分
+            SELECT s.sname FROM Student s WHERE NOT EXISTS(SELECT * FROM Name n WHERE s.id = n.id)
+
+            // 這裡如果有符合條件(有資料)會直接為 TRUE，並回傳有資料的部分
+            SELECT s.sname FROM Student s WHERE EXISTS(SELECT * FROM Name n WHERE s.id = n.id)
+電商平台增修
+    Select
+        menuPlacement:'top' // 可以控制選項出現的位置
+
+其他
+    git 
+        要推要先退到 WebTools 再 commit 推，要不然會抓不到其他 API 的修改
+    受控與非受控問題
+        1.useForm 初始化正確 (初始狀態不能為 undefined or null)
+            const { control, handleSubmit, formState:{errors}} = useForm({
+                defaultValues: modeDefine.defaultValues // 保證最初始的狀態
+            })
+        2.Controller
+            元件中的 value (受控) or defaultValue (非受控) 放入初始值
+                value = {modeDefine.xxx} // 帶入值
+                defaultValue = {modeDefine.xxx} // 帶入值
+    共同元件
+        合計元件
+            export const generatePinnedBottomData = (gridApi, columnApi, aggColumn, titleColumn) => {
+                const result = {}
+                gridApi?.getAllGridColumns()?.forEach(item => { result[item.colId] = null }) // 將每個 column ID 的值設定成 null
+                aggColumn?.forEach(element => {
+                    result[element] = 0 // 每個 column 初始值設定為 0
+                    gridApi?.forEachNodeAfterFilter((rowNode) => { // 遍歷未被篩掉的值
+                        result[element] += Number(rowNode.data[element]) // 將 rowNode 裡 data 的值取出來並轉為數字型態放回 result[element] 裡面 (rowNode 的結構會是 forEachNodeAfterFilter 的結構)
+                    })
+                })
+                result[titleColumn] = '合計' // 更改 result 中的 target 裡面的值 (這裡是 result['target'])
+                return result
+            }
+    
+
+採購
+    purchaseAmount => 金額
+    totalPurchaseNum => 數量
+    purchaseDate => 日期
+    goodID => 商品型號
+    sizeNo => 段
+    Non_Tax => 採購單價
+    Non_TaxAmount => 採購金額
+    NewTaxAmt => 稅金
+
+
+會員卡
+    cardID,  // 卡別代號
+    cardName, // 卡別名稱
+    discount,  // 折扣率
+    singleAmount,  // 單次消費門檻
+    amount, // 多次消費門檻
+    continueAmount, // 續卡資格門檻
+    wayCardID: wayCardID || '', // 歸屬卡別
+    mode, // 是否參與會員升降等
+    pointMode, // 是否計算會員點數
+    birthMode, // 生日禮使用 ("0":否 "1":是)
+    birthCount, // 使用次數
+    birthSort, // 使用總類
+    birthUseAmount, // 消費金額滿 元
+    birthDiscount, // 享有折扣(checkbox)
+    birthAmount, // 折扣金額(checkbox)
+    birthWay, // 使用方式
+    changePerson: getUserData() && getUserData().userId,
+    changeDate: getFullDate()
+
+
+類別
+    類別名稱
+    總採購量
+    未稅金額
+    稅金
+    合計金額
+廠商
+    廠商名稱
+    總採購量
+    未稅金額
+    稅金
+    合計金額
+商品
+    商品名稱
+    總採購量
+    未稅金額
+    稅金
+    合計金額
+預交日
+    預交日
+    總採購量
+    未稅金額
+    稅金
+    合計金額
+季別
+    季別
+    總採購量
+    未稅金額
+    稅金
+    合計金額
+
+ordeyByField
+    1.未交總計
+    2.未交明細
+    3.尺寸明細
+    4 and 5 去找 1 的另一個表格
+
+
+SQL
+    DECLARE @TmpResult TABLE( // 宣告並創建一個 Table
+        PurchaseID VARCHAR(20),
+        PurchaseStore VARCHAR(15),
+        PurchaseFactory VARCHAR(10),
+        GoodID VARCHAR(20),
+        PreDealDate VARCHAR(8),
+        Season VARCHAR(6),
+        SortID VARCHAR(8),
+        SortName VARCHAR(40),
+        TotalPurchaseNum FLOAT,
+        NewTaxAmt FLOAT,
+        PurchaseAmount FLOAT
+    )
+
+    DECLARE @Season [POVWeb].[udtStr], @SortOptions [POVWeb].[udtStr] // 宣告兩變數的類型為 [POVWeb].[udtStr] (為 [str1] [varchar])
+
+    IF NOT EXISTS (SELECT 1 FROM @SeasonData)  // 判斷 @SeasonData 裡面是否沒有資料(沒資料為 True)
+        INSERT INTO @Season 
+        SELECT DISTINCT Season FROM Goods  // 過濾 Goods 表中的資料，並放到 Season 中
+    ELSE 
+        INSERT INTO @Season 
+        SELECT str1 FROM @SeasonData // 將 SeasonData 的 str1 放到 @Season 中
+
+    IF NOT EXISTS (SELECT 1 FROM @SortOptionsData) // 判斷 @SortOptionsData 裡面是否沒有資料(沒資料為 True)
+        BEGIN
+            IF @SortMode = '1'
+                INSERT INTO @SortOptions 
+                SELECT DISTINCT Sort01ID FROM Sort01
+                UNION SELECT '' Sort01ID
+            ELSE IF @SortMode = '2'
+                INSERT INTO @SortOptions 
+                SELECT DISTINCT Sort02ID FROM Sort02
+                UNION SELECT '' Sort02ID
+            ELSE IF @SortMode = '3'
+                INSERT INTO @SortOptions 
+                SELECT DISTINCT Sort03ID FROM Sort03
+                UNION SELECT '' Sort03ID
+            ELSE IF @SortMode = '4'
+                INSERT INTO @SortOptions 
+                SELECT DISTINCT Sort04ID FROM Sort04
+                UNION SELECT '' Sort04ID
+            ELSE IF @SortMode = '5'
+                INSERT INTO @SortOptions 
+                SELECT DISTINCT Sort05ID FROM Sort05
+                UNION SELECT '' Sort05ID
+        END
+    ELSE
+        INSERT INTO @SortOptions // 從 @SortOptionsData 表中蒐集所有的 str1 資料，放到 SortOptions 中
+        SELECT str1 FROM @SortOptionsData
+
+    INSERT INTO @TmpResult(PurchaseID, PurchaseStore, PurchaseFactory, GoodID, PreDealDate, Season, SortID, SortName, TotalPurchaseNum,NewTaxAmt,PurchaseAmount)
+    
+    SELECT  P.PurchaseID, PurchaseStore, PurchaseFactory, P.GoodID, P.PreDealDate, ISNULL(G.Season,''),
+            ISNULL(CASE @SortMode WHEN '1' THEN G.Sort01 WHEN '2' THEN G.Sort02 WHEN '3' THEN G.Sort03 WHEN '4' THEN G.Sort04 WHEN '5' THEN G.Sort05 END,''),
+            ISNULL(CASE @SortMode WHEN '1' THEN S1.Sort01Name WHEN '2' THEN S2.Sort02Name WHEN '3' THEN S3.Sort03Name WHEN '4' THEN S4.Sort04Name WHEN '5' THEN S5.Sort05Name END,''),
+            TotalPurchaseNum-ISNULL(StockTotalNum,0), CAST(P.NewTaxAmt-ISNULL(SD.NewTaxAmt,0) AS Decimal(20,0)), CAST(PurchaseAmount-ISNULL(StockAmount,0) AS Decimal(20,0))
+    FROM Purchase P
+    LEFT JOIN (
+        SELECT PurchaseID, GoodID, SizeNo, SUM(StockTotalNum)StockTotalNum, SUM(NewTaxAmt)NewTaxAmt, SUM(StockAmount)StockAmount
+        FROM StockDetail
+        GROUP BY PurchaseID, GoodID, SizeNo  // LEFT JOIN 裡面的查詢結果以 SD 表示 
+    ) SD ON P.PurchaseID = SD.PurchaseID AND P.GoodID = SD.GoodID AND P.SizeNo = SD.SizeNo // 根據 SD 的內容與 P 的表作配對
+    LEFT JOIN Goods G ON G.GoodID = P.GoodID
+    LEFT JOIN Sort01 S1 ON G.Sort01 = S1.Sort01ID
+    LEFT JOIN Sort02 S2 ON G.Sort02 = S2.Sort02ID
+    LEFT JOIN Sort03 S3 ON G.Sort03 = S3.Sort03ID
+    LEFT JOIN Sort04 S4 ON G.Sort04 = S4.Sort04ID
+    LEFT JOIN Sort05 S5 ON G.Sort05 = S5.Sort05ID
+
+    INNER JOIN @Season S ON ISNULL(G.Season,'') = S.str1 // 與 S.str1 配對，如果為 NULL 的話，轉換為 ''
+    // 當 @SortMode = 1 放入 G.Sort01 的值 以此類推
+    // 如果都沒有的話 ISNULL 會把裡面轉為空值
+    INNER JOIN @SortOptions SO ON ISNULL((CASE @SortMode WHEN '1' THEN G.Sort01 WHEN '2' THEN G.Sort02 WHEN '3' THEN G.Sort03 WHEN '4' THEN G.Sort04 WHEN '5' THEN G.Sort05 END),'') = SO.str1
+    
+    WHERE PreDealDate>=@PreDealDate_ST AND PreDealDate <= @PreDealDate_ED
+        AND P.GoodID>=@GoodID_ST AND P.GoodID <= @GoodID_ED
+        AND PurchaseDate>=@PurchaseDate_ST AND PurchaseDate<=@PurchaseDate_ED
+        AND PurchaseFactory>=@PurchaseFactory_ST AND PurchaseFactory<=@PurchaseFactory_ED
+        AND PurchaseStore>=@PurchaseStore_ST AND PurchaseStore<=@PurchaseStore_ED
+        AND DealFlag != '*'
+        AND TotalPurchaseNum-ISNULL(StockTotalNum,0)>0
+
+    IF @OrderByMode = '1'
+        SELECT SortID Target, ISNULL(NULLIF(SortName,''),'其他')TargetName,
+            SUM(TotalPurchaseNum)TotalPurchaseNum, SUM(PurchaseAmount-NewTaxAmt)Non_Tax, SUM(NewTaxAmt)NewTaxAmt, SUM(PurchaseAmount)PurchaseAmount
+        FROM @TmpResult 
+        GROUP BY SortID, SortName
+        ORDER BY SortID
+    ELSE IF @OrderByMode = '2'
+        SELECT PurchaseFactory Target, ISNULL(NULLIF(F.FactoryShort,''),'其他')TargetName, SUM(TotalPurchaseNum)TotalPurchaseNum, SUM(PurchaseAmount-NewTaxAmt)Non_Tax, SUM(NewTaxAmt)NewTaxAmt, SUM(PurchaseAmount)PurchaseAmount
+        FROM @TmpResult T
+        LEFT JOIN Factory F ON T.PurchaseFactory = F.FactoryID
+        GROUP BY PurchaseFactory, FactoryShort
+        ORDER BY PurchaseFactory
+    ELSE IF @OrderByMode = '3'
+        SELECT T.GoodID Target, ISNULL(NULLIF(G.GoodName,''),'其他')TargetName, SUM(TotalPurchaseNum)TotalPurchaseNum, SUM(PurchaseAmount-NewTaxAmt)Non_Tax, SUM(NewTaxAmt)NewTaxAmt, SUM(PurchaseAmount)PurchaseAmount
+        FROM @TmpResult T
+        LEFT JOIN Goods G ON T.GoodID = G.GoodID
+        GROUP BY T.GoodID, GoodName
+        ORDER BY T.GoodID
+    ELSE IF @OrderByMode = '4'
+        SELECT T.PreDealDate Target, SUM(TotalPurchaseNum)TotalPurchaseNum, SUM(PurchaseAmount-NewTaxAmt)Non_Tax, SUM(NewTaxAmt)NewTaxAmt, SUM(PurchaseAmount)PurchaseAmount
+        FROM @TmpResult T
+        GROUP BY T.PreDealDate
+        ORDER BY T.PreDealDate
+    ELSE IF @OrderByMode = '5'
+        SELECT T.Season Target, SUM(TotalPurchaseNum)TotalPurchaseNum, SUM(PurchaseAmount-NewTaxAmt)Non_Tax, SUM(NewTaxAmt)NewTaxAmt, SUM(PurchaseAmount)PurchaseAmount
+        FROM @TmpResult T
+        GROUP BY T.Season
+        ORDER BY T.Season
+
+
+PurchaseID = P.PurchaseID
+PurchaseStore = P.PurchaseStore
+PurchaseFactory = P.PurchaseFactory
+PreDealDate = P.PreDealDate
+Season = ISNULL(G.Season,'') // Goods
+SortID = ISNULL(CASE @SortMode WHEN '1' THEN G.Sort01 WHEN '2' THEN G.Sort02 WHEN '3' THEN G.Sort03 WHEN '4' THEN G.Sort04 WHEN '5' THEN G.Sort05 END,'')
+SortName = ISNULL(CASE @SortMode WHEN '1' THEN S1.Sort01Name WHEN '2' THEN S2.Sort02Name WHEN '3' THEN S3.Sort03Name WHEN '4' THEN S4.Sort04Name WHEN '5' THEN S5.Sort05Name END,'')
+TotalPurchaseNum = TotalPurchaseNum-ISNULL(StockTotalNum,0)
+NewTaxAmt = CAST(P.NewTaxAmt-ISNULL(SD.NewTaxAmt,0) AS Decimal(20,0))
+PurchaseAmount = CAST(PurchaseAmount-ISNULL(StockAmount,0) AS Decimal(20,0))
+
+總採購量 - 庫存量 > 0
+
+OrderByMode => 1.廠商 2.商品 3.季別 4.預交日 5.類別
+SortMode => 1.類1 2.類2 3.類1 4.類4 5.類5 
+
+未交明細
+    GoodID GoodName PurchaseID PurchaseDate PreDealDate TotalPurchaseNum Non_Tax Discount Non_TaxAmount NewTaxAmt PurchaseAmount
+
+    PurchaseAmount = PurchaseAmount + NewTaxAmt
+
+    TotalPurchaseNum Non_Tax Non_TaxAmount Discount => 資料庫
+    未稅 => PurchaseAmount - NewTaxAmt  
+
+尺寸明細
+    GoodID GoodName PreDealDate SizeNo size01 ~ size17 TotalPurchaseNum TotalPurchaseAmount
+
+
+客戶
+    客戶 尺寸 總量 金額
+商品型號
+    商品(商品型號 商品名稱) 尺寸 總量 金額
+員工
+    員工 尺寸 總量 金額
+季別
+    季別 尺寸 總量 金額
+類別
+    類別 尺寸 總量 金額
+
+=> 尺寸 總量 金額
+
+依客戶
+    ClientName => 'CustName'
+依型號
+    EmpName => OperationName
+
+changeColumnMultiple 改變(未交明細)中的 column 欄位
+changeColumn 改變(未交統計)中的 column 欄位
+
+selectStr => 找未出貨資料
+selectStr2 => 找出過貨資料
+
+unShippedHead => 未交統計 (同一廠商所有一樣商品的統一數量與尺寸)
+unShippedDetail => 未交明細 (統計資料的廠商，具體購買物與尺寸) (包含 Detail 和 Sum)
+
+銷售達成率 = 設定金額/銷售金額
+銷售金額 => Sell -> SellCash (cashAmount)
+
+post date_ST(本月1日) and date_ED(下個月1日)、店員代號(比對)
+
+月達成率 => (月業績 / 月設定目標業績)*100
+月業績 => 另一個資料表
+月設定目標 => 年 月 業績目標
+
+銷售門店不會包含本店
+
+製作一個 搜尋上年整個業績的 API 用 clientID、clientName、year 去 POST (每個月的)
+資料用 setValue 放到各個資料中 or 放到 selectedPeersSale 並重新渲染
+
+會員
+    VIP 卡號不用必填 (O) 2024/08/06 
+    新增頁面欄位改變 (O) 2024/08/06 
+    會員Table欄位寬度調小 (O) 出現底部捲動軸 2024/08/06 
+    不需要顯示消費折數 (O) 2024/08/06 
+    多選功能全消失 (O) 2024/08/06
+會員卡
+    會員卡排序功能 (O) 2024/08/06
+    新增畫面的多次消費改成累計總額門檻 (O) 2024/08/06
+尺寸
+    表格每個欄位寬度調小 (O) 出現底部捲動軸 2024/08/06
+    尺寸對照增修 => 尺寸對照資料 (需要從資料庫改權限)
+品牌
+    不需要顯示日期 (O) 2024/08/06 
+    Excel 中要改成品牌對照資料 (O) 2024/08/06
+班別
+    前面要有勾選欄位 (跟其他一樣主檔功能, 要更改權限) (O) 2024/08/07
+    EXCEL 匯入功能 (統一匯入)
+訂貨未交
+    預交日期不能帶預設值 (O)
+    統一往前 30 天 (O)
+    不會扣除一張單中已交的數量 (有可能是 str2 的 SQL 有問題 or 下面的相加出問題)
+單據打印
+    印表機
+        印表機列印初始位置會在左上角(0,0)
+        FullPaperCut() 保留單據資料位置，多出的會自動切斷
+        PrintDocument() 將所有指令發送到打印機
+        byte[] command = { 0x1D, 0x77, (byte)width} 0x1D 為前置符 0x77 表示要進行寬度設定
+        byte[] command = { 0x1D, 0x68, (byte)height} 0x1D 為前置符 0x68 表示要進行高度設定
+    C#
+        StringBuilder 可讓字串成為可修改、刪除、新增操作
+            Append 新增 => StringBuilder.Append('123') // StringBuilder 要宣告一個變數建立實例
+            Insert 插入 => StringBuilder.Insert(插入位置, 插入字串)
+            Remove 刪除 => StringBuilder.Remove(起始, 結束) // 結束位置不包含
+            Replace 替代 => StringBuilder.Replace(被替代字串, 替代字串)
+            ToString() => 由於 StringBuilder 並不是真的字串，所以在輸出時，要特別轉為字串輸出
+        PadRight 在字串符的右側填充指定字符，長度可自訂，預設為''
+            string x = "Hello"
+            無填充值
+                string StringX = x.PadRight(10);
+                Console.WriteLine($"'{StringX}'"); // Hello
+            有填充值
+                string StringX = x.PadRight(10, '*');
+                Console.WriteLine($"'{StringX}'"); // Hello*****，少的位置會自動填充
+        ESC/POS
+            0x1D 0x77 設定寬度
+            0x1D 0x68 設定高度
+            0x1D 0x6B 列印條形碼
+        Startup
+            services.AddRepoServices(_configuration) // RepoServices 註冊
+            services.AddBizServices(_configuration) // BizServices 註冊
+            
+            BizServices 
+                需要在 ConfigureBizServices 加入 services.AddScoped<註冊的容器>() // 依賴註冊
+            RepoServices
+                需要在 ConfigureRepoServices 加入 services.AddScoped<註冊的容器>() // 依賴註冊
+會員分析
+    C#
+        高活耀會員 => 距離前一天的日期內，購買超過兩次(包含)以上
+        低活耀會員 => 距離前一天的日期內，購買低於兩次以上
+        期間註冊新會員 => 到前一天的日期內，所有註冊的會員
+        生日會員 => 讀取會員的生日，只抓到年月份，做比對
+
+        毛利 => 銷售單中每個商品單價減掉商品進貨成本，再相加
+        平均單價 => 銷售單總金額/單中商品的數量
+        平均單筆金額 => 根據會員所有銷售單金額/銷售單數量
+        未消費天數 =>  前一天的日期扣掉最後一次消費日期
+        消費金額 => 根據日期的前一天內的消費金額加總
+        消費次數 => 會員所有的銷貨單數量
+        消費數量 => 會員所有的銷貨單的商品數量加總
+
+91 電商新增畫面
+列印銷售明細
+
+result 抓出每一筆資料整理成一筆
+printResult 操作印表機列印
+
+每筆單據會分開
+但如果 sellID 相同的單據會在 C# 合成一筆資料
+Header
+    商店 => sellStore === clientID
+    單號 => sellID === sellID
+    日期 => sellDate
+Detail
+    單據消費金額 單價*數量 => 金額
+備註
+    mark => 信用卡後四碼，無 空值
+合計
+    這一單資料所有金額相加
+
+將每一個商店資料都打入 DB
+新增會自動產生一個商店編號
+複製會讀取點選的商店編號，並去抓該編號在 DB 的資料，帶入複製頁面
+我抓到商店的資料會是一個陣列
+
+修改資料庫資料
+刪除資料，但如果已有資料不能被刪除
+抓取商店數量並顯示出來到畫面上
+
+後端處理資料分成 3 塊
+    (request 會不同)
+    1.data1 // 91App
+    2.data2 // Yahoo
+    3.data3 // Momo
+    4.data4 // shopee
+
+運費先不抓東西
+電商商店可以透過資料庫新增去更改電商的數量(新電商會增加新的電商框)
+
+
+Size 表 和 Goods 表的 SizeNo 對照出錯
+尺寸錯誤跳錯誤訊息
+
+訂價 上次購買的金額
+
+yarn 問題
+    yarn 出錯去抓 20240902 的 ClientApp 的 yarn.lock 去複製全部到新專案的 ClientApp 的 yarn.lock
+

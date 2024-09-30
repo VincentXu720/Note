@@ -1,0 +1,155 @@
+專櫃
+    店中櫃
+        大賣場中的專櫃、百貨中的專櫃，特點是不開該百貨(賣場)的發票，而是開自家品牌發票，如果開自家發票則不會參加
+        百貨(賣場)活動
+
+基本知識
+    成本
+        移動平均
+        月平均成本
+            公司損益(收入) - 成本 - 費用 = 稅前利益
+        公司 => 收入 - 成本
+        進貨單價
+            總進貨金額 / 進貨數量
+            EX:
+                100 * 20 (第一次進貨)
+                80 * 20 (第二次進貨)(有溢價，可能讓進貨價格變低)
+                進貨單價 => 3600/40 = 90
+        收入
+            銷售量 * 售出價格
+            EX:
+                1月2 -800 (賣一個)
+                1月15 -500*2 (賣兩個，有折扣)
+                1月29 -500*10
+                收入 => 800 + 1000 + 5000 = 6800
+        毛利
+            進貨單價 * 銷售數量
+            EX:
+                100 * 20 (第一次進貨)
+                80 * 20 (第二次進貨)(有溢價，可能讓進貨價格變低)
+                1月2 -800 (賣一個)
+                1月15 -500*2 (賣兩個，有折扣)
+                1月29 -500*10
+                進貨單價 => 3600/40 = 90
+                銷售數量 => 1+2+10 = 13
+                毛利 => 90*13 = 1170
+        庫存成本
+            (總進貨量 - 銷售數量) * 進貨單價
+            EX:
+                100 * 20 (第一次進貨)
+                80 * 20 (第二次進貨)(有溢價，可能讓進貨價格變低)
+                1月2 -800 (賣一個)
+                1月15 -500*2 (賣兩個，有折扣)
+                1月29 -500*10
+                進貨單價 => 3600/40 = 90
+                總進貨量 => 20 + 20 = 40
+                銷售數量 => 1 + 2 + 10 = 13
+                庫存成本 => (40-13)*90 = 2430
+    寄賣
+        將東西給客戶販售
+    盤點
+        廠商到客戶點剩餘商品，中間的差距就是銷售出的數量
+    盤點轉出貨
+        將盤點後的差距放到出貨單
+    調價
+        EX:
+            廠商把價格為 10 塊的商品從庫存中扣除 10 個，給客戶做寄賣，後面廠商盤點後發現賣了 3 個
+            客戶以總價 100 塊退 7 個給廠商，而廠商再以 70 塊進貨給客戶
+
+盤點後商品價差 "+"
+商品應是沒有，但盤到商品的 = "-"
+應稅、含稅，客戶自己選(含稅預設)
+庫存建立的盤點日期 與 盤差轉出貨的盤點日期 相同
+寄賣客戶 = 同一間店
+CheckFlag = * (過帳)
+含稅 0 應稅 1
+盤點日期不等於匯入資料時間
+[uspGetStoreQuery] -> Current Storage
+
+TotalShipNum => Num1
+SellPrice = 建議售價(基商) = 訂價(出貨單) = goods 表 AdvicePrice
+ShipPrice = 最後進價(基商) = 單價(出貨單) = goods 表 Cost (這裡有可能自行輸入)
+ShipDiscount = 折扣 = (ShipPrice/SellPrice)*100%
+ShipAmount = ShipPrice = Cost
+Item 會根據商品的順序排列
+Non_Tax (未稅) = ShipAmount/1.05
+Tax = 全部單價 - (全部單價/1.05)
+NewTaxAmt = ShipPrice - ShipPrice/1.05 (無條件捨去)
+Price = ShipPrice
+
+ShipDate = InvoiceDate (以盤點日期去當出貨日)
+CustID = Store (商店編號)
+ShipStore = Store (出貨店 與 客戶店 相同)
+
+FillPerson => 店員編號
+ShipNum1...17 => 直接抓 Num1...17
+TotalShipNum => 直接抓 Num1
+
+會抓到重複的ID (originalShip 不會增加)
+
+yarn 出錯去抓 20240902 的 ClientApp 的 yarn.lock 去複製全部
+
+建議售價 = 訂價 = AdvicePrice
+單價 = 最後進價 = Cost
+
+DECLARE @SaleGross TABLE (
+	MemberID VARCHAR(50),
+	SaleDate INT
+)
+
+INSERT INTO @SaleGross
+SELECT S.MemberID, SUM((CASE WHEN SellMode IN ('2','8') THEN -1 ELSE 1 END) * SellNum1) AS SaleDate
+FROM Sell S
+LEFT JOIN Goods G ON G.GoodID = S.GoodID
+LEFT JOIN Member M ON M.MemberID = S.MemberID
+GROUP BY S.MemberID
+
+SELECT * FROM @SaleGross
+
+SELECT * FROM Sell
+
+SUM(SellPrice - SellPrice/1.05)
+taxPercent = taxPercent * 0.01
+tmpTaxPercent = 1+taxPercent
+
+
+SellPrice => 建議售價 => AdvicePrice
+ShipPrice => 最後進價 => Cost
+ShipAmount => SellPrice * TotalShipNum
+Price => 最後進價 => Cost
+SpecialPrice(特價)
+IntoPrice(起始進價)
+Non_Tax(未稅金額) 
+    應稅
+        SellPrice * 0.05
+    含稅
+        SellPrice / 1.05
+整單稅金算法
+    公式
+        整單總額 - (整單總額/1.05) = 稅金
+    例子
+        100 * 2 = 200 (商品單價 * 商品數量)
+        100 * 3 = 300
+        100 * 4 = 400
+        全部 = 900
+        Tax(整筆稅金) => 900 - 900 / 1.05 = 43 (四捨五入)
+分攤
+    NewTaxAmt => 稅金分攤到商品的金額
+    公式
+        整筆單稅金 * 單商品總額/整單總額 (無條件捨去)
+        最後一個商品 => 整筆單稅金 - 前面單商品的稅金 = 最後一筆的稅金
+        #含稅用整單總額算 #應稅先將整單金額扣除稅金當整單總額
+    例子
+        200+300+400 = 900
+        900/ 2/9 (200/900) = 200
+
+agGridData => arr => 打進的資料
+total => acc => 初始資料
+
+出貨單合計資料要改
+剩下 NewTaxAmt 的判斷最後一筆資料判別
+
+應稅 
+    總額 = 合計金額+稅金
+含稅
+    總額 = 合計金額
